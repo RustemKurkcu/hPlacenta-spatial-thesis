@@ -1,0 +1,17 @@
+[2026-02-15 19:30:32] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 14:16:07] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 14:16:45] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 14:18:23] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 15:13:13] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 15:14:24] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 15:21:13] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 15:22:27] RUN_OPTIONAL_HEAVY=FALSE. Skipping CellChat. 
+[2026-02-20 15:47:44] [06A] Resolved CellChatDB.human via utils::data from CellChat 
+[2026-02-20 15:49:34] Saved CellChat object: output/objects/cellchat_slidetags.rds 
+[2026-02-20 15:49:34] Done CellChat. 
+[2026-02-20 17:41:35] Starting CellChat module 06A. 
+[2026-02-20 17:41:35] [06A] Loaded SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 17:41:35] [06A] Using group column: celltype_final_refined 
+[2026-02-20 17:41:35] [06A] Unique groups: 14 
+[2026-02-20 17:43:26] Saved CellChat object: output/objects/cellchat_slidetags.rds 
+[2026-02-20 17:43:26] 06A CellChat module complete. 

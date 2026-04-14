@@ -1,0 +1,11 @@
+{
+  "dataset": "slidetags",
+  "sample": "W9",
+  "created_at": "2026-02-22 20:16:21",
+  "n_cells": 416,
+  "highlights": ["EVT", "vCTB", "Hofbauer cells", "EVT3"],
+  "global_score_definition": "z_global(MMP) + z_global(Tolerance) - z_global(NK) + z_global(EA)",
+  "top_fraction": 0.1,
+  "bottom_fraction": 0.1,
+  "comparability_note": "permissiveness_global is calibrated across pooled cells from all datasets loaded in this run"
+}

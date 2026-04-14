@@ -1,0 +1,12 @@
+[2026-02-20 17:14:42] Starting CellChat optional module. 
+[2026-02-20 17:14:59] Starting CellChat optional module. 
+[2026-02-20 17:18:24] Starting CellChat optional module. 
+[2026-02-20 17:18:24] Running CellChat for SlideTags 
+[2026-02-20 17:18:25] [06C] Loaded SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 17:18:25] SlideTags: using group column celltype_final_refined 
+[2026-02-20 17:18:25] [06C] SlideTags failed: unused argument ("data") 
+[2026-02-20 17:18:25] Running CellChat for STARmap 
+[2026-02-20 17:18:31] [06C] Loaded STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-20 17:18:31] STARmap: using group column celltype_final_refined 
+[2026-02-20 17:18:31] [06C] STARmap failed: unused argument ("data") 
+[2026-02-20 17:18:31] 06C complete. 

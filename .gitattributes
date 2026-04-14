@@ -1,0 +1,13 @@
+data/* filter=lfs diff=lfs merge=lfs -text
+*.rds filter=lfs diff=lfs merge=lfs -text
+*.qs filter=lfs diff=lfs merge=lfs -text
+*.mtx filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.gz filter=lfs diff=lfs merge=lfs -text
+*.csv filter=lfs diff=lfs merge=lfs -text
+*.txt filter=lfs diff=lfs merge=lfs -text
+data/processed/multiome_rna_seurat.rds filter=lfs diff=lfs merge=lfs -text
+data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv filter=lfs diff=lfs merge=lfs -text
+output/objects/multiome_SCP2601_formatted.rds filter=lfs diff=lfs merge=lfs -text
+output/objects/starmap_W8-2_SCP2601.rds filter=lfs diff=lfs merge=lfs -text

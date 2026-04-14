@@ -1,0 +1,170 @@
+[2026-02-15 18:30:18] Starting cell type harmonization... 
+[2026-02-15 18:30:18] Loading Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-15 18:30:19] Loading STARmap: output/objects/starmap_mapped.rds 
+[2026-02-15 18:30:24] 
+=== Harmonizing SlideTags === 
+[2026-02-15 18:30:24]   Cells: 1923 
+[2026-02-15 18:30:24]   Author labels: 1923, Predicted: 0, Unknown: 0 
+[2026-02-15 18:30:24]   Loading refinement map... 
+[2026-02-15 18:30:24]   Refined 21 cells using mapping table 
+[2026-02-15 18:30:24]   Computing lineage scores... 
+[2026-02-15 18:30:24]   Using assay: SCT 
+[2026-02-15 18:30:24]   Scoring lineage: EVT (6 markers) 
+[2026-02-15 18:30:24]   Scoring lineage: vCTB (5 markers) 
+[2026-02-15 18:30:24]   Scoring lineage: STB (5 markers) 
+[2026-02-15 18:30:24]   Scoring lineage: Endothelial (5 markers) 
+[2026-02-15 18:30:24]   Scoring lineage: Fibroblast (5 markers) 
+[2026-02-15 18:30:25]   Scoring lineage: Macrophage (6 markers) 
+[2026-02-15 18:30:25]   Scoring lineage: NK (5 markers) 
+[2026-02-15 18:30:25]   Rescued 0 unknown cells with lineage labels 
+[2026-02-15 18:30:25]   Exporting harmonization summary... 
+[2026-02-15 18:30:25]   Saved: output/tables/SlideTags_celltype_harmonization_summary.csv 
+[2026-02-15 18:30:25]   Final: 1923 cells, 10 conservative types, 14 refined types 
+[2026-02-15 18:30:25] 
+=== Harmonizing STARmap === 
+[2026-02-15 18:30:25]   Cells: 9041 
+[2026-02-15 18:30:25]   Author labels: 9041, Predicted: 0, Unknown: 0 
+[2026-02-15 18:30:25]   Loading refinement map... 
+[2026-02-15 18:30:25]   Refined 0 cells using mapping table 
+[2026-02-15 18:30:25]   Computing lineage scores... 
+[2026-02-15 18:30:25]   Using assay: imputed 
+[2026-02-15 18:30:25]   Scoring lineage: EVT (6 markers) 
+[2026-02-15 18:30:26]   Scoring lineage: vCTB (5 markers) 
+[2026-02-15 18:30:27]   Scoring lineage: STB (5 markers) 
+[2026-02-15 18:30:28]   Scoring lineage: Endothelial (5 markers) 
+[2026-02-15 18:30:29]   Scoring lineage: Fibroblast (5 markers) 
+[2026-02-15 18:30:30]   Scoring lineage: Macrophage (6 markers) 
+[2026-02-15 18:30:32]   Scoring lineage: NK (5 markers) 
+[2026-02-15 18:30:33]   Rescued 0 unknown cells with lineage labels 
+[2026-02-15 18:30:33]   Exporting harmonization summary... 
+[2026-02-15 18:30:33]   Saved: output/tables/STARmap_celltype_harmonization_summary.csv 
+[2026-02-15 18:30:33]   Final: 9041 cells, 12 conservative types, 12 refined types 
+[2026-02-15 18:30:33] 
+Saving harmonized objects... 
+[2026-02-15 18:30:39] Saved: output/objects/slidetags_harmonized.rds 
+[2026-02-15 18:31:07] Saved: output/objects/starmap_harmonized.rds 
+[2026-02-15 18:31:07] 
+03C complete. 
+[2026-02-17 16:44:00] Starting cell type harmonization... 
+[2026-02-17 16:44:00] Loading Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-17 16:44:01] Loading STARmap: output/objects/starmap_mapped.rds 
+[2026-02-17 16:44:06] 
+=== Harmonizing SlideTags === 
+[2026-02-17 16:44:06]   Cells: 1923 
+[2026-02-17 16:44:06]   Author labels: 1923, Predicted: 0, Unknown: 0 
+[2026-02-17 16:44:06]   Loading refinement map... 
+[2026-02-17 16:44:06]   Refined 21 cells using mapping table 
+[2026-02-17 16:44:06]   Computing lineage scores... 
+[2026-02-17 16:44:06]   Using assay: SCT 
+[2026-02-17 16:44:06]   Scoring lineage: EVT (6 markers) 
+[2026-02-17 16:44:06]   Scoring lineage: vCTB (5 markers) 
+[2026-02-17 16:44:06]   Scoring lineage: STB (5 markers) 
+[2026-02-17 16:44:06]   Scoring lineage: Endothelial (5 markers) 
+[2026-02-17 16:44:07]   Scoring lineage: Fibroblast (5 markers) 
+[2026-02-17 16:44:07]   Scoring lineage: Macrophage (6 markers) 
+[2026-02-17 16:44:07]   Scoring lineage: NK (5 markers) 
+[2026-02-17 16:44:07]   Rescued 0 unknown cells with lineage labels 
+[2026-02-17 16:44:07]   Exporting harmonization summary... 
+[2026-02-17 16:44:07]   Saved: output/tables/SlideTags_celltype_harmonization_summary.csv 
+[2026-02-17 16:44:07]   Final: 1923 cells, 10 conservative types, 14 refined types 
+[2026-02-17 16:44:07] 
+=== Harmonizing STARmap === 
+[2026-02-17 16:44:07]   Cells: 9041 
+[2026-02-17 16:44:07]   Author labels: 9041, Predicted: 0, Unknown: 0 
+[2026-02-17 16:44:07]   Loading refinement map... 
+[2026-02-17 16:44:07]   Refined 0 cells using mapping table 
+[2026-02-17 16:44:07]   Computing lineage scores... 
+[2026-02-17 17:12:42] Starting cell type harmonization... 
+[2026-02-17 17:12:42] Loading Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-17 17:12:43] Loading STARmap: output/objects/starmap_mapped.rds 
+[2026-02-17 17:12:48] 
+=== Harmonizing SlideTags === 
+[2026-02-17 17:12:48]   Cells: 1923 
+[2026-02-17 17:12:48]   Author labels: 1923, Predicted: 0, Unknown: 0 
+[2026-02-17 17:12:48]   Loading refinement map... 
+[2026-02-17 17:12:48]   Refined 21 cells using mapping table 
+[2026-02-17 17:12:48]   Computing lineage scores... 
+[2026-02-17 17:12:48]   Using assay: SCT 
+[2026-02-17 17:12:48]   Scoring lineage: EVT (6 markers) 
+[2026-02-17 17:12:48]   Scoring lineage: vCTB (5 markers) 
+[2026-02-17 17:12:48]   Scoring lineage: STB (5 markers) 
+[2026-02-17 17:12:49]   Scoring lineage: Endothelial (5 markers) 
+[2026-02-17 17:12:49]   Scoring lineage: Fibroblast (5 markers) 
+[2026-02-17 17:12:49]   Scoring lineage: Macrophage (6 markers) 
+[2026-02-17 17:12:49]   Scoring lineage: NK (5 markers) 
+[2026-02-17 17:12:49]   Rescued 0 unknown cells with lineage labels 
+[2026-02-17 17:12:49]   Exporting harmonization summary... 
+[2026-02-17 17:12:49]   Saved: output/tables/SlideTags_celltype_harmonization_summary.csv 
+[2026-02-17 17:12:49]   Final: 1923 cells, 10 conservative types, 14 refined types 
+[2026-02-17 17:12:49] 
+=== Harmonizing STARmap === 
+[2026-02-17 17:12:49]   Cells: 9041 
+[2026-02-17 17:12:49]   Author labels: 9041, Predicted: 0, Unknown: 0 
+[2026-02-17 17:12:49]   Loading refinement map... 
+[2026-02-17 17:12:49]   Refined 0 cells using mapping table 
+[2026-02-17 17:12:49]   Computing lineage scores... 
+[2026-02-17 17:12:49]   Using assay: imputed 
+[2026-02-17 17:12:49]   Scoring lineage: EVT (6 markers) 
+[2026-02-17 17:12:51]   Scoring lineage: vCTB (5 markers) 
+[2026-02-17 17:12:53]   Scoring lineage: STB (5 markers) 
+[2026-02-17 17:12:55]   Scoring lineage: Endothelial (5 markers) 
+[2026-02-17 17:12:57]   Scoring lineage: Fibroblast (5 markers) 
+[2026-02-17 17:12:59]   Scoring lineage: Macrophage (6 markers) 
+[2026-02-17 17:13:01]   Scoring lineage: NK (5 markers) 
+[2026-02-17 17:13:02]   Rescued 0 unknown cells with lineage labels 
+[2026-02-17 17:13:02]   Exporting harmonization summary... 
+[2026-02-17 17:13:02]   Saved: output/tables/STARmap_celltype_harmonization_summary.csv 
+[2026-02-17 17:13:02]   Final: 9041 cells, 12 conservative types, 12 refined types 
+[2026-02-17 17:13:02] 
+Saving harmonized objects... 
+[2026-02-17 17:13:09] Saved: output/objects/slidetags_harmonized.rds 
+[2026-02-17 17:13:40] Saved: output/objects/starmap_harmonized.rds 
+[2026-02-17 17:13:40] 
+03C complete. 
+[2026-02-20 14:06:26] Starting cell type harmonization... 
+[2026-02-20 14:06:29] Loading Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-20 14:06:30] Loading STARmap: output/objects/starmap_mapped.rds 
+[2026-02-20 14:06:36] 
+=== Harmonizing SlideTags === 
+[2026-02-20 14:06:36]   Cells: 1923 
+[2026-02-20 14:06:36]   Author labels: 1923, Predicted: 0, Unknown: 0 
+[2026-02-20 14:06:36]   Loading refinement map... 
+[2026-02-20 14:06:36]   Refined 21 cells using mapping table 
+[2026-02-20 14:06:36]   Computing lineage scores... 
+[2026-02-20 14:06:36]   Using assay: SCT 
+[2026-02-20 14:06:36]   Scoring lineage: EVT (6 markers) 
+[2026-02-20 14:06:36]   Scoring lineage: vCTB (5 markers) 
+[2026-02-20 14:06:36]   Scoring lineage: STB (5 markers) 
+[2026-02-20 14:06:36]   Scoring lineage: Endothelial (5 markers) 
+[2026-02-20 14:06:36]   Scoring lineage: Fibroblast (5 markers) 
+[2026-02-20 14:06:36]   Scoring lineage: Macrophage (6 markers) 
+[2026-02-20 14:06:37]   Scoring lineage: NK (5 markers) 
+[2026-02-20 14:06:37]   Rescued 0 unknown cells with lineage labels 
+[2026-02-20 14:06:37]   Exporting harmonization summary... 
+[2026-02-20 14:06:37]   Saved: output/tables/SlideTags_celltype_harmonization_summary.csv 
+[2026-02-20 14:06:37]   Final: 1923 cells, 10 conservative types, 14 refined types 
+[2026-02-20 14:06:37] 
+=== Harmonizing STARmap === 
+[2026-02-20 14:06:37]   Cells: 9041 
+[2026-02-20 14:06:37]   Author labels: 9041, Predicted: 0, Unknown: 0 
+[2026-02-20 14:06:37]   Loading refinement map... 
+[2026-02-20 14:06:37]   Refined 0 cells using mapping table 
+[2026-02-20 14:06:37]   Computing lineage scores... 
+[2026-02-20 14:06:37]   Using assay: imputed 
+[2026-02-20 14:06:37]   Scoring lineage: EVT (6 markers) 
+[2026-02-20 14:06:38]   Scoring lineage: vCTB (5 markers) 
+[2026-02-20 14:06:40]   Scoring lineage: STB (5 markers) 
+[2026-02-20 14:06:42]   Scoring lineage: Endothelial (5 markers) 
+[2026-02-20 14:06:43]   Scoring lineage: Fibroblast (5 markers) 
+[2026-02-20 14:06:46]   Scoring lineage: Macrophage (6 markers) 
+[2026-02-20 14:06:47]   Scoring lineage: NK (5 markers) 
+[2026-02-20 14:06:49]   Rescued 0 unknown cells with lineage labels 
+[2026-02-20 14:06:49]   Exporting harmonization summary... 
+[2026-02-20 14:06:49]   Saved: output/tables/STARmap_celltype_harmonization_summary.csv 
+[2026-02-20 14:06:49]   Final: 9041 cells, 12 conservative types, 12 refined types 
+[2026-02-20 14:06:49] 
+Saving harmonized objects... 
+[2026-02-20 14:06:55] Saved: output/objects/slidetags_harmonized.rds 
+[2026-02-20 14:07:25] Saved: output/objects/starmap_harmonized.rds 
+[2026-02-20 14:07:25] 
+03C complete. 

@@ -1,0 +1,11 @@
+﻿.tmp.driveupload/
+*imputed_gene_activity.csv
+*matrix.mtx
+.Rproj.user
+.tmp.drivedownload/
+.Rproj.user/
+desktop.ini
+Thumbs.db
+*.tmp
+*.lock
+data/processed/seurat_spatial_prepared.qs

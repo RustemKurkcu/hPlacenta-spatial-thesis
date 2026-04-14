@@ -1,0 +1,13 @@
+[2026-02-20 17:45:54] [03D] Loaded SlideTags: output/objects/slidetags_harmonized.rds 
+[2026-02-20 17:46:00] [03D] Loaded STARmap: output/objects/starmap_harmonized.rds 
+[2026-02-20 17:46:00] [03D] SlideTags versions: author=celltype_author; predicted=predicted.id; final=celltype_final_refined 
+[2026-02-20 17:46:00] [03D] STARmap versions: author=celltype_author; predicted=predicted.id; final=celltype_final_refined 
+[2026-02-20 17:48:02] [03D] Loaded Multiome: output/objects/multiome_reference_processed.rds 
+[2026-02-20 17:48:03] [03D] Loaded SlideTags: output/objects/slidetags_harmonized.rds 
+[2026-02-20 17:48:09] [03D] Loaded STARmap: output/objects/starmap_harmonized.rds 
+[2026-02-20 17:48:09] [03D] Multiome versions: reference=celltype_ref; author=cluster; final=celltype_ref 
+[2026-02-20 17:48:09] [03D] SlideTags versions: author=celltype_author; predicted=predicted.id; final=celltype_final_refined 
+[2026-02-20 17:48:09] [03D] STARmap versions: author=celltype_author; predicted=predicted.id; final=celltype_final_refined 
+[2026-02-20 17:48:09] [03D] Datasets compared: Multiome, SlideTags, STARmap 
+[2026-02-20 19:03:23] [03D] Loaded Multiome: output/objects/multiome_reference_processed.rds 
+[2026-02-20 19:03:23] [03D] Loaded SlideTags: output/objects/slidetags_harmonized.rds 

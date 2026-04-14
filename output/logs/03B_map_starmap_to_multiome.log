@@ -1,0 +1,105 @@
+[2026-02-15 16:48:28] Reference normalization = LogNormalize 
+[2026-02-15 16:48:28] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-15 16:48:33] Available assays: RNA_raw, imputed 
+[2026-02-15 16:48:33]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-15 16:48:33]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-15 16:48:33] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-15 16:48:33] Copied predicted.celltype -> predicted.id 
+[2026-02-15 16:48:33] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-15 16:48:33] Computing UMAP for STARmap... 
+[2026-02-15 16:48:33]   Visualization assay: imputed 
+[2026-02-15 17:08:29] Reference normalization = LogNormalize 
+[2026-02-15 17:08:29] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-15 17:08:34] Available assays: RNA_raw, imputed 
+[2026-02-15 17:08:34]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-15 17:08:34]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-15 17:08:34] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-15 17:08:34] Copied predicted.celltype -> predicted.id 
+[2026-02-15 17:08:34] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-15 17:08:34] Computing UMAP for STARmap... 
+[2026-02-15 17:08:34]   Visualization assay: imputed 
+[2026-02-15 17:14:19] Counts do NOT look UMI-like. Using LogNormalize + 5000 VF. 
+[2026-02-15 17:15:56] Reference has 36456 cells across 17 cell types 
+[2026-02-15 17:17:27] Saved processed reference: output/objects/multiome_reference_processed.rds 
+[2026-02-15 17:17:27] 02A complete. 
+[2026-02-15 17:26:56] Reference normalization = LogNormalize 
+[2026-02-15 17:26:56] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-15 17:27:01] Available assays: RNA_raw, imputed 
+[2026-02-15 17:27:01]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-15 17:27:01]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-15 17:27:01] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-15 17:27:01] Copied predicted.celltype -> predicted.id 
+[2026-02-15 17:27:01] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-15 17:27:01] Computing UMAP for STARmap... 
+[2026-02-15 17:27:01]   Visualization assay: imputed 
+[2026-02-15 18:16:58] Reference normalization = LogNormalize 
+[2026-02-15 18:16:58] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-15 18:17:03] Available assays: RNA_raw, imputed 
+[2026-02-15 18:17:03]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-15 18:17:03]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-15 18:17:03] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-15 18:17:03] Copied predicted.celltype -> predicted.id 
+[2026-02-15 18:17:03] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-15 18:17:03] Computing UMAP for STARmap... 
+[2026-02-15 18:17:03]   Visualization assay: imputed 
+[2026-02-15 18:26:25] Reference normalization = LogNormalize 
+[2026-02-15 18:26:25] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-15 18:26:30] Available assays: RNA_raw, imputed 
+[2026-02-15 18:26:31]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-15 18:26:31]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-15 18:26:31] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-15 18:26:31] Copied predicted.celltype -> predicted.id 
+[2026-02-15 18:26:31] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-15 18:26:31] Computing UMAP for STARmap... 
+[2026-02-15 18:26:31]   Visualization assay selected: imputed 
+[2026-02-15 18:26:31]   Trying UMAP with assay: imputed 
+[2026-02-15 18:26:31]   UMAP failed for assay 'imputed': invalid 'x' 
+[2026-02-15 18:26:31]   Trying UMAP with assay: RNA_raw 
+[2026-02-15 18:26:56] Computing tSNE for STARmap... 
+[2026-02-15 18:27:39] Saved: output/objects/starmap_mapped.rds 
+[2026-02-15 18:27:39] Generating STARmap QC plots... 
+[2026-02-15 18:27:40] 03B complete. 
+[2026-02-15 18:46:57] Reference normalization = LogNormalize 
+[2026-02-15 18:46:57] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-15 18:47:02] Available assays: RNA_raw, imputed 
+[2026-02-15 18:47:02]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-15 18:47:02]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-15 18:47:02] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-15 18:47:02] Copied predicted.celltype -> predicted.id 
+[2026-02-15 18:47:02] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-15 18:47:02] Computing UMAP for STARmap... 
+[2026-02-15 18:47:02]   Visualization assay selected: imputed 
+[2026-02-15 18:47:02]   Trying UMAP with assay: imputed 
+[2026-02-15 18:47:02]   UMAP failed for assay 'imputed': invalid 'x' 
+[2026-02-15 18:47:02]   Trying UMAP with assay: RNA_raw 
+[2026-02-15 18:47:27] Computing tSNE for STARmap... 
+[2026-02-15 18:48:13] Saved: output/objects/starmap_mapped.rds 
+[2026-02-15 18:48:13] Generating STARmap QC plots... 
+[2026-02-15 18:48:14] Generating per-timepoint spatial plots using column 'week' (2 group(s)). 
+[2026-02-15 18:48:16] 03B complete. 
+[2026-02-17 16:41:00] Reference normalization = LogNormalize 
+[2026-02-17 16:41:00] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-17 16:41:05] Available assays: RNA_raw, imputed 
+[2026-02-17 16:41:06]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-17 16:41:06]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-17 16:41:06] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-17 16:41:06] Copied predicted.celltype -> predicted.id 
+[2026-02-17 16:41:06] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-17 16:41:06] Computing UMAP for STARmap... 
+[2026-02-17 16:42:29] Reference normalization = LogNormalize 
+[2026-02-17 16:42:29] Loading STARmap: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-17 16:42:35] Available assays: RNA_raw, imputed 
+[2026-02-17 16:42:35]   Assay 'RNA_raw': 1004 genes, 1004 overlap with reference 
+[2026-02-17 16:42:35]   Assay 'imputed': 36546 genes, 36546 overlap with reference 
+[2026-02-17 16:42:35] Best assay for mapping: 'imputed' (36546 gene overlap) 
+[2026-02-17 16:42:35] Copied predicted.celltype -> predicted.id 
+[2026-02-17 16:42:35] STARmap already has predicted labels. Skipping transfer. 
+[2026-02-17 16:42:35] Computing UMAP for STARmap... 
+[2026-02-17 16:42:35]   Visualization assay selected: imputed 
+[2026-02-17 16:42:35]   Trying UMAP with assay: imputed 
+[2026-02-17 16:42:35]   UMAP failed for assay 'imputed': invalid 'x' 
+[2026-02-17 16:42:35]   Trying UMAP with assay: RNA_raw 
+[2026-02-17 16:43:01] Computing tSNE for STARmap... 
+[2026-02-17 16:43:48] Saved: output/objects/starmap_mapped.rds 
+[2026-02-17 16:43:48] Generating STARmap QC plots... 
+[2026-02-17 16:43:50] 03B complete. 

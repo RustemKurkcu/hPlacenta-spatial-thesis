@@ -1,0 +1,212 @@
+2026-04-14 15:34:03.280979 | 05B starting. 
+2026-04-14 15:34:06.753237 | Scanning for SCP2601 data files... 
+2026-04-14 15:34:16.565664 |   Data inventory: 
+2026-04-14 15:34:16.964127 |   [W7] spots_meta: MISSING 
+2026-04-14 15:34:16.964744 |   [W7] imputed_expr: MISSING 
+2026-04-14 15:34:16.965083 |   [W7] raw_expr: MISSING 
+2026-04-14 15:34:16.965337 |   [W7] cell_meta: MISSING 
+2026-04-14 15:34:16.965561 |   [W8-2] spots_meta: MISSING 
+2026-04-14 15:34:16.965788 |   [W8-2] imputed_expr: MISSING 
+2026-04-14 15:34:16.966153 |   [W8-2] raw_expr: MISSING 
+2026-04-14 15:34:16.966502 |   [W8-2] cell_meta: MISSING 
+2026-04-14 15:34:16.966753 |   [W9] spots_meta: MISSING 
+2026-04-14 15:34:16.967068 |   [W9] imputed_expr: MISSING 
+2026-04-14 15:34:16.97768 |   [W9] raw_expr: MISSING 
+2026-04-14 15:34:16.978372 |   [W9] cell_meta: MISSING 
+2026-04-14 15:34:16.978687 |   [W11] spots_meta: MISSING 
+2026-04-14 15:34:16.979014 |   [W11] imputed_expr: MISSING 
+2026-04-14 15:34:16.979328 |   [W11] raw_expr: MISSING 
+2026-04-14 15:34:16.979564 |   [W11] cell_meta: MISSING 
+2026-04-14 15:34:17.653039 |   multiome_rds: MISSING 
+2026-04-14 15:34:18.14094 |   starmap_rds: MISSING 
+2026-04-14 15:34:18.591179 |   spatial_csv: MISSING 
+2026-04-14 15:34:19.002645 |   cluster_csv: MISSING 
+2026-04-14 15:34:19.479741 |   metadata_csv: MISSING 
+2026-04-14 15:34:21.360234 | 
+=== Loading SCP2601 objects === 
+2026-04-14 15:34:23.520349 |   No CSV-built objects. Trying pre-built RDS... 
+2026-04-14 15:34:23.557872 |   Skipping STARmap RDS RDS (missing or too small) 
+2026-04-14 15:34:28.147931 |   Skipping Multiome RDS RDS (missing or too small) 
+2026-04-14 15:34:28.885299 | 
+=== Merging SCP2601 spatial objects === 
+2026-04-14 15:34:29.230774 |   WARNING: No SCP2601 spatial objects could be loaded. 
+2026-04-14 15:34:29.231192 |   Please ensure data files are downloaded from: 
+2026-04-14 15:34:29.231452 |     https://singlecell.broadinstitute.org/single_cell/study/SCP2601 
+2026-04-14 15:34:29.231675 |   Place CSV files in: data 
+2026-04-14 15:34:31.775917 | 
+  ⚠ No data loaded. Cannot proceed. 
+2026-04-14 15:34:31.776396 |   Download data from SCP2601 and re-run this script. 
+2026-04-14 15:34:37.969639 | 05B complete. 
+2026-04-14 15:44:07.933477 | 05B starting. 
+2026-04-14 15:44:07.944393 | Scanning for SCP2601 data files... 
+2026-04-14 15:44:07.981061 |   Data inventory: 
+2026-04-14 15:44:08.002398 |   [W7] spots_meta: MISSING 
+2026-04-14 15:44:08.002941 |   [W7] imputed_expr: MISSING 
+2026-04-14 15:44:08.003237 |   [W7] raw_expr: MISSING 
+2026-04-14 15:44:08.003461 |   [W7] cell_meta: MISSING 
+2026-04-14 15:44:08.003661 |   [W8-2] spots_meta: MISSING 
+2026-04-14 15:44:08.003848 |   [W8-2] imputed_expr: MISSING 
+2026-04-14 15:44:08.004019 |   [W8-2] raw_expr: MISSING 
+2026-04-14 15:44:08.004183 |   [W8-2] cell_meta: MISSING 
+2026-04-14 15:44:08.00436 |   [W9] spots_meta: MISSING 
+2026-04-14 15:44:08.004533 |   [W9] imputed_expr: MISSING 
+2026-04-14 15:44:08.0047 |   [W9] raw_expr: MISSING 
+2026-04-14 15:44:08.004862 |   [W9] cell_meta: MISSING 
+2026-04-14 15:44:08.005057 |   [W11] spots_meta: MISSING 
+2026-04-14 15:44:08.005324 |   [W11] imputed_expr: MISSING 
+2026-04-14 15:44:08.005559 |   [W11] raw_expr: MISSING 
+2026-04-14 15:44:08.005796 |   [W11] cell_meta: MISSING 
+2026-04-14 15:44:08.006547 |   multiome_rds: MISSING 
+2026-04-14 15:44:08.007204 |   starmap_rds: MISSING 
+2026-04-14 15:44:08.007843 |   spatial_csv: MISSING 
+2026-04-14 15:44:08.008491 |   cluster_csv: MISSING 
+2026-04-14 15:44:08.00907 |   metadata_csv: MISSING 
+2026-04-14 15:44:08.147852 | 
+=== Loading SCP2601 objects === 
+2026-04-14 15:44:08.262671 |   No CSV-built objects. Trying pre-built RDS... 
+2026-04-14 15:44:08.303796 |   Skipping STARmap RDS RDS (missing or too small) 
+2026-04-14 15:44:08.305115 |   Skipping Multiome RDS RDS (missing or too small) 
+2026-04-14 15:44:08.306411 | 
+=== Merging SCP2601 spatial objects === 
+2026-04-14 15:44:08.312894 |   WARNING: No SCP2601 spatial objects could be loaded. 
+2026-04-14 15:44:08.313323 |   Please ensure data files are downloaded from: 
+2026-04-14 15:44:08.313636 |     https://singlecell.broadinstitute.org/single_cell/study/SCP2601 
+2026-04-14 15:44:08.31396 |   Place CSV files in: data 
+2026-04-14 15:44:08.364791 | 
+  ⚠ No data loaded. Cannot proceed. 
+2026-04-14 15:44:08.365179 |   Download data from SCP2601 and re-run this script. 
+2026-04-14 15:44:08.374944 | 05B complete. 
+2026-04-14 15:49:15.567679 | Scanning for SCP2601 data files... 
+2026-04-14 15:49:16.530143 |   Data inventory: 
+2026-04-14 15:49:16.544437 |   [W7] spots_meta: FOUND 
+2026-04-14 15:49:16.545056 |   [W7] imputed_expr: FOUND 
+2026-04-14 15:49:16.545354 |   [W7] raw_expr: MISSING 
+2026-04-14 15:49:16.545692 |   [W7] cell_meta: FOUND 
+2026-04-14 15:49:16.546401 |   [W8-2] spots_meta: FOUND 
+2026-04-14 15:49:16.546659 |   [W8-2] imputed_expr: FOUND 
+2026-04-14 15:49:16.547042 |   [W8-2] raw_expr: FOUND 
+2026-04-14 15:49:16.54732 |   [W8-2] cell_meta: FOUND 
+2026-04-14 15:49:16.547567 |   [W9] spots_meta: MISSING 
+2026-04-14 15:49:16.547804 |   [W9] imputed_expr: FOUND 
+2026-04-14 15:49:16.548036 |   [W9] raw_expr: MISSING 
+2026-04-14 15:49:16.548299 |   [W9] cell_meta: FOUND 
+2026-04-14 15:49:16.548556 |   [W11] spots_meta: FOUND 
+2026-04-14 15:49:16.548828 |   [W11] imputed_expr: FOUND 
+2026-04-14 15:49:16.549145 |   [W11] raw_expr: FOUND 
+2026-04-14 15:49:16.549547 |   [W11] cell_meta: MISSING 
+2026-04-14 15:49:16.577163 |   multiome_rds: FOUND 
+2026-04-14 15:49:16.664081 |   starmap_rds: FOUND 
+2026-04-14 15:49:16.665502 |   spatial_csv: FOUND 
+2026-04-14 15:49:16.666717 |   cluster_csv: FOUND 
+2026-04-14 15:49:16.744685 |   metadata_csv: FOUND 
+2026-04-14 15:49:16.861387 | 
+=== Loading SCP2601 objects === 
+2026-04-14 15:49:17.147319 |   Building Seurat for STARmap sample: W7 
+2026-04-14 15:49:17.14783 |     Reading spots metadata: STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-14 15:49:20.764286 |     Spots metadata: 1427682 spots x 10 columns 
+2026-04-14 15:49:20.764874 |     Columns: spot_id, x_pixel, y_pixel, z_pixel, x_um, y_um, z_um, gene, tile, cell_id 
+2026-04-14 15:49:20.765275 |     Spatial coordinates found: x_um, y_um 
+2026-04-14 15:49:20.765603 |     X range: [0, 2618.1] 
+2026-04-14 15:49:20.77038 |     Y range: [0, 1570.9] 
+2026-04-14 15:49:20.774691 |     Reading expression: STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-14 15:52:34.133275 |     Expression matrix: 4640 x 36546 
+2026-04-14 15:52:34.134402 |     Assuming cells x genes (ncol > nrow) — transposing 
+2026-04-14 15:53:09.137979 |     Final matrix: 36546 genes x 4640 cells 
+2026-04-14 15:53:09.138622 |     Reading cell metadata: STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-14 15:53:09.211605 |     Cell metadata: 4640 cells x 15 columns 
+2026-04-14 15:53:09.212115 |     Creating Seurat object... 
+2026-04-14 15:53:11.942521 |     Injecting spatial coordinates into Seurat... 
+2026-04-14 15:53:12.37795 |     Valid spatial coordinates: 4640 / 4640 
+2026-04-14 15:53:12.410619 |     ✓ 'spatial' DimReducObject created (key='s_', assay=RNA) 
+2026-04-14 15:53:12.430393 |     Merging cell-level metadata... 
+2026-04-14 15:53:12.437419 |     Normalizing... 
+2026-04-14 15:53:22.635822 |     Done. Cells: 4640 | Genes: 36546 | Has spatial: TRUE 
+2026-04-14 15:53:22.636841 |   ✓ W7: 4640 cells loaded from CSV 
+2026-04-14 15:53:22.637616 |   Building Seurat for STARmap sample: W8-2 
+2026-04-14 15:53:22.637904 |     Reading spots metadata: STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-14 15:53:25.510457 |     Spots metadata: 1319018 spots x 10 columns 
+2026-04-14 15:53:25.511088 |     Columns: spot_id, x_pixel, y_pixel, z_pixel, x_um, y_um, z_um, gene, tile, cell_id 
+2026-04-14 15:53:25.511419 |     Spatial coordinates found: x_um, y_um 
+2026-04-14 15:53:25.511656 |     X range: [0, 1832.7] 
+2026-04-14 15:53:25.514908 |     Y range: [0, 2356.3] 
+2026-04-14 15:53:25.518691 |     Reading expression: STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-14 15:54:50.564007 |     Expression matrix: 1871 x 36546 
+2026-04-14 15:54:50.565763 |     Assuming cells x genes (ncol > nrow) — transposing 
+2026-04-14 15:54:57.545602 |     Final matrix: 36546 genes x 1871 cells 
+2026-04-14 15:54:57.546273 |     Reading cell metadata: STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-14 15:54:57.593501 |     Cell metadata: 4487 cells x 15 columns 
+2026-04-14 15:54:57.594058 |     Creating Seurat object... 
+2026-04-14 15:54:59.141753 |     Injecting spatial coordinates into Seurat... 
+2026-04-14 15:54:59.540777 |     Valid spatial coordinates: 1871 / 1871 
+2026-04-14 15:54:59.552755 |     ✓ 'spatial' DimReducObject created (key='s_', assay=RNA) 
+2026-04-14 15:54:59.558789 |     Merging cell-level metadata... 
+2026-04-14 15:54:59.560168 |     Normalizing... 
+2026-04-14 15:55:25.178875 |     Done. Cells: 1871 | Genes: 36546 | Has spatial: TRUE 
+2026-04-14 15:55:25.180014 |   ✓ W8-2: 1871 cells loaded from CSV 
+2026-04-14 15:55:25.180765 |   Building Seurat for STARmap sample: W9 
+2026-04-14 15:55:25.181177 |     No spots metadata available. 
+2026-04-14 15:55:25.181425 |     Reading expression: STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-14 15:58:47.037697 |     Expression matrix: 4554 x 36546 
+2026-04-14 15:58:47.038374 |     Assuming cells x genes (ncol > nrow) — transposing 
+2026-04-14 15:58:55.184727 |     Final matrix: 36546 genes x 4554 cells 
+2026-04-14 15:58:55.26883 |     Reading cell metadata: STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-14 15:58:55.311114 |     Cell metadata: 4554 cells x 15 columns 
+2026-04-14 15:58:55.311828 |     Creating Seurat object... 
+2026-04-14 15:59:16.690612 |     Merging cell-level metadata... 
+2026-04-14 15:59:16.69218 |     Normalizing... 
+2026-04-14 15:59:23.315973 |     Done. Cells: 4554 | Genes: 36546 | Has spatial: FALSE 
+2026-04-14 15:59:23.316991 |   ✓ W9: 4554 cells loaded from CSV 
+2026-04-14 15:59:23.317594 |   Building Seurat for STARmap sample: W11 
+2026-04-14 15:59:23.317829 |     Reading spots metadata: STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-14 15:59:24.718802 |     Spots metadata: 619597 spots x 10 columns 
+2026-04-14 15:59:24.719489 |     Columns: spot_id, x_pixel, y_pixel, z_pixel, x_um, y_um, z_um, gene, tile, cell_id 
+2026-04-14 15:59:24.719834 |     Spatial coordinates found: x_um, y_um 
+2026-04-14 15:59:24.720192 |     X range: [0, 2614.4] 
+2026-04-14 15:59:24.722974 |     Y range: [0, 1832.7] 
+2026-04-14 15:59:24.725815 |     Reading expression: STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-14 16:00:56.742993 |     Expression matrix: 2498 x 36546 
+2026-04-14 16:00:56.743735 |     Assuming cells x genes (ncol > nrow) — transposing 
+2026-04-14 16:01:08.909394 |     Final matrix: 36546 genes x 2498 cells 
+2026-04-14 16:01:08.910377 |     Creating Seurat object... 
+2026-04-14 16:01:10.149528 |     Injecting spatial coordinates into Seurat... 
+2026-04-14 16:01:10.380631 |     Valid spatial coordinates: 2498 / 2498 
+2026-04-14 16:01:10.392311 |     ✓ 'spatial' DimReducObject created (key='s_', assay=RNA) 
+2026-04-14 16:01:10.399993 |     Normalizing... 
+2026-04-14 16:01:23.18643 |     Done. Cells: 2498 | Genes: 36546 | Has spatial: TRUE 
+2026-04-14 16:01:23.187379 |   ✓ W11: 2498 cells loaded from CSV 
+2026-04-14 16:01:23.219323 |   Loading pre-built RDS: multiome_rna_seurat.rds 
+2026-04-14 16:01:25.689349 |   Loaded: 36456 cells x 36546 genes 
+2026-04-14 16:01:25.874552 |   Reductions:  
+2026-04-14 16:01:25.874871 |   Metadata cols: orig.ident, nCount_RNA, nFeature_RNA, X1, NAME, biosample_id, donor_id, species, species__ontology_label, disease, disease__ontology_label, organ, organ__ontology_label, library_preparation_protocol, library_preparation_protocol__ontology_label, sex, cluster, barcode, cell_id, spatial_x_um 
+2026-04-14 16:01:25.875212 |   WARNING: No spatial coordinates found in pre-built RDS. 
+2026-04-14 16:01:25.888954 | 
+=== Merging SCP2601 spatial objects === 
+2026-04-14 16:01:34.440147 |   Merged 4 samples: 13563 total cells 
+2026-04-14 16:01:34.59882 | 
+=== Post-processing === 
+2026-04-14 16:07:47.94784 | 
+=== Post-processing === 
+2026-04-14 16:08:19.179932 |   PCA complete (30 PCs) 
+2026-04-14 16:08:40.817816 |   UMAP complete 
+2026-04-14 16:08:40.818346 |   Has 'spatial' reduction: FALSE 
+2026-04-14 16:08:40.818661 |   Checking thesis-relevant gene availability... 
+2026-04-14 16:08:40.835803 |   Gene inventory: 55/55 thesis genes detected 
+2026-04-14 16:08:40.870583 |   Module detection rates: 
+2026-04-14 16:08:40.876396 |     Fn_response: 9/9 (100%) 
+2026-04-14 16:08:40.877364 |     IDO1_Tolerogenic_Shield: 12/12 (100%) 
+2026-04-14 16:08:40.878334 |     MISI_Homing: 5/5 (100%) 
+2026-04-14 16:08:40.878965 |     MISI_Invasion: 5/5 (100%) 
+2026-04-14 16:08:40.879465 |     MISI_Nutrient: 4/4 (100%) 
+2026-04-14 16:08:40.880029 |     MISI_Switch: 5/5 (100%) 
+2026-04-14 16:08:40.880648 |     MISI_Vascular: 5/5 (100%) 
+2026-04-14 16:08:40.88119 |     rPAC_EPAS1_axis: 6/6 (100%) 
+2026-04-14 16:08:40.881641 |     rPAC_NFKB: 4/4 (100%) 
+2026-04-14 16:08:41.006844 |   QC summary saved. 
+2026-04-14 16:08:41.007485 | 
+=== Saving outputs === 
+2026-04-14 16:09:43.059158 |   Saved: starmap_W7_SCP2601.rds 
+2026-04-14 16:10:08.840354 |   Saved: starmap_W8-2_SCP2601.rds 
+2026-04-14 16:11:07.970522 |   Saved: starmap_W9_SCP2601.rds 
+2026-04-14 16:11:41.757394 |   Saved: starmap_W11_SCP2601.rds 
+2026-04-14 16:14:50.292631 |   Saved: SCP2601_combined_spatial.rds (13563 cells) 
+2026-04-14 16:15:21.638081 |   Saved: multiome_SCP2601_formatted.rds 

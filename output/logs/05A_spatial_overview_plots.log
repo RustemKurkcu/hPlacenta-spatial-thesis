@@ -1,0 +1,30 @@
+[2026-02-15 19:28:04] Saved spatial overview plots. 
+[2026-02-18 09:31:01] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 09:31:02] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 09:31:15] Saved spatial overview plots. 
+[2026-02-18 18:30:33] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 18:30:33] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 18:30:49] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 18:30:49] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 18:36:52] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 18:36:56] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 18:38:07] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 18:38:08] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-19 09:44:58] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-19 09:44:58] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-19 09:45:04] SlideTags: 1923/1923 cells have finite spatial coordinates 
+[2026-02-19 09:45:04] Saved: output/figures/SlideTags_spatial_week_8.png (n=868 cells) 
+[2026-02-19 09:45:04] Saved: output/figures/SlideTags_spatial_week_9.png (n=416 cells) 
+[2026-02-19 09:45:05] Saved: output/figures/SlideTags_spatial_week_11.png (n=639 cells) 
+[2026-02-19 09:45:05] STARmap: 9041/9041 cells have finite spatial coordinates 
+[2026-02-19 09:45:05] Saved: output/figures/STARmap_spatial_week_8.png (n=4487 cells) 
+[2026-02-19 09:45:06] Saved: output/figures/STARmap_spatial_week_9.png (n=4554 cells) 
+[2026-02-19 09:45:06] SlideTags: 1923/1923 cells have finite spatial coordinates 
+[2026-02-19 09:45:07] Saved: output/figures/SlideTags_spatial_week_8.png (n=868 cells) 
+[2026-02-19 09:45:07] Saved: output/figures/SlideTags_spatial_week_9.png (n=416 cells) 
+[2026-02-19 09:45:08] Saved: output/figures/SlideTags_spatial_week_11.png (n=639 cells) 
+[2026-02-19 09:45:08] STARmap: 9041/9041 cells have finite spatial coordinates 
+[2026-02-19 09:45:08] Saved: output/figures/STARmap_spatial_week_8.png (n=4487 cells) 
+[2026-02-19 09:45:09] Saved: output/figures/STARmap_spatial_week_9.png (n=4554 cells) 
+[2026-02-19 09:45:09] Saved spatial overview plots. 
+[2026-02-19 09:45:09] Saved spatial overview plots. SlideTags=3, STARmap=2 

@@ -1,0 +1,86 @@
+2026-04-14 16:17:31.178384 | 21_rpac_spatial_routes starting. 
+2026-04-14 16:17:31.193549 |   Routes defined: 9 
+2026-04-14 16:17:31.19542 |     NFKB_SR_innate 
+2026-04-14 16:17:31.195794 |     NFKB_ER_cytokine 
+2026-04-14 16:17:31.196068 |     HIF1A_ER_metabolic 
+2026-04-14 16:17:31.196292 |     VEGF_SR_angiogenic 
+2026-04-14 16:17:31.196488 |     EA_nutrient_axis 
+2026-04-14 16:17:31.196685 |     NK_ER_cytotoxic 
+2026-04-14 16:17:31.196869 |     EPAS1_ER_antiangiogenic 
+2026-04-14 16:17:31.19705 |     NFKB_EPAS1_bridge 
+2026-04-14 16:17:31.197263 |     EPAS1_ER_notch 
+2026-04-14 16:17:31.198568 | Loading SCP2601 Seurat object with MISI scores... 
+2026-04-14 16:17:49.413926 |   Loaded: output/objects/SCP2601_combined_spatial.rds 
+2026-04-14 16:17:49.549214 |   Cells: 13563 | Genes: 36546 
+2026-04-14 16:17:49.564731 |   ✓ Spatial coords from metadata: x, y 
+2026-04-14 16:17:49.593086 |   Cell type col: cell_type 
+2026-04-14 16:17:49.593738 |   MISI col: NONE 
+2026-04-14 16:17:49.59456 |   IDO1 col: NONE 
+2026-04-14 16:17:49.825812 | 
+=== Computing Spatial rPAC Scores === 
+2026-04-14 16:31:00.861922 | 21_rpac_spatial_routes starting. 
+2026-04-14 16:31:00.876736 |   Routes defined: 9 
+2026-04-14 16:31:00.878958 |     NFKB_SR_innate 
+2026-04-14 16:31:00.87963 |     NFKB_ER_cytokine 
+2026-04-14 16:31:00.880041 |     HIF1A_ER_metabolic 
+2026-04-14 16:31:00.880326 |     VEGF_SR_angiogenic 
+2026-04-14 16:31:00.880589 |     EA_nutrient_axis 
+2026-04-14 16:31:00.881045 |     NK_ER_cytotoxic 
+2026-04-14 16:31:00.881386 |     EPAS1_ER_antiangiogenic 
+2026-04-14 16:31:00.881743 |     NFKB_EPAS1_bridge 
+2026-04-14 16:31:00.881991 |     EPAS1_ER_notch 
+2026-04-14 16:31:00.883541 | Loading SCP2601 Seurat object with MISI scores... 
+2026-04-14 16:31:18.728719 |   Loaded: output/objects/SCP2601_combined_spatial.rds 
+2026-04-14 16:31:18.787395 |   Cells: 13563 | Genes: 36546 
+2026-04-14 16:31:18.798996 |   ✓ Spatial coords from metadata: x, y 
+2026-04-14 16:31:18.821227 |   Cell type col: cell_type 
+2026-04-14 16:31:18.821999 |   MISI col: NONE 
+2026-04-14 16:31:18.822679 |   IDO1 col: NONE 
+2026-04-14 16:31:18.827066 | 
+=== Computing Spatial rPAC Scores === 
+2026-04-14 16:31:19.188949 |   RNA assay layers detected: counts.SCP2601_STARmap_W7, counts.SCP2601_STARmap_W8-2, counts.SCP2601_STARmap_W9, counts.SCP2601_STARmap_W11, data.SCP2601_STARmap_W7, data.SCP2601_STARmap_W8-2, data.SCP2601_STARmap_W9, data.SCP2601_STARmap_W11, scale.data 
+2026-04-14 16:31:19.18982 |   Joining 4 split 'data' layers into a single layer before scoring. 
+2026-04-14 16:32:08.947254 | 21_rpac_spatial_routes starting. 
+2026-04-14 16:32:08.955185 | Loading Seurat object... 
+2026-04-14 16:32:27.352707 |   Loaded: output/objects/SCP2601_combined_spatial.rds 
+2026-04-14 16:32:27.441772 |   Ensuring v5 layers are joined... 
+2026-04-14 16:32:37.605034 |   MISI col: NA 
+2026-04-14 16:32:37.605752 |   IDO1 col: NA 
+2026-04-14 16:32:37.607675 | 
+=== Computing Spatial rPAC Scores === 
+2026-04-14 16:32:41.763766 |   Applying spatial Gaussian smoothing (BW = 100 µm)... 
+2026-04-14 16:35:18.716544 | 21_rpac_spatial_routes starting. 
+2026-04-14 16:35:18.730911 |   Routes defined: 9 
+2026-04-14 16:35:18.732496 |     NFKB_SR_innate 
+2026-04-14 16:35:18.732836 |     NFKB_ER_cytokine 
+2026-04-14 16:35:18.733159 |     HIF1A_ER_metabolic 
+2026-04-14 16:35:18.733411 |     VEGF_SR_angiogenic 
+2026-04-14 16:35:18.733704 |     EA_nutrient_axis 
+2026-04-14 16:35:18.733971 |     NK_ER_cytotoxic 
+2026-04-14 16:35:18.734237 |     EPAS1_ER_antiangiogenic 
+2026-04-14 16:35:18.734453 |     NFKB_EPAS1_bridge 
+2026-04-14 16:35:18.734653 |     EPAS1_ER_notch 
+2026-04-14 16:35:18.736123 | Loading SCP2601 Seurat object with MISI scores... 
+2026-04-14 16:35:37.383217 |   Loaded: output/objects/SCP2601_combined_spatial.rds 
+2026-04-14 16:35:37.444312 |   Cells: 13563 | Genes: 36546 
+2026-04-14 16:35:37.455483 |   ✓ Spatial coords from metadata: x, y 
+2026-04-14 16:35:37.484347 |   Cell type col: cell_type 
+2026-04-14 16:35:37.485145 |   MISI col: NONE 
+2026-04-14 16:35:37.486071 |   IDO1 col: NONE 
+2026-04-14 16:35:37.489211 | 
+=== Computing Spatial rPAC Scores === 
+2026-04-14 16:35:37.878881 |   RNA assay layers detected: counts.SCP2601_STARmap_W7, counts.SCP2601_STARmap_W8-2, counts.SCP2601_STARmap_W9, counts.SCP2601_STARmap_W11, data.SCP2601_STARmap_W7, data.SCP2601_STARmap_W8-2, data.SCP2601_STARmap_W9, data.SCP2601_STARmap_W11, scale.data 
+2026-04-14 16:35:37.87945 |   Combining 4 split 'data' layers into one expression matrix for scoring. 
+2026-04-14 16:37:10.575395 |   Extracting and filtering spatial coordinates... 
+2026-04-14 16:37:13.816514 |   Ensuring v5 layers are joined... 
+2026-04-14 16:37:22.143146 |   Extracting and filtering spatial coordinates... 
+2026-04-14 16:37:22.15618 |   WARNING: Found 4554 cells with missing coordinates (likely Sample W9). 
+2026-04-14 16:37:22.156617 |   Subsetting object to include only the 9009 mappable cells. 
+2026-04-14 16:37:26.32881 |   Final Analysis Cells: 9009 
+2026-04-14 16:37:26.329963 |   MISI col detection: MISSING 
+2026-04-14 16:37:26.330587 |   IDO1 col detection: MISSING 
+2026-04-14 16:37:26.331118 | 
+=== Computing Spatial rPAC Scores === 
+2026-04-14 16:59:00.997701 |   Applying spatial Gaussian smoothing (BW = 100 µm)... 
+2026-04-14 16:59:03.449169 | 
+=== Computing Spatial Gradient Field === 

@@ -25,3 +25,41 @@ This repository contains the code and spatial analysis pipelines for my thesis, 
 │   └── 17_spatial_cellchat.R
 ├── outputs/               # Generated figures, hotspot polygons (.gpkg), and tables
 └── README.md              # Project documentation
+
+## Repository sync note
+
+Date: 2026-04-09 16:26:37
+Repository synced from the current local tree at: E:\hPlacenta-architecture
+
+Rules used:
+- Files <= 100 MiB added with regular Git
+- Files > 100 MiB and <= 500 MiB added with Git LFS
+- Excluded: .tmp.drivedownload, .tmp.driveupload, .Rproj.user, desktop.ini, Thumbs.db, *.tmp, *.lock
+
+This note was added automatically during the sync.
+
+## Repository sync note
+
+Date: 2026-04-14 18:46:27
+Repository synced from the current local tree at: E:\hPlacenta-architecture
+
+Rules used:
+- Files <= 100 MiB added with regular Git
+- Files > 100 MiB and <= 500 MiB added with Git LFS
+- Included if within size rules: .qs, .rds, .RData, .rda
+- Excluded: .tmp.drivedownload, .tmp.driveupload, .Rproj.user, desktop.ini, Thumbs.db, *.tmp, *.lock
+
+Remote main backup branch: backup/origin-main-20260414_184548
+Local backup branch: backup/local-main-20260414_184548
+
+## Repository sync note
+
+Date: 2026-04-14 18:59:25
+Repository synced from the current local tree at: E:\hPlacenta-architecture
+
+Rules used:
+- Files <= 100 MiB added with regular Git
+- Files > 100 MiB and <= 500 MiB added with Git LFS
+- Files > 500 MiB excluded
+- Included if within size rules: .qs, .rds, .RData, .rda
+- Excluded: .tmp.drivedownload, .tmp.driveupload, .Rproj.user, desktop.ini, Thumbs.db, *.tmp, *.lock

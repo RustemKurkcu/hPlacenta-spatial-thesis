@@ -1,0 +1,30 @@
+[2026-02-17 17:41:43] Gene universe (mean>0): 33357 
+[2026-02-17 17:41:44] Celltype Fibroblast2: n_cells=5509 
+[2026-02-17 17:52:48] Celltype EVT1: n_cells=224 
+[2026-02-17 17:53:27] Celltype EVT2: n_cells=2344 
+[2026-02-17 18:00:25] Celltype EVT3: n_cells=602 
+[2026-02-17 18:02:03] Celltype Endothelial_cells: n_cells=687 
+[2026-02-17 18:03:37] Celltype STB: n_cells=1985 
+[2026-02-17 18:07:56] Celltype vCTBp: n_cells=5188 
+[2026-02-17 18:22:18] Celltype vCTB2: n_cells=15497 
+[2026-02-17 18:58:28] Celltype unknown2: n_cells=379 
+[2026-02-17 18:59:39] Celltype Fibroblast1: n_cells=1571 
+[2026-02-17 19:03:44] Celltype vCTB1: n_cells=708 
+[2026-02-17 19:05:30] Celltype maternal macrophages: n_cells=439 
+[2026-02-17 19:06:24] Celltype vCTB3: n_cells=910 
+[2026-02-17 19:09:13] Done gene coordination scoring. 
+[2026-02-18 13:00:52] Gene universe (mean>0): 33357 
+[2026-02-18 13:00:52] Celltype Fibroblast2: n_cells=5509 
+[2026-02-18 13:15:09] Celltype EVT1: n_cells=224 
+[2026-02-18 13:15:56] Celltype EVT2: n_cells=2344 
+[2026-02-18 13:24:09] Celltype EVT3: n_cells=602 
+[2026-02-18 13:26:08] Celltype Endothelial_cells: n_cells=687 
+[2026-02-18 13:28:03] Celltype STB: n_cells=1985 
+[2026-02-18 13:32:53] Celltype vCTBp: n_cells=5188 
+[2026-02-18 13:48:00] Celltype vCTB2: n_cells=15497 
+[2026-02-18 14:20:59] Celltype unknown2: n_cells=379 
+[2026-02-18 14:22:03] Celltype Fibroblast1: n_cells=1571 
+[2026-02-18 14:25:58] Celltype vCTB1: n_cells=708 
+[2026-02-18 14:27:44] Celltype maternal macrophages: n_cells=439 
+[2026-02-18 14:28:36] Celltype vCTB3: n_cells=910 
+[2026-02-18 14:31:19] Done gene coordination scoring. 

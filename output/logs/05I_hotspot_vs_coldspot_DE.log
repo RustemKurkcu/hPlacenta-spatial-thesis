@@ -1,0 +1,31 @@
+[2026-02-22 19:39:51] [05I] Starting Hotspot vs Coldspot DE analysis... 
+[2026-02-22 19:39:51] Loading Slide-tags ... 
+[2026-02-22 19:39:52] Found 193 Hotspot cells and 193 Coldspot cells for Slide-tags 
+[2026-02-22 19:39:52] Running FindMarkers (Hotspot vs Coldspot) using assay: SCT 
+[2026-02-22 19:39:52] Saved DE table to: output/tables/05_spatial/SlideTags_hotspot_vs_coldspot_DE.csv 
+[2026-02-22 19:39:53] Saved Volcano plot to: output/figures/05_spatial/SlideTags_hotspot_vs_coldspot_volcano.png 
+[2026-02-22 19:39:53] Loading STARmap ... 
+[2026-02-22 19:39:58] Found 905 Hotspot cells and 905 Coldspot cells for STARmap 
+[2026-02-22 19:39:58] Running FindMarkers (Hotspot vs Coldspot) using assay: imputed 
+[2026-02-22 19:40:03] Saved DE table to: output/tables/05_spatial/STARmap_hotspot_vs_coldspot_DE.csv 
+[2026-02-22 19:40:04] Saved Volcano plot to: output/figures/05_spatial/STARmap_hotspot_vs_coldspot_volcano.png 
+[2026-02-22 19:40:04] [05I] Hotspot vs Coldspot DE analysis complete. 
+[2026-02-22 19:43:31] [05I] Starting Hotspot vs Coldspot DE analysis... 
+[2026-02-22 19:43:36] Loading STARmap ... 
+[2026-02-22 19:43:42] Found 905 Hotspot cells and 905 Coldspot cells for STARmap 
+[2026-02-22 19:43:42] Running FindMarkers (Hotspot vs Coldspot) using assay: imputed 
+[2026-02-22 19:43:47] Saved DE table to: output/tables/05_spatial/STARmap_hotspot_vs_coldspot_DE.csv 
+[2026-02-22 19:43:48] Saved Volcano plot to: output/figures/05_spatial/STARmap_hotspot_vs_coldspot_volcano.png 
+[2026-02-22 19:43:48] [05I] Hotspot vs Coldspot DE analysis complete. 
+[2026-02-23 10:38:09] [05I] Starting Hotspot vs Coldspot DE analysis... 
+[2026-02-23 10:38:11] Loading Slide-tags ... 
+[2026-02-23 10:38:12] Found 193 Hotspot cells and 193 Coldspot cells for Slide-tags 
+[2026-02-23 10:38:12] Running FindMarkers (Hotspot vs Coldspot) using assay: SCT 
+[2026-02-23 10:38:12] Saved DE table to: output/tables/05_spatial/SlideTags_hotspot_vs_coldspot_DE.csv 
+[2026-02-23 10:38:13] Saved Volcano plot to: output/figures/05_spatial/SlideTags_hotspot_vs_coldspot_volcano.png 
+[2026-02-23 10:38:13] Loading STARmap ... 
+[2026-02-23 10:38:18] Found 905 Hotspot cells and 905 Coldspot cells for STARmap 
+[2026-02-23 10:38:18] Running FindMarkers (Hotspot vs Coldspot) using assay: imputed 
+[2026-02-23 10:38:22] Saved DE table to: output/tables/05_spatial/STARmap_hotspot_vs_coldspot_DE.csv 
+[2026-02-23 10:38:23] Saved Volcano plot to: output/figures/05_spatial/STARmap_hotspot_vs_coldspot_volcano.png 
+[2026-02-23 10:38:23] [05I] Hotspot vs Coldspot DE analysis complete. 

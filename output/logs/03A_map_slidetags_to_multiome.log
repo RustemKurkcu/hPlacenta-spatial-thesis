@@ -1,0 +1,71 @@
+[2026-02-15 13:44:23] Using normalization method for mapping = LogNormalize 
+[2026-02-15 13:44:23] Loading Slide-tags query: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-15 13:44:24] Slide-tags already has predicted labels? TRUE 
+[2026-02-15 13:44:24] Skipping transfer (predicted.id already present). 
+[2026-02-15 13:44:24] Query has no UMAP; computing a lightweight UMAP for visualization. 
+[2026-02-15 13:44:32] Computing tSNE for query... 
+[2026-02-15 13:44:42] Saved mapped Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-15 13:44:42] Generating mapping QC plots... 
+[2026-02-15 13:57:36] Using normalization method for mapping = LogNormalize 
+[2026-02-15 13:57:36] Loading Slide-tags query: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-15 13:57:36] Slide-tags already has predicted labels? TRUE 
+[2026-02-15 13:57:36] Skipping transfer (predicted.id already present). 
+[2026-02-15 13:57:36] Query has no UMAP; computing a lightweight UMAP for visualization. 
+[2026-02-15 13:57:44] Computing tSNE for query... 
+[2026-02-15 13:57:54] Saved mapped Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-15 13:57:54] Generating mapping QC plots... 
+[2026-02-15 15:49:55] Using normalization method for mapping = LogNormalize 
+[2026-02-15 15:49:55] Loading Slide-tags query: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-15 15:49:56] Slide-tags already has predicted labels? TRUE 
+[2026-02-15 15:49:56] Skipping transfer (predicted.id already present). 
+[2026-02-15 15:49:56] Computing UMAP for visualization... 
+[2026-02-15 15:49:56]   Using assay: SCT 
+[2026-02-15 15:50:02] Computing tSNE for query... 
+[2026-02-15 15:50:11] Saved mapped Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-15 15:50:11] Generating mapping QC plots... 
+[2026-02-15 15:50:12] 03A complete. 
+[2026-02-15 17:06:55] Using normalization method for mapping = LogNormalize 
+[2026-02-15 17:06:55] Loading Slide-tags query: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-15 17:06:56] Slide-tags already has predicted labels? TRUE 
+[2026-02-15 17:06:56] Skipping transfer (predicted.id already present). 
+[2026-02-15 17:06:56] Computing UMAP for visualization... 
+[2026-02-15 17:06:56]   Using assay: SCT 
+[2026-02-15 17:07:02] Computing tSNE for query... 
+[2026-02-15 17:07:10] Saved mapped Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-15 17:07:10] Generating mapping QC plots... 
+[2026-02-15 17:07:12] 03A complete. 
+[2026-02-15 17:34:13] Using normalization method for mapping = LogNormalize 
+[2026-02-15 17:34:13] Loading Slide-tags query: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-15 17:34:14] Slide-tags already has predicted labels? TRUE 
+[2026-02-15 17:34:14] Skipping transfer (predicted.id already present). 
+[2026-02-15 17:34:14] Computing UMAP for visualization... 
+[2026-02-15 17:34:14]   Using assay: SCT 
+[2026-02-15 17:34:20] Computing tSNE for query... 
+[2026-02-15 17:34:29] Saved mapped Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-15 17:34:29] Generating mapping QC plots... 
+[2026-02-15 17:34:31] 03A complete. 
+[2026-02-15 17:38:10] Generating per-sample spatial plots using column 'sample_id' (3 sample(s)). 
+[2026-02-15 17:53:25] Using normalization method for mapping = LogNormalize 
+[2026-02-15 17:53:25] Loading Slide-tags query: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-15 17:53:26] Slide-tags already has predicted labels? TRUE 
+[2026-02-15 17:53:26] Skipping transfer (predicted.id already present). 
+[2026-02-15 17:53:26] Computing UMAP for visualization... 
+[2026-02-15 17:53:26]   Using assay: SCT 
+[2026-02-15 17:53:32] Computing tSNE for query... 
+[2026-02-15 17:53:40] Saved mapped Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-15 17:53:40] Generating mapping QC plots... 
+[2026-02-15 17:53:42] Generating per-sample spatial plots using column 'sample_id' (3 sample(s)). 
+[2026-02-15 17:53:43] 03A complete. 
+[2026-02-15 18:16:22] Generating per-sample spatial plots using column 'sample_id' (3 sample(s)) with natural ordering. 
+[2026-02-17 16:40:03] Using normalization method for mapping = LogNormalize 
+[2026-02-17 16:40:03] Loading Slide-tags query: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-17 16:40:04] Slide-tags already has predicted labels? TRUE 
+[2026-02-17 16:40:04] Skipping transfer (predicted.id already present). 
+[2026-02-17 16:40:04] Computing UMAP for visualization... 
+[2026-02-17 16:40:04]   Using assay: SCT 
+[2026-02-17 16:40:10] Computing tSNE for query... 
+[2026-02-17 16:40:18] Saved mapped Slide-tags: output/objects/slidetags_mapped.rds 
+[2026-02-17 16:40:25] Saved compatibility copy: output/objects/slidetags_mapped_to_multiome.rds 
+[2026-02-17 16:40:25] Generating mapping QC plots... 
+[2026-02-17 16:40:27] Generating per-sample spatial plots using column 'sample_id' (3 sample(s)). 
+[2026-02-17 16:40:28] 03A complete. 

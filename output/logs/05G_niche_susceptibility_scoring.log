@@ -1,0 +1,33 @@
+[2026-02-20 18:52:50] [05G] Starting niche susceptibility scoring... 
+[2026-02-20 18:52:51] [05G] Loaded SlideTags niche object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 18:52:56] [05G] Loaded STARmap niche object: output/objects/starmap_harmonized.rds 
+[2026-02-20 18:53:29] [05G] Starting niche susceptibility scoring... 
+[2026-02-20 18:53:31] [05G] Loaded SlideTags niche object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 18:53:36] [05G] Loaded STARmap niche object: output/objects/starmap_harmonized.rds 
+[2026-02-20 19:03:34] [05G] Starting niche susceptibility scoring... 
+[2026-02-20 19:03:35] [05G] Loaded SlideTags niche object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 19:03:36] [05G] Loaded SlideTags permissiveness object: output/objects/slidetags_with_permissiveness.rds 
+[2026-02-20 19:03:36] [05G] Loaded SlideTags permissiveness table: output/tables/SlideTags_permissiveness_cell_level.csv 
+[2026-02-20 19:03:41] [05G] Loaded STARmap niche object: output/objects/starmap_harmonized.rds 
+[2026-02-20 19:03:46] [05G] Loaded STARmap permissiveness object: output/objects/starmap_with_permissiveness.rds 
+[2026-02-20 19:03:46] [05G] Loaded STARmap permissiveness table: output/tables/STARmap_permissiveness_cell_level.csv 
+[2026-02-20 19:36:13] [05G] Starting niche susceptibility scoring... 
+[2026-02-20 19:36:14] [05G] Loaded SlideTags niche object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 19:36:15] [05G] Loaded SlideTags permissiveness object: output/objects/slidetags_with_permissiveness.rds 
+[2026-02-20 19:36:15] [05G] Loaded SlideTags permissiveness table: output/tables/SlideTags_permissiveness_cell_level.csv 
+[2026-02-20 19:36:20] [05G] Loaded STARmap niche object: output/objects/starmap_harmonized.rds 
+[2026-02-20 19:36:25] [05G] Loaded STARmap permissiveness object: output/objects/starmap_with_permissiveness.rds 
+[2026-02-20 19:36:53] [05G] STARmap: niches=8 susceptible=2 saved=output/objects/starmap_with_niche_susceptibility.rds 
+[2026-02-20 19:41:39] [05G] Starting niche susceptibility scoring... 
+[2026-02-20 19:41:40] [05G] Loaded SlideTags niche object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 19:41:40] [05G] Loaded SlideTags permissiveness object: output/objects/slidetags_with_permissiveness.rds 
+[2026-02-20 19:41:40] [05G] Loaded SlideTags permissiveness table: output/tables/SlideTags_permissiveness_cell_level.csv 
+[2026-02-20 19:41:45] [05G] Loaded STARmap niche object: output/objects/starmap_harmonized.rds 
+[2026-02-20 19:41:50] [05G] Loaded STARmap permissiveness object: output/objects/starmap_with_permissiveness.rds 
+[2026-02-20 19:42:19] [05G] STARmap: niches=8 susceptible=2 saved=output/objects/starmap_with_niche_susceptibility.rds 
+[2026-02-20 19:43:46] [05G] Starting niche susceptibility scoring... 
+[2026-02-20 19:43:47] [05G] Loaded SlideTags niche object: output/objects/slidetags_harmonized.rds 
+[2026-02-20 19:43:48] [05G] Loaded SlideTags permissiveness object: output/objects/slidetags_with_permissiveness.rds 
+[2026-02-20 19:43:48] [05G] Loaded SlideTags permissiveness table: output/tables/SlideTags_permissiveness_cell_level.csv 
+[2026-02-20 19:43:53] [05G] Loaded STARmap niche object: output/objects/starmap_harmonized.rds 
+[2026-02-20 19:43:58] [05G] Loaded STARmap permissiveness object: output/objects/starmap_with_permissiveness.rds 

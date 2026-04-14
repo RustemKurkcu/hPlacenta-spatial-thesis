@@ -1,0 +1,127 @@
+[2026-02-17 17:34:41] Starting enhanced timecourse analysis 
+[2026-02-17 17:34:41] Loading Seurat objects... 
+[2026-02-17 17:34:52] Analyzing 29 genes of interest 
+[2026-02-17 17:34:52] Adding module scores... 
+[2026-02-17 17:34:52] Reference assay: RNA 
+[2026-02-17 17:35:00] Slide-tags assay: SCT 
+[2026-02-17 17:35:00] Processing STARmap... 
+[2026-02-17 17:35:00] STARmap assays available: RNA_raw, imputed 
+[2026-02-17 17:35:00] Using imputed assay for better gene coverage 
+[2026-02-17 17:35:00]   MMP_ECM_Remodeling: 12/12 genes available (100.0%) 
+[2026-02-17 17:35:00]   Immune_Tolerance: 11/11 genes available (100.0%) 
+[2026-02-17 17:35:00]   Cytotoxic_NK: 9/9 genes available (100.0%) 
+[2026-02-17 17:35:00]   Ethanolamine_Metabolism: 7/7 genes available (100.0%) 
+[2026-02-17 17:35:06] Summarizing data by dataset, week, and cell type... 
+[2026-02-17 17:35:06] Multiome: 29/29 genes present for timecourse (100.0%) 
+[2026-02-17 17:35:07] Slide-tags: 24/29 genes present for timecourse (82.8%) 
+[2026-02-17 17:35:07] STARmap: 29/29 genes present for timecourse (100.0%) 
+[2026-02-17 17:35:08] Saved: output/tables/timecourse_gene_module_summaries_enhanced.csv 
+[2026-02-17 17:35:08] Generating enhanced plots... 
+[2026-02-17 17:35:08]   Saved: timecourse_PLD1_enhanced.png 
+[2026-02-17 17:35:09]   Saved: timecourse_MMP2_enhanced.png 
+[2026-02-17 17:35:09]   Saved: timecourse_MMP9_enhanced.png 
+[2026-02-17 17:35:10]   Saved: timecourse_GALNT1_enhanced.png 
+[2026-02-17 17:35:10]   Saved: timecourse_HLA-G_enhanced.png 
+[2026-02-17 17:35:11]   Saved: timecourse_NKG7_enhanced.png 
+[2026-02-17 17:35:11]   Saved: timecourse_MMP_ECM_Remodeling_enhanced.png 
+[2026-02-17 17:35:12]   Saved: timecourse_Immune_Tolerance_enhanced.png 
+[2026-02-17 17:35:12]   Saved: timecourse_Cytotoxic_NK_enhanced.png 
+[2026-02-17 17:35:13]   Saved: timecourse_Ethanolamine_Metabolism_enhanced.png 
+[2026-02-17 17:35:13] Creating validation plot: imputed vs raw for STARmap 
+[2026-02-17 17:35:13]   Comparing 14 genes available in both assays 
+[2026-02-17 17:35:13] 
+=== SUMMARY STATISTICS === 
+[2026-02-17 17:35:13] Total cells analyzed: 47420 
+[2026-02-17 17:35:13] Datasets: 3 
+[2026-02-17 17:35:13] Cell types: 26 
+[2026-02-17 17:35:13] Gestational weeks: 6, 7, 8, 9, 10, 11 
+[2026-02-17 17:35:13] 
+[OK] Enhanced timecourse analysis complete 
+[2026-02-17 17:35:13] Results saved to: output/tables 
+[2026-02-17 17:35:13] Figures saved to: output/figures 
+[2026-02-18 17:17:01] Starting enhanced timecourse analysis 
+[2026-02-18 17:17:01] Loading Seurat objects... 
+[2026-02-18 17:17:12] Analyzing 29 genes of interest 
+[2026-02-18 17:17:12] Adding module scores... 
+[2026-02-18 17:17:12] Reference assay: RNA 
+[2026-02-18 17:17:22] Slide-tags assay: SCT 
+[2026-02-18 17:17:22] Processing STARmap... 
+[2026-02-18 17:17:22] STARmap assays available: RNA_raw, imputed 
+[2026-02-18 17:17:22] Using imputed assay for better gene coverage 
+[2026-02-18 17:17:22]   MMP_ECM_Remodeling: 12/12 genes available (100.0%) 
+[2026-02-18 17:17:22]   Immune_Tolerance: 11/11 genes available (100.0%) 
+[2026-02-18 17:17:22]   Cytotoxic_NK: 9/9 genes available (100.0%) 
+[2026-02-18 17:17:22]   Ethanolamine_Metabolism: 7/7 genes available (100.0%) 
+[2026-02-18 17:17:29] Summarizing data by dataset, week, and cell type... 
+[2026-02-18 17:17:29] Multiome: 29/29 genes present for timecourse (100.0%) 
+[2026-02-18 17:17:30] Slide-tags: 24/29 genes present for timecourse (82.8%) 
+[2026-02-18 17:17:30] STARmap: 29/29 genes present for timecourse (100.0%) 
+[2026-02-18 17:17:30] Saved: output/tables/timecourse_gene_module_summaries_enhanced.csv 
+[2026-02-18 17:17:30] Generating enhanced plots... 
+[2026-02-18 17:17:31]   Saved: timecourse_PLD1_enhanced.png 
+[2026-02-18 17:17:32]   Saved: timecourse_MMP2_enhanced.png 
+[2026-02-18 17:17:32]   Saved: timecourse_MMP9_enhanced.png 
+[2026-02-18 17:17:33]   Saved: timecourse_GALNT1_enhanced.png 
+[2026-02-18 17:17:34]   Saved: timecourse_HLA-G_enhanced.png 
+[2026-02-18 17:17:34]   Saved: timecourse_NKG7_enhanced.png 
+[2026-02-18 17:17:35]   Saved: timecourse_MMP_ECM_Remodeling_enhanced.png 
+[2026-02-18 17:17:36]   Saved: timecourse_Immune_Tolerance_enhanced.png 
+[2026-02-18 17:17:36]   Saved: timecourse_Cytotoxic_NK_enhanced.png 
+[2026-02-18 17:17:37]   Saved: timecourse_Ethanolamine_Metabolism_enhanced.png 
+[2026-02-18 17:17:37] Creating validation plot: imputed vs raw for STARmap 
+[2026-02-18 17:17:37]   Comparing 14 genes available in both assays 
+[2026-02-18 17:17:37] 
+=== SUMMARY STATISTICS === 
+[2026-02-18 17:17:37] Total cells analyzed: 47420 
+[2026-02-18 17:17:37] Datasets: 3 
+[2026-02-18 17:17:37] Cell types: 26 
+[2026-02-18 17:17:37] Gestational weeks: 6, 7, 8, 9, 10, 11 
+[2026-02-18 17:17:37] 
+[OK] Enhanced timecourse analysis complete 
+[2026-02-18 17:17:37] Results saved to: output/tables 
+[2026-02-18 17:17:37] Figures saved to: output/figures 
+[2026-02-18 17:22:17] Starting enhanced timecourse analysis 
+[2026-02-18 17:22:17] Loading Seurat objects... 
+[2026-02-18 17:22:29] Analyzing 29 genes of interest 
+[2026-02-18 17:22:29] Adding module scores... 
+[2026-02-18 17:22:29] Reference assay: RNA 
+[2026-02-18 17:22:38] Slide-tags assay: SCT 
+[2026-02-18 17:22:39] Processing STARmap... 
+[2026-02-18 17:22:39] STARmap assays available: RNA_raw, imputed 
+[2026-02-18 17:22:39] Using imputed assay for better gene coverage 
+[2026-02-18 17:22:39]   MMP_ECM_Remodeling: 12/12 genes available (100.0%) 
+[2026-02-18 17:22:39]   Immune_Tolerance: 11/11 genes available (100.0%) 
+[2026-02-18 17:22:39]   Cytotoxic_NK: 9/9 genes available (100.0%) 
+[2026-02-18 17:22:39]   Ethanolamine_Metabolism: 7/7 genes available (100.0%) 
+[2026-02-18 17:22:45] Summarizing data by dataset, week, and cell type... 
+[2026-02-18 17:22:45] Multiome: 29/29 genes present for timecourse (100.0%) 
+[2026-02-18 17:22:46] Slide-tags: 24/29 genes present for timecourse (82.8%) 
+[2026-02-18 17:22:47] STARmap: 29/29 genes present for timecourse (100.0%) 
+[2026-02-18 17:22:47] Saved: output/tables/timecourse_gene_module_summaries_enhanced.csv 
+[2026-02-18 17:22:47] Generating enhanced plots... 
+[2026-02-18 17:22:48]   Saved: timecourse_PLD1_enhanced.png 
+[2026-02-18 17:22:48]   Saved: timecourse_MMP2_enhanced.png 
+[2026-02-18 17:22:49]   Saved: timecourse_MMP9_enhanced.png 
+[2026-02-18 17:22:50]   Saved: timecourse_GALNT1_enhanced.png 
+[2026-02-18 17:22:50]   Saved: timecourse_HLA-G_enhanced.png 
+[2026-02-18 17:22:51]   Saved: timecourse_NKG7_enhanced.png 
+[2026-02-18 17:22:52]   Saved: timecourse_MMP_ECM_Remodeling_enhanced.png 
+[2026-02-18 17:22:52]   Saved: timecourse_Immune_Tolerance_enhanced.png 
+[2026-02-18 17:22:53]   Saved: timecourse_Cytotoxic_NK_enhanced.png 
+[2026-02-18 17:22:53]   Saved: timecourse_Ethanolamine_Metabolism_enhanced.png 
+[2026-02-18 17:22:54] Creating validation plot: imputed vs raw for STARmap 
+[2026-02-18 17:22:54]   Comparing 14 genes available in both assays 
+[2026-02-18 17:22:54] 
+=== SUMMARY STATISTICS === 
+[2026-02-18 17:22:54] Total cells analyzed: 47420 
+[2026-02-18 17:22:54] Datasets: 3 
+[2026-02-18 17:22:54] Cell types: 26 
+[2026-02-18 17:22:54] Gestational weeks: 6, 7, 8, 9, 10, 11 
+[2026-02-18 17:22:54] 
+[OK] Enhanced timecourse analysis complete 
+[2026-02-18 17:22:54] Results saved to: output/tables 
+[2026-02-18 17:22:54] Figures saved to: output/figures 
+[2026-02-18 17:25:20] Celltype Fibroblast2: n_cells=5509 
+[2026-02-18 17:38:55] Celltype EVT1: n_cells=224 
+[2026-02-18 17:39:50] Celltype EVT2: n_cells=2344 
+[2026-02-18 17:43:43] Done gene coordination scoring. 

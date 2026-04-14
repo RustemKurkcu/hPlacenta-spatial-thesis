@@ -1,0 +1,75 @@
+[2026-02-19 17:02:40] [05E] Complete. 
+[2026-02-19 18:23:40] [05E] Complete. 
+[2026-02-19 18:33:12] [05E] SlideTags: k=8 
+[2026-02-19 18:33:20] [05E] SlideTags: k=15 
+[2026-02-19 18:33:28] [05E] SlideTags: k=25 
+[2026-02-19 18:33:37] [05E] SlideTags: k=40 
+[2026-02-19 18:33:48] [05E] Done spatial LR for SlideTags using assay SCT 
+[2026-02-19 18:33:48] [05E] STARmap: k=8 
+[2026-02-19 18:33:58] [05E] STARmap: k=15 
+[2026-02-19 18:34:10] [05E] STARmap: k=25 
+[2026-02-19 18:34:28] [05E] STARmap: k=40 
+[2026-02-19 18:34:56] [05E] Done spatial LR for STARmap using assay imputed 
+[2026-02-19 18:34:56] [05E] Complete. 
+[2026-02-20 13:13:30] [05E] Failed to read SlideTags object at output/objects/slidetags_harmonized.rds (error reading from connection) 
+[2026-02-20 13:13:31] [05E] Loaded SlideTags object: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-20 13:13:31] [05E] Failed to read STARmap object at output/objects/starmap_harmonized.rds (error reading from connection) 
+[2026-02-20 13:13:36] [05E] Loaded STARmap object: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-20 13:13:36] [05E] SlideTags: k=8 
+[2026-02-20 13:13:44] [05E] SlideTags: k=15 
+[2026-02-20 13:13:53] [05E] SlideTags: k=25 
+[2026-02-20 13:14:03] [05E] SlideTags: k=40 
+[2026-02-20 13:14:16] [05E] Done spatial LR for SlideTags using assay SCT 
+[2026-02-20 13:32:56] [05E] Failed to read SlideTags object at output/objects/slidetags_harmonized.rds (error reading from connection) 
+[2026-02-20 13:32:57] [05E] Loaded SlideTags object: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-20 13:32:57] [05E] Failed to read STARmap object at output/objects/starmap_harmonized.rds (error reading from connection) 
+[2026-02-20 13:33:02] [05E] Loaded STARmap object: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-20 13:33:03] [05E] SlideTags: using label column 'predicted.id' 
+[2026-02-20 13:33:03] [05E] SlideTags: k=8 
+[2026-02-20 13:33:11] [05E] SlideTags: k=15 
+[2026-02-20 13:33:20] [05E] SlideTags: k=25 
+[2026-02-20 13:33:31] [05E] SlideTags: k=40 
+[2026-02-20 13:33:46] [05E] Done spatial LR for SlideTags using assay SCT 
+[2026-02-20 13:35:53] [05E] Complete. 
+[2026-02-20 13:37:11] [05E] Failed to read SlideTags object at output/objects/slidetags_harmonized.rds (error reading from connection) 
+[2026-02-20 13:37:12] [05E] Loaded SlideTags object: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-20 13:37:12] [05E] Failed to read STARmap object at output/objects/starmap_harmonized.rds (error reading from connection) 
+[2026-02-20 13:37:17] [05E] Loaded STARmap object: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-20 13:37:17] [05E] SlideTags: using label column 'predicted.id' 
+[2026-02-20 13:37:17] [05E] SlideTags: k=8 
+[2026-02-20 13:37:26] [05E] SlideTags: k=15 
+[2026-02-20 13:37:36] [05E] SlideTags: k=25 
+[2026-02-20 13:37:47] [05E] SlideTags: k=40 
+[2026-02-20 13:38:02] [05E] Done spatial LR for SlideTags using assay SCT 
+[2026-02-20 13:40:01] [05E] Failed to read SlideTags object at output/objects/slidetags_harmonized.rds (error reading from connection) 
+[2026-02-20 13:40:02] [05E] Loaded SlideTags object: data/processed/slidetags_mapped_to_multiome.rds 
+[2026-02-20 13:40:02] [05E] Failed to read STARmap object at output/objects/starmap_harmonized.rds (error reading from connection) 
+[2026-02-20 13:40:07] [05E] Loaded STARmap object: data/processed/starmap_spatial_raw_plus_imputed_seurat.rds 
+[2026-02-20 13:40:08] [05E] SlideTags: using label column 'predicted.id' 
+[2026-02-20 13:40:08] [05E] SlideTags: k=8 
+[2026-02-20 13:40:16] [05E] SlideTags: k=15 
+[2026-02-20 13:40:25] [05E] SlideTags: k=25 
+[2026-02-20 13:40:35] [05E] SlideTags: k=40 
+[2026-02-20 13:40:47] [05E] Done spatial LR for SlideTags using assay SCT 
+[2026-02-20 14:08:24] [05E] SlideTags: k=8 
+[2026-02-20 14:08:31] [05E] SlideTags: k=15 
+[2026-02-20 14:08:39] [05E] SlideTags: k=25 
+[2026-02-20 14:08:49] [05E] SlideTags: k=40 
+[2026-02-20 14:09:01] [05E] Done spatial LR for SlideTags using assay SCT 
+[2026-02-20 14:09:01] [05E] STARmap: k=8 
+[2026-02-20 14:09:12] [05E] STARmap: k=15 
+[2026-02-20 14:09:28] [05E] STARmap: k=25 
+[2026-02-20 14:09:52] [05E] STARmap: k=40 
+[2026-02-20 14:10:29] [05E] Done spatial LR for STARmap using assay imputed 
+[2026-02-20 14:10:29] [05E] Complete. 
+[2026-02-20 14:13:44] [05E] SlideTags: k=8 
+[2026-02-20 14:13:52] [05E] SlideTags: k=15 
+[2026-02-20 14:14:00] [05E] SlideTags: k=25 
+[2026-02-20 14:14:10] [05E] SlideTags: k=40 
+[2026-02-20 14:14:22] [05E] Done spatial LR for SlideTags using assay SCT 
+[2026-02-20 14:14:22] [05E] STARmap: k=8 
+[2026-02-20 14:14:33] [05E] STARmap: k=15 
+[2026-02-20 14:14:49] [05E] STARmap: k=25 
+[2026-02-20 14:15:09] [05E] STARmap: k=40 
+[2026-02-20 14:15:44] [05E] Done spatial LR for STARmap using assay imputed 
+[2026-02-20 14:15:44] [05E] Complete. 

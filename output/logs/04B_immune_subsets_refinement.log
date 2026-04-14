@@ -1,0 +1,11 @@
+[2026-02-15 18:54:29] Done immune subtype refinement. 
+[2026-02-17 17:41:37] Done immune subtype refinement. 
+[2026-02-18 17:20:41] Done immune subtype refinement. 
+[2026-02-18 17:21:52] Creating validation plot: imputed vs raw for STARmap 
+[2026-02-18 17:21:52]   Comparing 14 genes available in both assays 
+[2026-02-18 17:21:53] 
+=== SUMMARY STATISTICS === 
+[2026-02-18 17:21:56] Total cells analyzed: 47420 
+[2026-02-18 17:21:56] Datasets: 3 
+[2026-02-18 17:21:56] Cell types: 26 
+[2026-02-18 17:21:56] Gestational weeks: 6, 7, 8, 9, 10, 11 

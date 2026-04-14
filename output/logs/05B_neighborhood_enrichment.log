@@ -1,0 +1,175 @@
+[2026-02-15 19:28:19] SlideTags week 8: KNN k=15 n=868 
+[2026-02-15 19:28:21] SlideTags week 9: KNN k=15 n=416 
+[2026-02-15 19:28:22] SlideTags week 11: KNN k=15 n=639 
+[2026-02-15 19:28:23] STARmap week 8: KNN k=15 n=4487 
+[2026-02-15 19:28:28] STARmap week 9: KNN k=15 n=4554 
+[2026-02-15 19:28:34] Done neighborhood enrichment. 
+[2026-02-18 09:35:14] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 09:35:19] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 09:35:25] SlideTags week 8: KNN k=15 n=868 
+[2026-02-18 09:35:26] SlideTags week 8: n=868 
+[2026-02-18 09:35:26]   k=8 
+[2026-02-18 11:18:00] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 11:18:06] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 11:18:11] SlideTags week 8: KNN k=15 n=868 
+[2026-02-18 11:18:12] SlideTags week 8: n=868 
+[2026-02-18 11:18:12]   k=8 
+[2026-02-18 11:18:13]   k=15 
+[2026-02-18 11:18:14]   k=25 
+[2026-02-18 11:18:16]   k=40 
+[2026-02-18 11:18:17] SlideTags week 9: KNN k=15 n=416 
+[2026-02-18 11:18:18] SlideTags week 9: n=416 
+[2026-02-18 11:18:18]   k=8 
+[2026-02-18 11:18:18]   k=15 
+[2026-02-18 11:18:19]   k=25 
+[2026-02-18 11:18:20]   k=40 
+[2026-02-18 11:18:21] SlideTags week 11: KNN k=15 n=639 
+[2026-02-18 11:18:21] SlideTags week 11: n=639 
+[2026-02-18 11:18:21]   k=8 
+[2026-02-18 11:18:22]   k=15 
+[2026-02-18 11:18:22]   k=25 
+[2026-02-18 11:18:23]   k=40 
+[2026-02-18 11:18:24] STARmap week 8: KNN k=15 n=4487 
+[2026-02-18 11:18:26] STARmap week 8: n=4487 
+[2026-02-18 11:18:26]   k=8 
+[2026-02-18 11:18:27]   k=15 
+[2026-02-18 11:18:29]   k=25 
+[2026-02-18 11:18:31]   k=40 
+[2026-02-18 11:18:35] STARmap week 9: KNN k=15 n=4554 
+[2026-02-18 11:18:37] STARmap week 9: n=4554 
+[2026-02-18 11:18:37]   k=8 
+[2026-02-18 11:18:38]   k=15 
+[2026-02-18 11:18:40]   k=25 
+[2026-02-18 11:18:43]   k=40 
+[2026-02-18 11:18:48] Done neighborhood enrichment. 
+[2026-02-18 11:18:48] Done neighborhood enrichment (with k-sensitivity and density stratification). 
+[2026-02-18 12:58:07] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 12:58:08] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 12:58:14] SlideTags week 8: n=868 
+[2026-02-18 12:58:14]   k=8 
+[2026-02-18 12:58:15]   k=15 
+[2026-02-18 12:58:16]   k=25 
+[2026-02-18 12:58:18]   k=40 
+[2026-02-18 12:58:21] SlideTags week 9: n=416 
+[2026-02-18 12:58:21]   k=8 
+[2026-02-18 12:58:22]   k=15 
+[2026-02-18 12:58:23]   k=25 
+[2026-02-18 12:58:24]   k=40 
+[2026-02-18 12:58:25] SlideTags week 11: n=639 
+[2026-02-18 12:58:25]   k=8 
+[2026-02-18 12:58:26]   k=15 
+[2026-02-18 12:58:28]   k=25 
+[2026-02-18 12:58:29]   k=40 
+[2026-02-18 12:58:31] STARmap week 8: n=4487 
+[2026-02-18 12:58:31]   k=8 
+[2026-02-18 12:58:33]   k=15 
+[2026-02-18 12:58:36]   k=25 
+[2026-02-18 12:58:41]   k=40 
+[2026-02-18 12:58:47] STARmap week 9: n=4554 
+[2026-02-18 12:58:47]   k=8 
+[2026-02-18 12:58:50]   k=15 
+[2026-02-18 12:58:53]   k=25 
+[2026-02-18 12:58:58]   k=40 
+[2026-02-18 12:59:04] Done neighborhood enrichment (with k-sensitivity and density stratification). 
+[2026-02-18 14:31:19] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-18 14:31:24] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-18 14:31:30] SlideTags week 8: KNN k=15 n=868 
+[2026-02-18 14:31:30] SlideTags week 8: n=868 
+[2026-02-18 14:31:30]   k=8 
+[2026-02-18 14:31:31]   k=15 
+[2026-02-18 14:31:33]   k=25 
+[2026-02-18 14:31:34]   k=40 
+[2026-02-18 14:31:36] SlideTags week 9: KNN k=15 n=416 
+[2026-02-18 14:31:36] SlideTags week 9: n=416 
+[2026-02-18 14:31:36]   k=8 
+[2026-02-18 14:31:37]   k=15 
+[2026-02-18 14:31:38]   k=25 
+[2026-02-18 14:31:40]   k=40 
+[2026-02-18 14:31:41] SlideTags week 11: KNN k=15 n=639 
+[2026-02-18 14:31:42] SlideTags week 11: n=639 
+[2026-02-18 14:31:42]   k=8 
+[2026-02-18 14:31:43]   k=15 
+[2026-02-18 14:31:44]   k=25 
+[2026-02-18 14:31:45]   k=40 
+[2026-02-18 14:31:47] STARmap week 8: KNN k=15 n=4487 
+[2026-02-18 14:31:48] STARmap week 8: n=4487 
+[2026-02-18 14:31:48]   k=8 
+[2026-02-18 14:31:50]   k=15 
+[2026-02-18 14:31:52]   k=25 
+[2026-02-18 14:31:55]   k=40 
+[2026-02-18 14:31:59] STARmap week 9: KNN k=15 n=4554 
+[2026-02-18 14:32:01] STARmap week 9: n=4554 
+[2026-02-18 14:32:01]   k=8 
+[2026-02-18 14:32:02]   k=15 
+[2026-02-18 14:32:05]   k=25 
+[2026-02-18 14:32:08]   k=40 
+[2026-02-18 14:32:12] Done neighborhood enrichment. 
+[2026-02-18 14:32:12] Done neighborhood enrichment (with k-sensitivity and density stratification). 
+[2026-02-19 09:46:47] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-19 09:46:53] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-19 09:46:58] SlideTags week 8: KNN k=15 n=868 
+[2026-02-19 09:46:59] SlideTags week 8: n=868 
+[2026-02-19 09:46:59]   k=8 
+[2026-02-19 09:47:00]   k=15 
+[2026-02-19 09:47:01]   k=25 
+[2026-02-19 09:47:03]   k=40 
+[2026-02-19 09:47:05] SlideTags week 9: KNN k=15 n=416 
+[2026-02-19 09:47:05] SlideTags week 9: n=416 
+[2026-02-19 09:47:05]   k=8 
+[2026-02-19 09:47:06]   k=15 
+[2026-02-19 09:47:07]   k=25 
+[2026-02-19 09:47:09]   k=40 
+[2026-02-19 09:47:10] SlideTags week 11: KNN k=15 n=639 
+[2026-02-19 09:47:11] SlideTags week 11: n=639 
+[2026-02-19 09:47:11]   k=8 
+[2026-02-19 09:47:12]   k=15 
+[2026-02-19 09:47:13]   k=25 
+[2026-02-19 09:47:14]   k=40 
+[2026-02-19 09:47:16] STARmap week 8: KNN k=15 n=4487 
+[2026-02-19 09:47:17] STARmap week 8: n=4487 
+[2026-02-19 09:47:17]   k=8 
+[2026-02-19 09:47:19]   k=15 
+[2026-02-19 09:47:22]   k=25 
+[2026-02-19 09:47:25]   k=40 
+[2026-02-19 09:47:29] STARmap week 9: KNN k=15 n=4554 
+[2026-02-19 09:47:30] STARmap week 9: n=4554 
+[2026-02-19 09:47:30]   k=8 
+[2026-02-19 09:47:32]   k=15 
+[2026-02-19 09:47:35]   k=25 
+[2026-02-19 09:47:38]   k=40 
+[2026-02-19 09:47:42] Done neighborhood enrichment. 
+[2026-02-19 09:47:42] Done neighborhood enrichment (with k-sensitivity and density stratification). 
+[2026-02-19 16:50:19] Loading SlideTags object: output/objects/slidetags_harmonized.rds 
+[2026-02-19 16:50:25] Loading STARmap object: output/objects/starmap_harmonized.rds 
+[2026-02-19 16:50:30] SlideTags week 8: KNN k=15 n=868 
+[2026-02-19 16:50:31] SlideTags week 8: n=868 
+[2026-02-19 16:50:31]   k=8 
+[2026-02-19 16:50:33]   k=15 
+[2026-02-19 16:50:34]   k=25 
+[2026-02-19 16:50:36]   k=40 
+[2026-02-19 16:50:39] SlideTags week 9: KNN k=15 n=416 
+[2026-02-19 16:50:40] SlideTags week 9: n=416 
+[2026-02-19 16:50:40]   k=8 
+[2026-02-19 16:50:41]   k=15 
+[2026-02-19 16:50:43]   k=25 
+[2026-02-19 16:50:45]   k=40 
+[2026-02-19 16:50:47] SlideTags week 11: KNN k=15 n=639 
+[2026-02-19 16:50:47] SlideTags week 11: n=639 
+[2026-02-19 16:50:47]   k=8 
+[2026-02-19 16:50:49]   k=15 
+[2026-02-19 16:50:51]   k=25 
+[2026-02-19 16:50:53]   k=40 
+[2026-02-19 16:50:56] STARmap week 8: KNN k=15 n=4487 
+[2026-02-19 16:50:57] STARmap week 8: n=4487 
+[2026-02-19 16:50:57]   k=8 
+[2026-02-19 16:51:00]   k=15 
+[2026-02-19 16:51:03]   k=25 
+[2026-02-19 16:51:07]   k=40 
+[2026-02-19 16:51:12] STARmap week 9: KNN k=15 n=4554 
+[2026-02-19 16:51:14] STARmap week 9: n=4554 
+[2026-02-19 16:51:14]   k=8 
+[2026-02-19 16:51:16]   k=15 
+[2026-02-19 16:51:19]   k=25 
+[2026-02-19 16:51:23]   k=40 
+[2026-02-19 16:51:29] Done neighborhood enrichment. 
+[2026-02-19 16:51:29] Done neighborhood enrichment (with k-sensitivity and density stratification). 

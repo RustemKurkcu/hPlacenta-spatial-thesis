@@ -1,0 +1,19 @@
+Plot interpretation guide (short)
+--------------------------------
+
+Files produced per sample:
+- <dataset>_<sample>_3panel_global.png : (Viridis) Global permissiveness, hotspot density, highlights.
+- <dataset>_<sample>_3panel_global_white_red.png : same but white->red symmetric color scale for cross-sample comparability.
+- <dataset>_<sample>_protected_and_diff.png : Top density, bottom(protected) density, and difference (hotspot - protected).
+- <dataset>_<sample>_permissiveness_global_week_<w>.png : per-week global permissiveness maps.
+
+Key points:
+- Permissiveness_global is pooled across datasets and comparable across samples.
+- Hotspots = highest-permissive cells (top 10% by default). Protected = lowest 10%.
+- Difference map (hotspot - protected) highlights spatially differential permissiveness.
+- Use hotspot CSVs for downstream DE/CellChat.
+- Check meta.json and permissiveness_global_stats.json for provenance and the perm_maxabs used for symmetric color scales.
+
+Caveats:
+- If module scores are missing (e.g., due to limited gene panels), permissiveness contributions may be NA; check NK_module_coverage_qc files.
+- Interpret differences across platforms (STARmap vs SlideTags) carefully even after global calibration; module computation assumptions matter.
