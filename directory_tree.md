@@ -781,6 +781,7 @@ hPlacenta-architecture
 │   │   │   ├── SlideTags_hotspot_vs_coldspot_DE.csv
 │   │   │   ├── STARmap_hotspot_vs_coldspot_DE.csv
 │   │   │   └── summary_table_with_highlights.csv
+│   │   ├── 01_qc_summary_by_week.csv
 │   │   ├── 06A_cellchat_run_summary.csv
 │   │   ├── cellchat_slidetags_interactions.csv
 │   │   ├── celltype_proportions_by_week_and_version.csv
