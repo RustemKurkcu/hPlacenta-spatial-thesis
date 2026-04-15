@@ -368,7 +368,8 @@ read_csv_flexible <- function(path) {
         skip = skip,
         show_col_types = FALSE,
         progress = FALSE,
-        guess_max = 10000
+        guess_max = 10000,
+        name_repair = "minimal"
       ),
       error = function(e) {
         msg <- conditionMessage(e)
@@ -587,6 +588,51 @@ coerce_expression_with_spots <- function(expr_path, spots_md, week_id) {
   mat
 }
 
+coerce_expression_without_metadata <- function(expr_path, week_id) {
+  expr <- read_csv_flexible(expr_path)
+  if (ncol(expr) < 2) {
+    stop("Expression CSV has too few columns for week ", week_id, ": ", expr_path)
+  }
+
+  expr <- expr %>% dplyr::rename(id_col = 1)
+  expr$id_col <- trimws(as.character(expr$id_col))
+  expr <- expr %>% dplyr::filter(!is.na(id_col), id_col != "") %>% dplyr::distinct(id_col, .keep_all = TRUE)
+
+  candidate_cols <- setdiff(colnames(expr), "id_col")
+  id_vals <- expr$id_col
+
+  barcode_like <- mean(grepl("^(W[0-9]|[A-Za-z]+_tile_|cell|spot)", id_vals), na.rm = TRUE)
+
+  if (is.finite(barcode_like) && barcode_like >= 0.05) {
+    mat_raw <- as.matrix(expr[, candidate_cols, drop = FALSE])
+    suppressWarnings(storage.mode(mat_raw) <- "numeric")
+    rownames(mat_raw) <- expr$id_col
+    mat_raw <- t(mat_raw)
+    colnames(mat_raw) <- make.unique(colnames(mat_raw))
+    rownames(mat_raw) <- make.unique(rownames(mat_raw))
+    mat <- mat_raw
+  } else {
+    mat_raw <- as.matrix(expr[, candidate_cols, drop = FALSE])
+    suppressWarnings(storage.mode(mat_raw) <- "numeric")
+    rownames(mat_raw) <- expr$id_col
+    colnames(mat_raw) <- candidate_cols
+    mat <- mat_raw
+  }
+
+  mat <- as(Matrix(mat, sparse = TRUE), "dgCMatrix")
+  md <- tibble::tibble(
+    barcode = colnames(mat),
+    x_um = NA_real_,
+    y_um = NA_real_,
+    week = week_id,
+    sample_id = week_id,
+    metadata_source = "placeholder_from_expression"
+  )
+
+  list(counts = mat, metadata = md)
+}
+
+
 week_inputs <- lapply(cfg$week_ids, function(wk) {
   list(
     week = wk,
@@ -658,40 +704,67 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     next
   }
 
-  spots_md_raw <- if (!is.na(wi$spots_metadata)) read_csv_flexible(wi$spots_metadata) else NULL
-  cell_md_raw <- if (!is.na(wi$cell_metadata)) read_csv_flexible(wi$cell_metadata) else NULL
-  if (!is.null(spots_md_raw)) names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
-  if (!is.null(cell_md_raw)) names(cell_md_raw) <- make.names(names(cell_md_raw), unique = TRUE)
+  spots_ptr <- !is.na(wi$spots_metadata) && is_git_lfs_pointer_file(wi$spots_metadata)
+  cell_ptr <- !is.na(wi$cell_metadata) && is_git_lfs_pointer_file(wi$cell_metadata)
 
-  spots_md <- standardize_spots_metadata(
-    md_raw = spots_md_raw,
-    week_id = wk,
-    barcodes = character(0),
-    cell_md_raw = cell_md_raw
-  )
+  if (spots_ptr && (is.na(wi$cell_metadata) || cell_ptr)) {
+    log_msg("  Spots/cell metadata unavailable as real CSVs for week ", wk,
+            ". Building placeholder metadata from expression matrix.", .level = "WARN")
+    log_msg("  Reading expression (fallback mode): ", wi$expression)
+    inferred <- coerce_expression_without_metadata(wi$expression, wk)
+    counts <- inferred$counts
+    md <- inferred$metadata
+  } else {
+    # Prefer cell_metadata as primary coordinate source when available;
+    # spots_metadata can be very large (gene-level spots) and slow to parse.
+    use_cell_primary <- !is.na(wi$cell_metadata) && !cell_ptr
 
-  counts <- tryCatch(
-    coerce_expression_with_spots(wi$expression, spots_md, wk),
-    error = function(e) {
-      write_troubleshooting_bundle(
-        week_id = wk,
-        expr_path = wi$expression,
-        spots_path = wi$spots_metadata,
-        expr_df = tryCatch(read_csv_flexible(wi$expression), error = function(...) NULL),
-        spots_df = if (!is.null(spots_md_raw)) spots_md_raw else cell_md_raw,
-        err_msg = conditionMessage(e)
-      )
-      stop(e)
+    if (use_cell_primary) {
+      log_msg("  Using cell metadata as primary coordinate source for week ", wk, ".")
+      cell_md_raw <- read_csv_flexible(wi$cell_metadata)
+      spots_md_raw <- NULL
+    } else {
+      spots_md_raw <- if (!is.na(wi$spots_metadata) && !spots_ptr) read_csv_flexible(wi$spots_metadata) else NULL
+      cell_md_raw <- if (!is.na(wi$cell_metadata) && !cell_ptr) read_csv_flexible(wi$cell_metadata) else NULL
     }
-  )
-  log_msg("  Counts loaded from STARmap CSV: genes=", nrow(counts), ", cells=", ncol(counts))
 
-  md <- standardize_spots_metadata(
-    md_raw = spots_md_raw,
-    week_id = wk,
-    barcodes = colnames(counts),
-    cell_md_raw = cell_md_raw
-  )
+    if (!is.null(spots_md_raw)) names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
+    if (!is.null(cell_md_raw)) names(cell_md_raw) <- make.names(names(cell_md_raw), unique = TRUE)
+
+    spots_md <- standardize_spots_metadata(
+      md_raw = spots_md_raw,
+      week_id = wk,
+      barcodes = character(0),
+      cell_md_raw = cell_md_raw
+    )
+
+    counts <- tryCatch(
+      {
+        log_msg("  Reading expression with metadata alignment: ", wi$expression)
+        coerce_expression_with_spots(wi$expression, spots_md, wk)
+      },
+      error = function(e) {
+        write_troubleshooting_bundle(
+          week_id = wk,
+          expr_path = wi$expression,
+          spots_path = wi$spots_metadata,
+          expr_df = tryCatch(read_csv_flexible(wi$expression), error = function(...) NULL),
+          spots_df = if (!is.null(spots_md_raw)) spots_md_raw else cell_md_raw,
+          err_msg = conditionMessage(e)
+        )
+        stop(e)
+      }
+    )
+
+    md <- standardize_spots_metadata(
+      md_raw = spots_md_raw,
+      week_id = wk,
+      barcodes = colnames(counts),
+      cell_md_raw = cell_md_raw
+    )
+  }
+
+  log_msg("  Counts loaded from STARmap CSV: genes=", nrow(counts), ", cells=", ncol(counts))
 
   seu_w <- CreateSeuratObject(counts = counts, project = paste0("STARmap_", wk))
 
@@ -729,7 +802,11 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
       ". Applying adaptive fallback for imputed STARmap (coordinate-valid + counts>0).",
       .level = "WARN"
     )
-    keep <- (!is.na(seu_w$x_um) & !is.na(seu_w$y_um) & seu_w$nCount_RNA > 0)
+    if (all(is.na(seu_w$x_um)) || all(is.na(seu_w$y_um))) {
+      keep <- (seu_w$nCount_RNA > 0)
+    } else {
+      keep <- (!is.na(seu_w$x_um) & !is.na(seu_w$y_um) & seu_w$nCount_RNA > 0)
+    }
   } else {
     keep <- keep_primary
   }
