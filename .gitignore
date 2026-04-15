@@ -9,3 +9,8 @@ Thumbs.db
 *.tmp
 *.lock
 data/processed/seurat_spatial_prepared.qs
+data/processed/starmap_spatial_raw_plus_imputed_seurat.rds
+data/raw/Broad_SCP2601human-placenta-architecture/matrix.mtx
+data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv
+data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv
+data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_gene_activity.csv

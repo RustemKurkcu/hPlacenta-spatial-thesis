@@ -125,11 +125,11 @@ if (misi_module_loaded && exists("misi_modules_v2", mode = "function")) {
     Nutrient_Liberation    = c("PLD1", "PLD2", "GDPD1", "ETNK1", "FAAH"),
     Nutrient_Sequestration = c("PCYT2", "CHPT1", "CEPT1"),
     Homing_Glyco           = c("GALNT1", "GALNT2", "GALNT3", "C1GALT1",
-                                "C1GALT1C1", "GCNT1", "MGAT5"),
+                               "C1GALT1C1", "GCNT1", "MGAT5"),
     Homing_Barrier         = c("CDH1", "CDH5", "OCLN", "TJP1",
-                                "CLDN1", "CLDN3", "EPCAM"),
+                               "CLDN1", "CLDN3", "EPCAM"),
     Switch_Immune          = c("TLR2", "TLR4", "TNF", "IL6", "IL1B",
-                                "NFKB1", "NFKB2", "IL18"),
+                               "NFKB1", "NFKB2", "IL18"),
     Switch_Hypoxia         = c("HIF1A", "VEGFA", "LDHA", "PGK1", "ENO1"),
     Invasion_MMP           = c("MMP1", "MMP2", "MMP9", "MMP14"),
     Invasion_TIMP          = c("TIMP1", "TIMP2", "TIMP3"),
@@ -224,7 +224,7 @@ if (has_spatial) {
 } else {
   # Fallback: check metadata
   coord_pairs <- list(c("x", "y"), c("X", "Y"), c("x_um", "y_um"),
-                       c("spatial_x", "spatial_y"))
+                      c("spatial_x", "spatial_y"))
   for (cp in coord_pairs) {
     if (all(cp %in% colnames(seu@meta.data))) {
       xy <- as.matrix(seu@meta.data[, cp])
@@ -550,35 +550,35 @@ log_msg("  Saved: SCP2601_misi_v2_summary_by_celltype_week.csv (",
 
 if (RUN_SPATIAL && has_spatial) {
   log_msg("\n=== Spatial Moran's I Radius Sweep ===")
-
+  
   # Install spdep if needed
   if (!requireNamespace("spdep", quietly = TRUE)) {
     log_msg("  Installing spdep...")
     install.packages("spdep", repos = "https://cloud.r-project.org")
   }
   library(spdep)
-
+  
   #' Moran's I at a single radius for a single score
   moranI_at_radius <- function(xy_mat, values, radius) {
     valid <- !is.na(values) & complete.cases(xy_mat)
     if (sum(valid) < 30) return(list(I = NA, p = NA, n = sum(valid), mean_nb = NA))
-
+    
     xy_v  <- xy_mat[valid, , drop = FALSE]
     val_v <- values[valid]
-
+    
     nb <- tryCatch(spdep::dnearneigh(xy_v, 0, radius, longlat = FALSE),
                    error = function(e) NULL)
     if (is.null(nb)) return(list(I = NA, p = NA, n = length(val_v), mean_nb = NA))
-
+    
     card_nb <- spdep::card(nb)
     if (all(card_nb == 0)) return(list(I = NA, p = NA, n = length(val_v), mean_nb = 0))
-
+    
     lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
     mt <- tryCatch(spdep::moran.test(val_v, lw, zero.policy = TRUE),
                    error = function(e) NULL)
-
+    
     if (is.null(mt)) return(list(I = NA, p = NA, n = length(val_v), mean_nb = mean(card_nb)))
-
+    
     list(
       I = as.numeric(mt$estimate[["Moran I statistic"]]),
       p = mt$p.value,
@@ -586,7 +586,7 @@ if (RUN_SPATIAL && has_spatial) {
       mean_nb = mean(card_nb)
     )
   }
-
+  
   # Scores to sweep
   spatial_score_cols <- intersect(
     c("MISI", "MISI_extended", "MISI_Homing", "MISI_Nutrient",
@@ -594,32 +594,32 @@ if (RUN_SPATIAL && has_spatial) {
       "Invasion_MMP_composite", "IDO1_Shield_Intact", "IDO1_Shield_Collapse"),
     colnames(subindices)
   )
-
+  
   # Get XY matrix
   if ("spatial" %in% names(seu@reductions)) {
     xy_mat <- Embeddings(seu, "spatial")[, 1:2]
   } else {
     xy_mat <- xy
   }
-
+  
   # Run sweep per sample (if multi-sample) or global
   if (!is.null(week_col)) {
     sample_groups <- split(seq_len(ncol(seu)), seu@meta.data[[week_col]])
   } else {
     sample_groups <- list(all = seq_len(ncol(seu)))
   }
-
+  
   all_spatial_results <- list()
-
+  
   for (grp_name in names(sample_groups)) {
     idx <- sample_groups[[grp_name]]
     xy_grp <- xy_mat[idx, , drop = FALSE]
-
+    
     log_msg("  Sample/week: ", grp_name, " (", length(idx), " cells)")
-
+    
     for (sc in spatial_score_cols) {
       vals <- subindices[[sc]][idx]
-
+      
       for (r in SPATIAL_RADII) {
         res <- moranI_at_radius(xy_grp, vals, r)
         all_spatial_results[[length(all_spatial_results) + 1]] <- data.frame(
@@ -635,13 +635,13 @@ if (RUN_SPATIAL && has_spatial) {
       }
     }
   }
-
+  
   spatial_df <- do.call(rbind, all_spatial_results)
   write.csv(spatial_df, file.path(DIR_TABLES, "SCP2601_misi_v2_spatial_radius_sweep.csv"),
             row.names = FALSE)
   log_msg("  Saved: SCP2601_misi_v2_spatial_radius_sweep.csv (",
           nrow(spatial_df), " rows)")
-
+  
   # Report peaks
   for (sc in spatial_score_cols) {
     sc_data <- spatial_df %>% filter(score == sc, !is.na(moran_I))
@@ -653,7 +653,7 @@ if (RUN_SPATIAL && has_spatial) {
               " sample=", peak$sample)
     }
   }
-
+  
   # --- Separate IDO1 shield sweep for emphasis ---
   ido1_spatial <- spatial_df %>% filter(grepl("IDO1", score))
   if (nrow(ido1_spatial) > 0) {
@@ -662,7 +662,7 @@ if (RUN_SPATIAL && has_spatial) {
               row.names = FALSE)
     log_msg("  Saved: SCP2601_ido1_shield_spatial_sweep.csv")
   }
-
+  
 } else {
   log_msg("  Skipping Moran's I sweep (RUN_SPATIAL=", RUN_SPATIAL,
           ", has_spatial=", has_spatial, ")")
@@ -676,7 +676,7 @@ if (RUN_SPATIAL && has_spatial) {
 
 if (has_spatial) {
   log_msg("\n=== Generating Spatial Feature Maps ===")
-
+  
   spatial_theme <- theme_minimal(base_size = 10) +
     theme(
       panel.grid = element_blank(),
@@ -686,9 +686,9 @@ if (has_spatial) {
       plot.title = element_text(face = "bold", size = 11),
       plot.subtitle = element_text(size = 8, color = "grey40"),
       panel.border = element_rect(linetype = "solid", color = "black",
-                                   fill = NA, linewidth = 0.8)
+                                  fill = NA, linewidth = 0.8)
     )
-
+  
   # Helper: spatial feature map for one score
   plot_spatial_score <- function(seu_obj, score_col, title, subtitle = "") {
     df <- data.frame(
@@ -697,7 +697,7 @@ if (has_spatial) {
       score = seu_obj@meta.data[[score_col]]
     )
     df <- df[!is.na(df$x) & !is.na(df$y), ]
-
+    
     ggplot(df, aes(x = x, y = y, color = score)) +
       geom_point(size = 0.5, alpha = 0.8) +
       scale_color_gradient2(low = "navy", mid = "white", high = "firebrick",
@@ -706,29 +706,29 @@ if (has_spatial) {
       ggtitle(title, subtitle = subtitle) +
       spatial_theme
   }
-
+  
   # --- MISI subindex spatial maps ---
   misi_map_features <- c("MISIv2_MISI", "MISIv2_MISI_Homing",
-                           "MISIv2_MISI_Nutrient", "MISIv2_MISI_SwitchPressure",
-                           "MISIv2_MISI_VascularFragility",
-                           "MISIv2_Invasion_MMP_composite")
-
+                         "MISIv2_MISI_Nutrient", "MISIv2_MISI_SwitchPressure",
+                         "MISIv2_MISI_VascularFragility",
+                         "MISIv2_Invasion_MMP_composite")
+  
   if ("MISIv2_IDO1_Shield_Intact" %in% colnames(seu@meta.data)) {
     misi_map_features <- c(misi_map_features,
-                            "MISIv2_IDO1_Shield_Intact",
-                            "MISIv2_IDO1_Shield_Collapse")
+                           "MISIv2_IDO1_Shield_Intact",
+                           "MISIv2_IDO1_Shield_Collapse")
   }
-
+  
   # Filter to existing columns
   misi_map_features <- intersect(misi_map_features, colnames(seu@meta.data))
-
+  
   if (length(misi_map_features) > 0 && "x" %in% colnames(seu@meta.data)) {
     plot_list <- lapply(misi_map_features, function(feat) {
       short_name <- gsub("MISIv2_", "", feat)
       plot_spatial_score(seu, feat, short_name,
                          paste0("SCP2601 | n=", ncol(seu)))
     })
-
+    
     p_combined <- wrap_plots(plot_list, ncol = 3) +
       plot_annotation(
         title = "MISI v2 Subindices — Spatial Feature Maps (SCP2601)",
@@ -738,7 +738,7 @@ if (has_spatial) {
           plot.subtitle = element_text(size = 10, color = "grey40")
         )
       )
-
+    
     ggsave(file.path(DIR_FIGURES, "SCP2601_misi_spatial_featuremaps.pdf"),
            p_combined, width = 18, height = ceiling(length(plot_list) / 3) * 5,
            limitsize = FALSE)
@@ -747,7 +747,7 @@ if (has_spatial) {
            dpi = 300, limitsize = FALSE)
     log_msg("  Saved: SCP2601_misi_spatial_featuremaps.pdf/png")
   }
-
+  
   # --- IDO1 Shield dedicated spatial map ---
   if ("MISIv2_IDO1_Shield_Intact" %in% colnames(seu@meta.data) &&
       "x" %in% colnames(seu@meta.data)) {
@@ -757,20 +757,20 @@ if (has_spatial) {
       IDO1_collapse = seu$MISIv2_IDO1_Shield_Collapse
     )
     df_ido1 <- df_ido1[!is.na(df_ido1$x) & !is.na(df_ido1$y), ]
-
+    
     p_ido1_intact <- ggplot(df_ido1, aes(x = x, y = y, color = IDO1_intact)) +
       geom_point(size = 0.5, alpha = 0.8) +
       scale_color_viridis_c(option = "magma", direction = -1, name = "Shield\nIntact") +
       coord_fixed() + ggtitle("IDO1 Tolerogenic Shield (Intact Score)") +
       spatial_theme
-
+    
     p_ido1_collapse <- ggplot(df_ido1, aes(x = x, y = y, color = IDO1_collapse)) +
       geom_point(size = 0.5, alpha = 0.8) +
       scale_color_gradient2(low = "navy", mid = "grey90", high = "darkred",
                             midpoint = 0, name = "Shield\nCollapse") +
       coord_fixed() + ggtitle("IDO1 Shield Collapse (Vulnerability)") +
       spatial_theme
-
+    
     p_ido1_combined <- p_ido1_intact | p_ido1_collapse
     p_ido1_combined <- p_ido1_combined +
       plot_annotation(
@@ -781,7 +781,7 @@ if (has_spatial) {
           plot.subtitle = element_text(size = 9, color = "grey40")
         )
       )
-
+    
     ggsave(file.path(DIR_FIGURES, "SCP2601_ido1_shield_spatial_map.pdf"),
            p_ido1_combined, width = 14, height = 6)
     ggsave(file.path(DIR_FIGURES, "SCP2601_ido1_shield_spatial_map.png"),
@@ -797,7 +797,7 @@ if (has_spatial) {
 
 if (!is.null(spatial_df) && nrow(spatial_df) > 0) {
   log_msg("Generating Moran's I curve plots...")
-
+  
   p_moran <- ggplot(spatial_df %>% filter(!is.na(moran_I)),
                     aes(x = radius, y = moran_I, color = score)) +
     geom_line(linewidth = 1) +
@@ -811,7 +811,7 @@ if (!is.null(spatial_df) && nrow(spatial_df) > 0) {
     theme_minimal(base_size = 11) +
     theme(legend.position = "bottom",
           strip.text = element_text(face = "bold"))
-
+  
   ggsave(file.path(DIR_FIGURES, "SCP2601_misi_moranI_curves.pdf"),
          p_moran, width = 14, height = 8)
   ggsave(file.path(DIR_FIGURES, "SCP2601_misi_moranI_curves.png"),
@@ -826,13 +826,13 @@ if (!is.null(spatial_df) && nrow(spatial_df) > 0) {
 
 if (!is.null(week_col)) {
   log_msg("Generating MISI violin plots by week...")
-
+  
   violin_features <- intersect(
     c("MISIv2_MISI", "MISIv2_IDO1_Shield_Intact",
       "MISIv2_MISI_Homing", "MISIv2_MISI_VascularFragility"),
     colnames(seu@meta.data)
   )
-
+  
   if (length(violin_features) > 0) {
     vln_list <- lapply(violin_features, function(feat) {
       VlnPlot(seu, features = feat, group.by = week_col,
@@ -842,13 +842,13 @@ if (!is.null(week_col)) {
         theme(legend.position = "none",
               plot.title = element_text(face = "bold", size = 10))
     })
-
+    
     p_vln <- wrap_plots(vln_list, ncol = 2) +
       plot_annotation(
         title = "MISI v2 Scores by Gestational Week (SCP2601)",
         subtitle = "Dashed line = neutral (0) | SCP2601 spatial data"
       )
-
+    
     ggsave(file.path(DIR_FIGURES, "SCP2601_misi_violins_by_week.pdf"),
            p_vln, width = 12, height = 10)
     log_msg("  Saved: SCP2601_misi_violins_by_week.pdf")
@@ -862,17 +862,17 @@ if (!is.null(week_col)) {
 
 if (all(c("MISIv2_MISI", "MISIv2_IDO1_Shield_Intact") %in% colnames(seu@meta.data))) {
   log_msg("Generating MISI vs IDO1 Shield scatter...")
-
+  
   df_scatter <- data.frame(
     MISI = seu$MISIv2_MISI,
     IDO1 = seu$MISIv2_IDO1_Shield_Intact,
     cell_type = as.character(seu@meta.data[[ct_col]]),
     stringsAsFactors = FALSE
   )
-
+  
   r_val <- cor(df_scatter$MISI, df_scatter$IDO1, use = "complete.obs",
                method = "spearman")
-
+  
   p_scatter <- ggplot(df_scatter, aes(x = MISI, y = IDO1, color = cell_type)) +
     geom_point(size = 0.5, alpha = 0.4) +
     geom_smooth(method = "lm", se = TRUE, color = "black", linewidth = 0.8) +
@@ -886,7 +886,7 @@ if (all(c("MISIv2_MISI", "MISIv2_IDO1_Shield_Intact") %in% colnames(seu@meta.dat
          color = "Cell Type") +
     theme_minimal(base_size = 11) +
     theme(legend.position = "right")
-
+  
   ggsave(file.path(DIR_FIGURES, "SCP2601_misi_vs_ido1_scatter.pdf"),
          p_scatter, width = 10, height = 8)
   ggsave(file.path(DIR_FIGURES, "SCP2601_misi_vs_ido1_scatter.png"),

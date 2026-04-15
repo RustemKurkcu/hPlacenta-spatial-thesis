@@ -1,0 +1,143 @@
+$ErrorActionPreference = "Stop"
+
+$RepoRoot  = "E:\hPlacenta-architecture"
+$RemoteUrl = "https://github.com/RustemKurkcu/hPlacenta-spatial-thesis.git"
+$MaxGitMB  = 100
+$MaxLfsMB  = 500
+
+Set-Location $RepoRoot
+
+# --- sanity / cleanup ---
+Get-Process -Name git,git-lfs -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2
+if (Test-Path ".git\index.lock") { Remove-Item ".git\index.lock" -Force }
+
+git remote set-url origin $RemoteUrl 2>$null
+if ($LASTEXITCODE -ne 0) { git remote add origin $RemoteUrl }
+
+git fetch origin
+git checkout main
+
+# backup your current local main before rewriting it
+$ts = Get-Date -Format "yyyyMMdd_HHmmss"
+git branch "backup/local-before-reset-$ts"
+git push -u origin "backup/local-before-reset-$ts"
+
+# reset local main to remote main, but keep your working tree files
+git reset --mixed origin/main
+
+# make sure git lfs is active
+git lfs install
+
+# ignore junk
+$ignoreLines = @(
+    ".tmp.drivedownload/"
+    ".tmp.driveupload/"
+    ".Rproj.user/"
+    "desktop.ini"
+    "Thumbs.db"
+    "*.tmp"
+    "*.lock"
+)
+if (-not (Test-Path ".gitignore")) { New-Item -ItemType File -Path ".gitignore" | Out-Null }
+$existingIgnore = Get-Content ".gitignore" -ErrorAction SilentlyContinue
+foreach ($line in $ignoreLines) {
+    if ($existingIgnore -notcontains $line) { Add-Content ".gitignore" $line }
+}
+
+# path exclusions
+$excludeAnywhere = @(".git",".tmp.drivedownload",".tmp.driveupload",".Rproj.user","__MACOSX")
+$escaped = $excludeAnywhere | ForEach-Object { [regex]::Escape($_) }
+$excludeRegex = "(^|[\\/])(" + ($escaped -join "|") + ")([\\/]|$)"
+
+$maxGitBytes = $MaxGitMB * 1MB
+$maxLfsBytes = $MaxLfsMB * 1MB
+
+# find files over 500MB and append them to .gitignore so they cannot sneak in
+$tooBig = Get-ChildItem -Path $RepoRoot -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object {
+    $_.Length -gt $maxLfsBytes -and
+    ($_.FullName.Substring($RepoRoot.Length + 1).TrimStart('\') -notmatch $excludeRegex)
+}
+foreach ($f in $tooBig) {
+    $rel = $f.FullName.Substring($RepoRoot.Length + 1).TrimStart('\') -replace '\\','/'
+    $existingIgnore = Get-Content ".gitignore" -ErrorAction SilentlyContinue
+    if ($existingIgnore -notcontains $rel) { Add-Content ".gitignore" $rel }
+    git rm --cached --ignore-unmatch -- "$rel" 2>$null
+}
+
+# now scan only wanted files
+$allFiles = Get-ChildItem -Path $RepoRoot -Recurse -File -Force -ErrorAction SilentlyContinue
+
+$gitFiles = New-Object System.Collections.Generic.List[string]
+$lfsFiles = New-Object System.Collections.Generic.List[string]
+
+foreach ($f in $allFiles) {
+    $rel = $f.FullName.Substring($RepoRoot.Length + 1).TrimStart('\') -replace '\\','/'
+    $name = [System.IO.Path]::GetFileName($rel).ToLowerInvariant()
+
+    if ($rel -match $excludeRegex) { continue }
+    if ($name -eq "desktop.ini" -or $name -eq "thumbs.db") { continue }
+    if ($f.Length -gt $maxLfsBytes) { continue }
+
+    if ($f.Length -le $maxGitBytes) {
+        $gitFiles.Add($rel)
+    } else {
+        $lfsFiles.Add($rel)
+    }
+}
+
+# track exact 100-500MB files with LFS
+foreach ($rel in $lfsFiles) {
+    git lfs track "$rel" | Out-Null
+}
+
+if (Test-Path ".gitattributes") { git add ".gitattributes" }
+git add ".gitignore"
+
+# stage LFS files
+foreach ($rel in $lfsFiles) {
+    git rm --cached --ignore-unmatch -- "$rel" 2>$null
+    git add -- "$rel"
+}
+
+# stage normal git files
+foreach ($rel in $gitFiles) {
+    git add -- "$rel"
+}
+
+# stage deletions
+git add -u
+
+# append note
+$note = @"
+
+## Repository sync note
+
+Date: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+Repository synced from the current local tree at: $RepoRoot
+
+Rules used:
+- Files <= $MaxGitMB MiB added with regular Git
+- Files > $MaxGitMB MiB and <= $MaxLfsMB MiB added with Git LFS
+- Files > $MaxLfsMB MiB excluded
+- Included if within size rules: .qs, .rds, .RData, .rda
+- Excluded: .tmp.drivedownload, .tmp.driveupload, .Rproj.user, desktop.ini, Thumbs.db, *.tmp, *.lock
+"@
+
+if (-not (Test-Path "README.md")) {
+    Set-Content -Path "README.md" -Value "# hPlacenta spatial thesis`n"
+}
+Add-Content -Path "README.md" -Value $note
+git add "README.md"
+
+$pending = git status --porcelain
+if (-not $pending) {
+    Write-Host "Nothing to commit. Exiting."
+    exit 0
+}
+
+git commit -m "Sync local environment to main: <=100MB Git, 100-500MB Git LFS, >500MB excluded"
+
+# refresh, then push
+git fetch origin
+git push --force-with-lease origin main
