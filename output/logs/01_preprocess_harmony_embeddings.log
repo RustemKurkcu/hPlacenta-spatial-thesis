@@ -1,0 +1,188 @@
+2026-04-15 09:53:57 [INFO] ============================================================ 
+2026-04-15 09:53:57 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.0 
+2026-04-15 09:53:57 [INFO] Run timestamp: 2026-04-15 09:53:57 EDT 
+2026-04-15 09:53:57 [INFO] Seed: 42 
+2026-04-15 09:53:57 [INFO] ============================================================ 
+2026-04-15 09:53:57 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 09:53:57 [INFO] QC thresholds: min_features=150, max_features=9000, min_counts=300, max_counts=80000, max_percent_mt=20 
+2026-04-15 09:53:57 [INFO] Week W7 file discovery: 
+2026-04-15 09:53:57 [INFO]   counts   : NA 
+2026-04-15 09:53:57 [INFO]   features : NA 
+2026-04-15 09:53:57 [INFO]   barcodes : NA 
+2026-04-15 09:53:57 [INFO]   metadata : NA 
+2026-04-15 09:57:30 [INFO] ============================================================ 
+2026-04-15 09:57:30 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.0 
+2026-04-15 09:57:30 [INFO] Run timestamp: 2026-04-15 09:57:30 EDT 
+2026-04-15 09:57:30 [INFO] Seed: 42 
+2026-04-15 09:57:30 [INFO] ============================================================ 
+2026-04-15 09:57:30 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 09:57:30 [INFO] QC thresholds: min_features=150, max_features=9000, min_counts=300, max_counts=80000, max_percent_mt=20 
+2026-04-15 09:57:30 [INFO] Week W7 file discovery: 
+2026-04-15 09:57:30 [INFO]   counts   : NA 
+2026-04-15 09:57:30 [INFO]   features : NA 
+2026-04-15 09:57:30 [INFO]   barcodes : NA 
+2026-04-15 09:57:30 [INFO]   metadata : NA 
+2026-04-15 10:01:22 [INFO] ============================================================ 
+2026-04-15 10:01:22 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.0 
+2026-04-15 10:01:22 [INFO] Run timestamp: 2026-04-15 10:01:22 EDT 
+2026-04-15 10:01:22 [INFO] Seed: 42 
+2026-04-15 10:01:22 [INFO] ============================================================ 
+2026-04-15 10:01:23 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 10:01:23 [INFO] QC thresholds: min_features=150, max_features=9000, min_counts=300, max_counts=80000, max_percent_mt=20 
+2026-04-15 10:01:23 [INFO] Week W7 file discovery: 
+2026-04-15 10:01:23 [INFO]   counts   : NA 
+2026-04-15 10:01:23 [INFO]   features : NA 
+2026-04-15 10:01:23 [INFO]   barcodes : NA 
+2026-04-15 10:01:23 [INFO]   metadata : NA 
+2026-04-15 10:17:52 [INFO] ============================================================ 
+2026-04-15 10:17:52 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.1 
+2026-04-15 10:17:52 [INFO] Run timestamp: 2026-04-15 10:17:52 EDT 
+2026-04-15 10:17:52 [INFO] Seed: 42 
+2026-04-15 10:17:52 [INFO] ============================================================ 
+2026-04-15 10:17:52 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 10:17:52 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 10:17:52 [INFO] QC thresholds: min_features=150, max_features=9000, min_counts=300, max_counts=80000, max_percent_mt=20 
+2026-04-15 10:17:53 [INFO] Week W7 file discovery: 
+2026-04-15 10:17:53 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 10:17:53 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 10:17:53 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 10:17:53 [INFO] Week W8-2 file discovery: 
+2026-04-15 10:17:53 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 10:17:53 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-15 10:17:53 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 10:17:53 [INFO] Week W9 file discovery: 
+2026-04-15 10:17:53 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 10:17:53 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 10:17:53 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 10:17:53 [INFO] Week W11 file discovery: 
+2026-04-15 10:17:53 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 10:17:53 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 10:17:53 [INFO]   cell_metadata   : NA 
+2026-04-15 10:17:53 [INFO] --- Processing week W7 --- 
+2026-04-15 10:21:12 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=4640 
+2026-04-15 10:21:13 [WARN]   No MT- genes detected for week W7. percent.mt set to 0. 
+2026-04-15 10:33:44 [INFO] ============================================================ 
+2026-04-15 10:33:44 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.2 
+2026-04-15 10:33:44 [INFO] Run timestamp: 2026-04-15 10:33:44 EDT 
+2026-04-15 10:33:44 [INFO] Seed: 42 
+2026-04-15 10:33:44 [INFO] ============================================================ 
+2026-04-15 10:33:44 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 10:33:44 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 10:33:44 [INFO] QC thresholds: min_features=150, max_features=Inf, min_counts=300, max_counts=Inf, max_percent_mt=20 
+2026-04-15 10:33:44 [INFO] Week W7 file discovery: 
+2026-04-15 10:33:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 10:33:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 10:33:44 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 10:33:44 [INFO] Week W8-2 file discovery: 
+2026-04-15 10:33:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 10:33:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-15 10:33:44 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 10:33:44 [INFO] Week W9 file discovery: 
+2026-04-15 10:33:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 10:33:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 10:33:44 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 10:33:44 [INFO] Week W11 file discovery: 
+2026-04-15 10:33:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 10:33:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 10:33:44 [INFO]   cell_metadata   : NA 
+2026-04-15 10:33:44 [INFO] --- Processing week W7 --- 
+2026-04-15 10:41:44 [INFO] ============================================================ 
+2026-04-15 10:41:44 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.3 
+2026-04-15 10:41:44 [INFO] Run timestamp: 2026-04-15 10:41:44 EDT 
+2026-04-15 10:41:44 [INFO] Seed: 42 
+2026-04-15 10:41:44 [INFO] ============================================================ 
+2026-04-15 10:41:44 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 10:41:44 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 10:41:44 [INFO] QC thresholds: min_features=150, max_features=Inf, min_counts=300, max_counts=Inf, max_percent_mt=20 
+2026-04-15 10:41:44 [INFO] Week W7 file discovery: 
+2026-04-15 10:41:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 10:41:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 10:41:44 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 10:41:44 [INFO] Week W8-2 file discovery: 
+2026-04-15 10:41:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 10:41:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-15 10:41:44 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 10:41:44 [INFO] Week W9 file discovery: 
+2026-04-15 10:41:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 10:41:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 10:41:44 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 10:41:44 [INFO] Week W11 file discovery: 
+2026-04-15 10:41:44 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 10:41:44 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 10:41:44 [INFO]   cell_metadata   : NA 
+2026-04-15 10:41:44 [INFO] --- Processing week W7 --- 
+2026-04-15 10:54:21 [INFO] ============================================================ 
+2026-04-15 10:54:21 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.4 
+2026-04-15 10:54:21 [INFO] Run timestamp: 2026-04-15 10:54:21 EDT 
+2026-04-15 10:54:21 [INFO] Seed: 42 
+2026-04-15 10:54:21 [INFO] ============================================================ 
+2026-04-15 10:54:21 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 10:54:21 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 10:54:21 [INFO] QC thresholds: min_features=150, max_features=Inf, min_counts=300, max_counts=Inf, max_percent_mt=20 
+2026-04-15 10:54:21 [INFO] Week W7 file discovery: 
+2026-04-15 10:54:21 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 10:54:21 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 10:54:21 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 10:54:21 [INFO] Week W8-2 file discovery: 
+2026-04-15 10:54:21 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 10:54:21 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-15 10:54:21 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 10:54:21 [INFO] Week W9 file discovery: 
+2026-04-15 10:54:21 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 10:54:21 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 10:54:21 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 10:54:21 [INFO] Week W11 file discovery: 
+2026-04-15 10:54:21 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 10:54:21 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 10:54:21 [INFO]   cell_metadata   : NA 
+2026-04-15 10:54:21 [INFO] --- Processing week W7 --- 
+2026-04-15 10:58:33 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=4640 
+2026-04-15 10:58:34 [WARN]   No MT- genes detected for week W7. percent.mt set to 0. 
+2026-04-15 10:58:34 [INFO]   QC retained 4640/4640 cells (100%). 
+2026-04-15 10:58:34 [INFO] --- Processing week W8-2 --- 
+2026-04-15 11:18:39 [INFO] ============================================================ 
+2026-04-15 11:18:39 [INFO] Starting 01_preprocess_harmony_embeddings v1.0.5 
+2026-04-15 11:18:39 [INFO] Run timestamp: 2026-04-15 11:18:39 EDT 
+2026-04-15 11:18:39 [INFO] Seed: 42 
+2026-04-15 11:18:39 [INFO] ============================================================ 
+2026-04-15 11:18:39 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 11:18:39 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 11:18:39 [INFO] VROOM_CONNECTION_SIZE set to 10485760 bytes 
+2026-04-15 11:18:39 [INFO] QC thresholds: min_features=150, max_features=Inf, min_counts=300, max_counts=Inf, max_percent_mt=20 
+2026-04-15 11:18:39 [INFO] Week W7 file discovery: 
+2026-04-15 11:18:39 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 11:18:39 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 11:18:39 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 11:18:39 [INFO] Week W8-2 file discovery: 
+2026-04-15 11:18:39 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 11:18:39 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-15 11:18:39 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 11:18:39 [INFO] Week W9 file discovery: 
+2026-04-15 11:18:39 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 11:18:39 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 11:18:39 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 11:18:39 [INFO] Week W11 file discovery: 
+2026-04-15 11:18:39 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 11:18:39 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 11:18:39 [INFO]   cell_metadata   : NA 
+2026-04-15 11:18:40 [INFO] --- Processing week W7 --- 
+2026-04-15 11:23:53 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=4640 
+2026-04-15 11:23:54 [WARN]   No MT- genes detected for week W7. percent.mt set to 0. 
+2026-04-15 11:23:54 [INFO]   QC retained 4640/4640 cells (100%). 
+2026-04-15 11:23:54 [INFO] --- Processing week W8-2 --- 
+2026-04-15 11:27:23 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=1870 
+2026-04-15 11:27:24 [WARN]   No MT- genes detected for week W8-2. percent.mt set to 0. 
+2026-04-15 11:27:24 [INFO]   QC retained 1870/1870 cells (100%). 
+2026-04-15 11:27:24 [INFO] --- Processing week W9 --- 
+2026-04-15 11:32:19 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=4554 
+2026-04-15 11:32:21 [WARN]   No MT- genes detected for week W9. percent.mt set to 0. 
+2026-04-15 11:32:21 [INFO]   QC retained 4554/4554 cells (100%). 
+2026-04-15 11:32:21 [INFO] --- Processing week W11 --- 
+2026-04-15 11:36:07 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=2498 
+2026-04-15 11:36:08 [WARN]   No MT- genes detected for week W11. percent.mt set to 0. 
+2026-04-15 11:36:08 [INFO]   QC retained 2498/2498 cells (100%). 
+2026-04-15 11:36:08 [INFO] Per-week QC summary saved. 
+2026-04-15 11:36:08 [INFO] Merging week-level Seurat objects... 
+2026-04-15 11:36:14 [INFO] Applying JoinLayers() for Seurat v5 compatibility. 
+2026-04-15 11:36:19 [INFO] Cells by week after merge+QC: W11=2498; W7=4640; W8-2=1870; W9=4554 
+2026-04-15 11:36:19 [INFO] Running SCTransform on merged object... 
