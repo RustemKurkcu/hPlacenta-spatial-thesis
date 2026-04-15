@@ -5,6 +5,7 @@ suppressPackageStartupMessages({
   library(dplyr)
   library(jsonlite)
 })
+source("R/celltype_dictionary.R")
 
 if (!requireNamespace("UCell", quietly = TRUE)) {
   stop("Package 'UCell' is required. Install with: remotes::install_github('carmonalab/UCell')")
@@ -98,6 +99,11 @@ if (is.na(input_obj_found)) {
 
 log_msg("Loading input object: ", input_obj_found)
 seu <- read_object(input_obj_found)
+seu <- add_true_celltype_metadata(seu)
+if ("celltype_true_name" %in% colnames(seu@meta.data)) {
+  seu$celltype_corrected <- seu$celltype_true_name
+}
+log_msg("Added celltype columns: celltype_original, celltype_true_name, cell_label_display, celltype_corrected")
 
 if (!"RNA" %in% names(seu@assays)) {
   stop("RNA assay not found. Available assays: ", paste(names(seu@assays), collapse = ", "))

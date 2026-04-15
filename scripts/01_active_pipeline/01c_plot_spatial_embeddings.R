@@ -7,6 +7,7 @@ suppressPackageStartupMessages({
 })
 
 source("R/spatial_color_themes.R")
+source("R/celltype_dictionary.R")
 
 OUT_ROOT <- "output"
 DIR_OBJECTS <- file.path(OUT_ROOT, "objects")
@@ -91,6 +92,26 @@ ggsave(out_files[1], week_patch, width = 14, height = 6)
 ggsave(out_files[2], week_patch, width = 14, height = 6, dpi = 320)
 ggsave(out_files[3], cluster_patch, width = 14, height = 6)
 ggsave(out_files[4], cluster_patch, width = 14, height = 6, dpi = 320)
+
+celltype_col <- pick_celltype_source_column(seu@meta.data)
+if (!is.na(celltype_col)) {
+  cell_levels <- sort(unique(as.character(seu@meta.data[[celltype_col]])))
+  cell_cols <- get_universal_colors(cell_levels)
+  p_umap_celltype <- DimPlot(seu, reduction = "umap_harmony", group.by = celltype_col, label = TRUE, pt.size = 0.2) +
+    scale_color_manual(values = cell_cols, drop = FALSE) +
+    ggtitle(paste0("UMAP (Harmony) by Cell Type (", celltype_col, ")")) +
+    theme_thesis_spatial()
+  p_tsne_celltype <- DimPlot(seu, reduction = "tsne_harmony", group.by = celltype_col, label = TRUE, pt.size = 0.2) +
+    scale_color_manual(values = cell_cols, drop = FALSE) +
+    ggtitle(paste0("t-SNE (Harmony) by Cell Type (", celltype_col, ")")) +
+    theme_thesis_spatial()
+  p_ct <- p_umap_celltype + p_tsne_celltype
+  ct_pdf <- file.path(DIR_FIGURES, "01c_embeddings_celltype_umap_tsne.pdf")
+  ct_png <- file.path(DIR_FIGURES, "01c_embeddings_celltype_umap_tsne.png")
+  ggsave(ct_pdf, p_ct, width = 14, height = 6)
+  ggsave(ct_png, p_ct, width = 14, height = 6, dpi = 320)
+  out_files <- c(out_files, ct_pdf, ct_png)
+}
 
 plot_manifest_path <- file.path(DIR_REPORTS, "01c_plot_spatial_embeddings_manifest.json")
 record_artifact_manifest(

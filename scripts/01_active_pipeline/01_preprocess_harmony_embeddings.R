@@ -840,7 +840,14 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
 
   # Add harmonized metadata in cell order
   md <- as.data.frame(md, stringsAsFactors = FALSE)
-  keep_md_cols <- c("barcode", "cell_id", "tile", "x_pixel", "y_pixel", "z_pixel", "x_um", "y_um", "z_um", "week", "sample_id", "metadata_source")
+  keep_md_cols <- c(
+    "barcode", "cell_id", "tile",
+    "x_pixel", "y_pixel", "z_pixel",
+    "x_um", "y_um", "z_um",
+    "week", "sample_id", "metadata_source",
+    "sample", "sample_stage", "leiden",
+    "predicted.celltype", "predicted.celltype.score"
+  )
   keep_md_cols <- intersect(keep_md_cols, colnames(md))
   md <- md[, keep_md_cols, drop = FALSE]
   rownames(md) <- md$barcode

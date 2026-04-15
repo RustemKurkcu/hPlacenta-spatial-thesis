@@ -7,6 +7,7 @@ suppressPackageStartupMessages({
 })
 
 source("R/spatial_color_themes.R")
+source("R/celltype_dictionary.R")
 
 PIPELINE_NAME <- "02c_plot_spatial_misi"
 PIPELINE_VERSION <- "1.0.0"
@@ -102,6 +103,7 @@ if (length(missing_reductions) > 0) {
 }
 
 fig_paths <- character(0)
+celltype_col <- pick_celltype_source_column(seu@meta.data)
 
 for (red in reductions) {
   for (feat in features_to_plot) {
@@ -125,6 +127,70 @@ for (red in reductions) {
 
     fig_paths <- c(fig_paths, pdf_path, png_path)
   }
+
+  if (!is.na(celltype_col)) {
+    cell_levels <- sort(unique(as.character(seu@meta.data[[celltype_col]])))
+    cell_cols <- get_universal_colors(cell_levels)
+    p_ct <- DimPlot(
+      object = seu,
+      reduction = red,
+      group.by = celltype_col,
+      label = TRUE,
+      pt.size = 0.2
+    ) +
+      scale_color_manual(values = cell_cols, drop = FALSE) +
+      ggtitle(paste0("Cell type overlay on ", red, " (", celltype_col, ")")) +
+      theme_thesis_spatial()
+
+    base_ct <- file.path(DIR_FIGURES, paste0("02c_celltype_overlay_", red))
+    pdf_ct <- paste0(base_ct, ".pdf")
+    png_ct <- paste0(base_ct, ".png")
+    ggsave(pdf_ct, p_ct, width = 10, height = 8)
+    ggsave(png_ct, p_ct, width = 10, height = 8, dpi = 300)
+    fig_paths <- c(fig_paths, pdf_ct, png_ct)
+  }
+}
+
+# Spatial heat maps in physical coordinates for each score
+if (all(c("x_um", "y_um", "week") %in% colnames(seu@meta.data))) {
+  spatial_df <- seu@meta.data
+  spatial_df$week <- as.character(spatial_df$week)
+  for (feat in features_to_plot) {
+    d <- spatial_df[, c("x_um", "y_um", "week", feat), drop = FALSE]
+    names(d)[4] <- "score"
+    d <- d[is.finite(d$x_um) & is.finite(d$y_um) & is.finite(d$score), , drop = FALSE]
+    if (nrow(d) == 0) next
+
+    p_red <- ggplot(d, aes(x = x_um, y = y_um, color = score)) +
+      geom_point(size = 0.15, alpha = 0.8) +
+      facet_wrap(~week, scales = "free") +
+      scale_color_gradient(low = "white", high = "#8B0000") +
+      coord_equal() +
+      ggtitle(paste0(feat, " spatial heatmap (white → dark red)")) +
+      theme_thesis_spatial()
+
+    p_div <- ggplot(d, aes(x = x_um, y = y_um, color = score)) +
+      geom_point(size = 0.15, alpha = 0.8) +
+      facet_wrap(~week, scales = "free") +
+      scale_color_gradient2(low = "#0B1F5E", mid = "white", high = "#CB181D", midpoint = median(d$score, na.rm = TRUE)) +
+      coord_equal() +
+      ggtitle(paste0(feat, " spatial heatmap (navy → white → red)")) +
+      theme_thesis_spatial()
+
+    base_red <- file.path(DIR_FIGURES, paste0("02c_spatial_", feat, "_white_to_red"))
+    base_div <- file.path(DIR_FIGURES, paste0("02c_spatial_", feat, "_navy_white_red"))
+    ggsave(paste0(base_red, ".pdf"), p_red, width = 12, height = 8)
+    ggsave(paste0(base_red, ".png"), p_red, width = 12, height = 8, dpi = 320)
+    ggsave(paste0(base_div, ".pdf"), p_div, width = 12, height = 8)
+    ggsave(paste0(base_div, ".png"), p_div, width = 12, height = 8, dpi = 320)
+    fig_paths <- c(
+      fig_paths,
+      paste0(base_red, ".pdf"), paste0(base_red, ".png"),
+      paste0(base_div, ".pdf"), paste0(base_div, ".png")
+    )
+  }
+} else {
+  log_msg("Skipping spatial heat maps: need x_um, y_um, and week columns in metadata.", .level = "WARN")
 }
 
 manifest_path <- file.path(DIR_REPORTS, "02c_plot_spatial_misi_manifest.json")
