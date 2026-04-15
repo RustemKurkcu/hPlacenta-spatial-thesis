@@ -22,3 +22,7 @@ output/objects/SCP2601_combined_spatial.rds
 output/objects/starmap_W11_SCP2601.rds
 output/objects/starmap_W7_SCP2601.rds
 output/objects/starmap_W9_SCP2601.rds
+output/objects/01_merged_post_qc.rds
+output/objects/01_post_sct.rds
+output/objects/01_post_harmony.rds
+data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_gene_activity.csv
