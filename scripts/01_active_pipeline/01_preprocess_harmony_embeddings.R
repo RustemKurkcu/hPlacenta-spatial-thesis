@@ -250,20 +250,14 @@ log_msg("Data roots: broad=", cfg$data_roots$broad, " ; zenodo=", cfg$data_roots
 Sys.setenv(VROOM_CONNECTION_SIZE = as.character(cfg$io$vroom_connection_size))
 log_msg("VROOM_CONNECTION_SIZE set to ", cfg$io$vroom_connection_size, " bytes")
 options(future.globals.maxSize = as.numeric(cfg$sct$future_maxsize_gb) * 1024^3)
-tryCatch(
-  future::plan(cfg$sct$future_plan),
-  error = function(e) {
-    log_msg("future::plan with string failed; retrying explicit strategy. Error: ", conditionMessage(e), .level = "WARN")
-    if (identical(cfg$sct$future_plan, "sequential")) {
-      future::plan(future::sequential)
-    } else if (identical(cfg$sct$future_plan, "multisession")) {
-      future::plan(future::multisession)
-    } else {
-      future::plan(future::sequential)
-      log_msg("Unknown future plan '", cfg$sct$future_plan, "'. Falling back to sequential.", .level = "WARN")
-    }
-  }
-)
+if (identical(cfg$sct$future_plan, "sequential")) {
+  future::plan(future::sequential)
+} else if (identical(cfg$sct$future_plan, "multisession")) {
+  future::plan(future::multisession)
+} else {
+  future::plan(future::sequential)
+  log_msg("Unknown future plan '", cfg$sct$future_plan, "'. Falling back to sequential.", .level = "WARN")
+}
 log_msg("future.globals.maxSize set to ", cfg$sct$future_maxsize_gb, " GiB")
 log_msg("future::plan set to ", cfg$sct$future_plan)
 log_msg("Resume mode: ", cfg$resume$resume_from, " (use_checkpoints=", cfg$resume$use_checkpoints, ")")
@@ -307,6 +301,13 @@ append_methods_provenance <- function(report_path, week, expression_file, spots_
 # C) Data Ingestion + Metadata Harmonization
 # =============================================================================
 
+is_git_lfs_pointer_file <- function(path) {
+  if (is.na(path) || !file.exists(path)) return(FALSE)
+  lines <- tryCatch(readLines(path, n = 3, warn = FALSE), error = function(e) character(0))
+  if (length(lines) == 0) return(FALSE)
+  any(grepl("^version https://git-lfs.github.com/spec/v1$", lines))
+}
+
 find_first_regex <- function(roots, patterns, week, prefer_root = NULL) {
   roots_order <- roots
   if (!is.null(prefer_root) && prefer_root %in% roots) {
@@ -317,7 +318,11 @@ find_first_regex <- function(roots, patterns, week, prefer_root = NULL) {
     for (pat in patterns) {
       rx <- stringr::str_replace_all(pat, "\\{week\\}", week)
       hits <- list.files(root, pattern = rx, full.names = TRUE, recursive = TRUE)
-      if (length(hits) > 0) return(hits[[1]])
+      if (length(hits) > 0) {
+        non_pointer_hits <- hits[!vapply(hits, is_git_lfs_pointer_file, logical(1))]
+        if (length(non_pointer_hits) > 0) return(non_pointer_hits[[1]])
+        return(hits[[1]])
+      }
     }
   }
   NA_character_
@@ -327,29 +332,30 @@ detect_delimiter <- function(path) {
   lines <- readLines(path, n = 100, warn = FALSE, encoding = "UTF-8")
   if (length(lines) == 0) return(list(delim = ",", skip = 0L))
 
-  cands <- c("," = ",", "tab" = "\t", ";" = ";", "|" = "|")
-  best_score <- -1
-  best_delim <- ","
-  best_line <- 1L
+  lines <- trimws(lines)
+  lines <- lines[nzchar(lines)]
+  if (length(lines) == 0) return(list(delim = ",", skip = 0L))
 
-  for (i in seq_along(lines)) {
-    li <- lines[[i]]
-    scores <- vapply(cands, function(d) stringr::str_count(li, fixed(d)), numeric(1))
-    j <- which.max(scores)
-    if (length(j) == 1 && scores[[j]] > best_score) {
-      best_score <- scores[[j]]
-      best_delim <- unname(cands[[j]])
-      best_line <- i
-    }
-  }
+  header_line <- lines[[1]]
+  cands <- c("," = ",", "tab" = "	", ";" = ";", "|" = "|")
+  scores <- vapply(cands, function(d) stringr::str_count(header_line, fixed(d)), numeric(1))
 
-  if (best_score <= 0) {
+  if (all(scores <= 0)) {
     return(list(delim = ",", skip = 0L))
   }
-  list(delim = best_delim, skip = as.integer(best_line - 1L))
+
+  best_delim <- unname(cands[[which.max(scores)]])
+  list(delim = best_delim, skip = 0L)
 }
 
 read_csv_flexible <- function(path) {
+  if (is_git_lfs_pointer_file(path)) {
+    stop(
+      "Input file is a Git LFS pointer, not real CSV content: ", path,
+      "\nRun `git lfs pull` in the repository (or replace pointer with actual file) and retry."
+    )
+  }
+
   probe <- detect_delimiter(path)
   delim_guess <- probe$delim
   skip_guess <- probe$skip
@@ -390,11 +396,15 @@ read_csv_flexible <- function(path) {
 
   # Fallback attempts if file parsed into one column
   if (ncol(df) < 2) {
-    for (d in c(",", "\t", ";", "|")) {
-      if (identical(d, delim_guess)) next
-      trial <- safe_read_delim(file = path, delim = d, skip = skip_guess)
-      if (ncol(trial) > ncol(df)) {
-        df <- trial
+    for (sk in c(0L, 1L, 2L)) {
+      for (d in c(",", "	", ";", "|")) {
+        trial <- safe_read_delim(file = path, delim = d, skip = sk)
+        if (ncol(trial) > ncol(df)) {
+          df <- trial
+          delim_guess <- d
+          skip_guess <- sk
+        }
+        if (ncol(df) >= 2) break
       }
       if (ncol(df) >= 2) break
     }
@@ -456,42 +466,62 @@ write_troubleshooting_bundle <- function(week_id, expr_path, spots_path, expr_df
   writeLines(diag_lines, con = file.path(wk_dir, "diagnostics.txt"))
 }
 
-standardize_spots_metadata <- function(md_raw, week_id, barcodes) {
-  md <- md_raw
-
-  barcode_candidates <- c("barcode", "barcodes", "cell", "cell_id", "spot_id", "X")
-  barcode_col <- intersect(barcode_candidates, names(md))
-  if (length(barcode_col) == 0) {
-    stop("No barcode-like column found in spots metadata for week ", week_id)
+standardize_spots_metadata <- function(md_raw, week_id, barcodes, cell_md_raw = NULL) {
+  resolve_col <- function(df, candidates) {
+    if (is.null(df) || ncol(df) == 0) return(NULL)
+    nm <- names(df)
+    nm_norm <- tolower(gsub("[^a-z0-9]", "", nm))
+    cand_norm <- tolower(gsub("[^a-z0-9]", "", candidates))
+    hit <- which(nm_norm %in% cand_norm)
+    if (length(hit) == 0) return(NULL)
+    nm[[hit[[1]]]]
   }
-  barcode_col <- barcode_col[[1]]
 
-  x_candidates <- c("x", "x_um", "spatial_x", "X_coord", "xcoord")
-  y_candidates <- c("y", "y_um", "spatial_y", "Y_coord", "ycoord")
-  x_col <- intersect(x_candidates, names(md))
-  y_col <- intersect(y_candidates, names(md))
-  if (length(x_col) == 0 || length(y_col) == 0) {
-    stop("Missing coordinate columns in metadata for week ", week_id)
+  make_harmonized_md <- function(df, source_label) {
+    barcode_col <- resolve_col(df, c("barcode", "barcodes", "cell", "cell_id", "spot_id", "id", "X"))
+    x_col <- resolve_col(df, c("x", "x_um", "spatial_x", "X_coord", "xcoord", "x_pixel", "xpixel"))
+    y_col <- resolve_col(df, c("y", "y_um", "spatial_y", "Y_coord", "ycoord", "y_pixel", "ypixel"))
+
+    if (is.null(barcode_col) || is.null(x_col) || is.null(y_col)) return(NULL)
+
+    out <- df %>%
+      dplyr::mutate(
+        barcode = as.character(.data[[barcode_col]]),
+        x_um = suppressWarnings(as.numeric(.data[[x_col]])),
+        y_um = suppressWarnings(as.numeric(.data[[y_col]])),
+        week = week_id,
+        sample_id = week_id,
+        metadata_source = source_label
+      )
+    out$barcode <- trimws(out$barcode)
+    out <- out %>% dplyr::filter(!is.na(barcode), barcode != "") %>% dplyr::distinct(barcode, .keep_all = TRUE)
+    out
   }
-  x_col <- x_col[[1]]
-  y_col <- y_col[[1]]
 
-  out <- md %>%
-    mutate(
-      barcode = as.character(.data[[barcode_col]]),
-      x_um = as.numeric(.data[[x_col]]),
-      y_um = as.numeric(.data[[y_col]]),
-      week = week_id,
-      sample_id = week_id
+  md_primary <- make_harmonized_md(md_raw, "spots_metadata")
+  md_cell <- make_harmonized_md(cell_md_raw, "cell_metadata")
+
+  out <- md_primary
+  if (is.null(out)) {
+    out <- md_cell
+    if (!is.null(out)) {
+      log_msg("  Falling back to cell metadata for barcode/x/y harmonization in week ", week_id, ".", .level = "WARN")
+    }
+  }
+
+  if (is.null(out)) {
+    spot_cols <- if (!is.null(md_raw)) paste(names(md_raw), collapse = ", ") else "<none>"
+    cell_cols <- if (!is.null(cell_md_raw)) paste(names(cell_md_raw), collapse = ", ") else "<none>"
+    stop(
+      "Could not resolve barcode/x/y columns for week ", week_id,
+      ". Checked spots metadata and cell metadata.",
+      "\nspots columns: ", spot_cols,
+      "\ncell columns: ", cell_cols
     )
-
-  out$barcode <- trimws(out$barcode)
-  out <- out %>% distinct(barcode, .keep_all = TRUE)
+  }
 
   if (length(barcodes) > 0) {
-    # Keep only cells present in counts matrix
-    out <- out %>% filter(barcode %in% barcodes)
-    # Make rownames-compatible ordering
+    out <- out %>% dplyr::filter(barcode %in% barcodes)
     out <- out[match(barcodes, out$barcode), , drop = FALSE]
 
     missing_md <- sum(is.na(out$barcode))
@@ -588,8 +618,14 @@ for (wk in cfg$week_ids) {
   log_msg("  expression      : ", wi$expression)
   log_msg("  spots_metadata  : ", wi$spots_metadata)
   log_msg("  cell_metadata   : ", wi$cell_metadata)
-  if (is.na(wi$expression) || is.na(wi$spots_metadata)) {
-    stop("Required files missing for week ", wk, ". Check Broad/Zenodo data roots and STARmap naming patterns.")
+  if (!is.na(wi$expression) && is_git_lfs_pointer_file(wi$expression)) log_msg("  WARN expression is Git LFS pointer: ", wi$expression, .level = "WARN")
+  if (!is.na(wi$spots_metadata) && is_git_lfs_pointer_file(wi$spots_metadata)) log_msg("  WARN spots_metadata is Git LFS pointer: ", wi$spots_metadata, .level = "WARN")
+  if (!is.na(wi$cell_metadata) && is_git_lfs_pointer_file(wi$cell_metadata)) log_msg("  WARN cell_metadata is Git LFS pointer: ", wi$cell_metadata, .level = "WARN")
+  if (is.na(wi$expression)) {
+    stop("Expression file missing for week ", wk, ". Check data roots and STARmap naming patterns.")
+  }
+  if (is.na(wi$spots_metadata) && is.na(wi$cell_metadata)) {
+    stop("Both spots and cell metadata are missing for week ", wk, ". Need at least one metadata source with coordinates.")
   }
 }
 
@@ -622,9 +658,18 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     next
   }
 
-  spots_md_raw <- read_csv_flexible(wi$spots_metadata)
-  names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
-  spots_md <- standardize_spots_metadata(spots_md_raw, wk, barcodes = character(0))
+  spots_md_raw <- if (!is.na(wi$spots_metadata)) read_csv_flexible(wi$spots_metadata) else NULL
+  cell_md_raw <- if (!is.na(wi$cell_metadata)) read_csv_flexible(wi$cell_metadata) else NULL
+  if (!is.null(spots_md_raw)) names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
+  if (!is.null(cell_md_raw)) names(cell_md_raw) <- make.names(names(cell_md_raw), unique = TRUE)
+
+  spots_md <- standardize_spots_metadata(
+    md_raw = spots_md_raw,
+    week_id = wk,
+    barcodes = character(0),
+    cell_md_raw = cell_md_raw
+  )
+
   counts <- tryCatch(
     coerce_expression_with_spots(wi$expression, spots_md, wk),
     error = function(e) {
@@ -633,7 +678,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
         expr_path = wi$expression,
         spots_path = wi$spots_metadata,
         expr_df = tryCatch(read_csv_flexible(wi$expression), error = function(...) NULL),
-        spots_df = spots_md_raw,
+        spots_df = if (!is.null(spots_md_raw)) spots_md_raw else cell_md_raw,
         err_msg = conditionMessage(e)
       )
       stop(e)
@@ -641,7 +686,12 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   )
   log_msg("  Counts loaded from STARmap CSV: genes=", nrow(counts), ", cells=", ncol(counts))
 
-  md <- standardize_spots_metadata(spots_md_raw, wk, colnames(counts))
+  md <- standardize_spots_metadata(
+    md_raw = spots_md_raw,
+    week_id = wk,
+    barcodes = colnames(counts),
+    cell_md_raw = cell_md_raw
+  )
 
   seu_w <- CreateSeuratObject(counts = counts, project = paste0("STARmap_", wk))
 
