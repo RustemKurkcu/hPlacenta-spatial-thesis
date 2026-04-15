@@ -250,14 +250,20 @@ log_msg("Data roots: broad=", cfg$data_roots$broad, " ; zenodo=", cfg$data_roots
 Sys.setenv(VROOM_CONNECTION_SIZE = as.character(cfg$io$vroom_connection_size))
 log_msg("VROOM_CONNECTION_SIZE set to ", cfg$io$vroom_connection_size, " bytes")
 options(future.globals.maxSize = as.numeric(cfg$sct$future_maxsize_gb) * 1024^3)
-if (identical(cfg$sct$future_plan, "sequential")) {
-  future::plan(future::sequential)
-} else if (identical(cfg$sct$future_plan, "multisession")) {
-  future::plan(future::multisession)
-} else {
-  future::plan(future::sequential)
-  log_msg("Unknown future plan '", cfg$sct$future_plan, "'. Falling back to sequential.", .level = "WARN")
-}
+tryCatch(
+  future::plan(cfg$sct$future_plan),
+  error = function(e) {
+    log_msg("future::plan with string failed; retrying explicit strategy. Error: ", conditionMessage(e), .level = "WARN")
+    if (identical(cfg$sct$future_plan, "sequential")) {
+      future::plan(future::sequential)
+    } else if (identical(cfg$sct$future_plan, "multisession")) {
+      future::plan(future::multisession)
+    } else {
+      future::plan(future::sequential)
+      log_msg("Unknown future plan '", cfg$sct$future_plan, "'. Falling back to sequential.", .level = "WARN")
+    }
+  }
+)
 log_msg("future.globals.maxSize set to ", cfg$sct$future_maxsize_gb, " GiB")
 log_msg("future::plan set to ", cfg$sct$future_plan)
 log_msg("Resume mode: ", cfg$resume$resume_from, " (use_checkpoints=", cfg$resume$use_checkpoints, ")")
@@ -450,58 +456,42 @@ write_troubleshooting_bundle <- function(week_id, expr_path, spots_path, expr_df
   writeLines(diag_lines, con = file.path(wk_dir, "diagnostics.txt"))
 }
 
-standardize_spots_metadata <- function(md_raw, week_id, barcodes, cell_md_raw = NULL) {
-  resolve_col <- function(df, candidates) {
-    if (is.null(df) || ncol(df) == 0) return(NULL)
-    nm <- names(df)
-    nm_norm <- tolower(gsub("[^a-z0-9]", "", nm))
-    cand_norm <- tolower(gsub("[^a-z0-9]", "", candidates))
-    hit <- which(nm_norm %in% cand_norm)
-    if (length(hit) == 0) return(NULL)
-    nm[[hit[[1]]]]
+standardize_spots_metadata <- function(md_raw, week_id, barcodes) {
+  md <- md_raw
+
+  barcode_candidates <- c("barcode", "barcodes", "cell", "cell_id", "spot_id", "X")
+  barcode_col <- intersect(barcode_candidates, names(md))
+  if (length(barcode_col) == 0) {
+    stop("No barcode-like column found in spots metadata for week ", week_id)
   }
+  barcode_col <- barcode_col[[1]]
 
-  make_harmonized_md <- function(df, source_label) {
-    barcode_col <- resolve_col(df, c("barcode", "barcodes", "cell", "cell_id", "spot_id", "id", "X"))
-    x_col <- resolve_col(df, c("x", "x_um", "spatial_x", "X_coord", "xcoord", "x_pixel", "xpixel"))
-    y_col <- resolve_col(df, c("y", "y_um", "spatial_y", "Y_coord", "ycoord", "y_pixel", "ypixel"))
-
-    if (is.null(barcode_col) || is.null(x_col) || is.null(y_col)) return(NULL)
-
-    out <- df %>%
-      dplyr::mutate(
-        barcode = as.character(.data[[barcode_col]]),
-        x_um = suppressWarnings(as.numeric(.data[[x_col]])),
-        y_um = suppressWarnings(as.numeric(.data[[y_col]])),
-        week = week_id,
-        sample_id = week_id,
-        metadata_source = source_label
-      )
-    out$barcode <- trimws(out$barcode)
-    out <- out %>% dplyr::filter(!is.na(barcode), barcode != "") %>% dplyr::distinct(barcode, .keep_all = TRUE)
-    out
+  x_candidates <- c("x", "x_um", "spatial_x", "X_coord", "xcoord")
+  y_candidates <- c("y", "y_um", "spatial_y", "Y_coord", "ycoord")
+  x_col <- intersect(x_candidates, names(md))
+  y_col <- intersect(y_candidates, names(md))
+  if (length(x_col) == 0 || length(y_col) == 0) {
+    stop("Missing coordinate columns in metadata for week ", week_id)
   }
+  x_col <- x_col[[1]]
+  y_col <- y_col[[1]]
 
-  md_primary <- make_harmonized_md(md_raw, "spots_metadata")
-  md_cell <- make_harmonized_md(cell_md_raw, "cell_metadata")
-
-  out <- md_primary
-  if (is.null(out)) {
-    out <- md_cell
-    if (!is.null(out)) {
-      log_msg("  Falling back to cell metadata for barcode/x/y harmonization in week ", week_id, ".", .level = "WARN")
-    }
-  }
-
-  if (is.null(out)) {
-    stop(
-      "Could not resolve barcode/x/y columns for week ", week_id,
-      ". Checked spots metadata and cell metadata."
+  out <- md %>%
+    mutate(
+      barcode = as.character(.data[[barcode_col]]),
+      x_um = as.numeric(.data[[x_col]]),
+      y_um = as.numeric(.data[[y_col]]),
+      week = week_id,
+      sample_id = week_id
     )
-  }
+
+  out$barcode <- trimws(out$barcode)
+  out <- out %>% distinct(barcode, .keep_all = TRUE)
 
   if (length(barcodes) > 0) {
-    out <- out %>% dplyr::filter(barcode %in% barcodes)
+    # Keep only cells present in counts matrix
+    out <- out %>% filter(barcode %in% barcodes)
+    # Make rownames-compatible ordering
     out <- out[match(barcodes, out$barcode), , drop = FALSE]
 
     missing_md <- sum(is.na(out$barcode))
@@ -598,11 +588,8 @@ for (wk in cfg$week_ids) {
   log_msg("  expression      : ", wi$expression)
   log_msg("  spots_metadata  : ", wi$spots_metadata)
   log_msg("  cell_metadata   : ", wi$cell_metadata)
-  if (is.na(wi$expression)) {
-    stop("Expression file missing for week ", wk, ". Check data roots and STARmap naming patterns.")
-  }
-  if (is.na(wi$spots_metadata) && is.na(wi$cell_metadata)) {
-    stop("Both spots and cell metadata are missing for week ", wk, ". Need at least one metadata source with coordinates.")
+  if (is.na(wi$expression) || is.na(wi$spots_metadata)) {
+    stop("Required files missing for week ", wk, ". Check Broad/Zenodo data roots and STARmap naming patterns.")
   }
 }
 
@@ -635,18 +622,9 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     next
   }
 
-  spots_md_raw <- if (!is.na(wi$spots_metadata)) read_csv_flexible(wi$spots_metadata) else NULL
-  cell_md_raw <- if (!is.na(wi$cell_metadata)) read_csv_flexible(wi$cell_metadata) else NULL
-  if (!is.null(spots_md_raw)) names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
-  if (!is.null(cell_md_raw)) names(cell_md_raw) <- make.names(names(cell_md_raw), unique = TRUE)
-
-  spots_md <- standardize_spots_metadata(
-    md_raw = spots_md_raw,
-    week_id = wk,
-    barcodes = character(0),
-    cell_md_raw = cell_md_raw
-  )
-
+  spots_md_raw <- read_csv_flexible(wi$spots_metadata)
+  names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
+  spots_md <- standardize_spots_metadata(spots_md_raw, wk, barcodes = character(0))
   counts <- tryCatch(
     coerce_expression_with_spots(wi$expression, spots_md, wk),
     error = function(e) {
@@ -655,7 +633,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
         expr_path = wi$expression,
         spots_path = wi$spots_metadata,
         expr_df = tryCatch(read_csv_flexible(wi$expression), error = function(...) NULL),
-        spots_df = if (!is.null(spots_md_raw)) spots_md_raw else cell_md_raw,
+        spots_df = spots_md_raw,
         err_msg = conditionMessage(e)
       )
       stop(e)
@@ -663,12 +641,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   )
   log_msg("  Counts loaded from STARmap CSV: genes=", nrow(counts), ", cells=", ncol(counts))
 
-  md <- standardize_spots_metadata(
-    md_raw = spots_md_raw,
-    week_id = wk,
-    barcodes = colnames(counts),
-    cell_md_raw = cell_md_raw
-  )
+  md <- standardize_spots_metadata(spots_md_raw, wk, colnames(counts))
 
   seu_w <- CreateSeuratObject(counts = counts, project = paste0("STARmap_", wk))
 

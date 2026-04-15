@@ -39,6 +39,7 @@ hPlacenta-architecture
 │       │   ├── STARmap-ISH_sample_W11_G5.png
 │       │   ├── STARmap-ISH_sample_W11_G6.png
 │       │   ├── STARmap-ISH_sample_W7-2_G1.png
+│       │   ├── STARmap-ISH_sample_W7-2_G2.png
 │       │   ├── STARmap-ISH_sample_W7-2_G3.png
 │       │   ├── STARmap-ISH_sample_W7-2_G4.png
 │       │   ├── STARmap-ISH_sample_W7-2_G5.png
@@ -48,7 +49,12 @@ hPlacenta-architecture
 │       │   ├── STARmap-ISH_sample_W8-2_G3.png
 │       │   ├── STARmap-ISH_sample_W8-2_G4.png
 │       │   ├── STARmap-ISH_sample_W8-2_G5.png
+│       │   ├── STARmap-ISH_sample_W8-2_G6.png
+│       │   ├── STARmap-ISS_cell_metadata.csv
+│       │   ├── STARmap-ISS_sample_W11_cell_metadata.csv
+│       │   ├── STARmap-ISS_sample_W11_imputed_DORC.csv
 │       │   ├── STARmap-ISS_sample_W11_imputed_expression.csv
+│       │   ├── STARmap-ISS_sample_W11_imputed_gene_activity.csv
 │       │   ├── STARmap-ISS_sample_W11_raw_expression.csv
 │       │   ├── STARmap-ISS_sample_W11_spots_metadata.csv
 │       │   ├── STARmap-ISS_sample_W7_cell_metadata.csv
@@ -88,7 +94,8 @@ hPlacenta-architecture
 │   ├── directory_tree.txt
 │   ├── Force_Push.wsl
 │   ├── SOURCE_MANIFEST.bib
-│   └── SOURCE_MANIFEST.md
+│   ├── SOURCE_MANIFEST.md
+│   └── STARmap_author_method_alignment_report.md
 ├── jian-shu-lab
 │   ├── chromatin-potential
 │   │   ├── 1. calculate_dorc.ipynb
@@ -457,6 +464,9 @@ hPlacenta-architecture
 │   │   │   ├── timecourse_score_Ethanolamine_Metabolism_mean.png
 │   │   │   ├── timecourse_score_Immune_Tolerance_mean.png
 │   │   │   └── timecourse_score_MMP_ECM_Remodeling_mean.png
+│   │   ├── 01_embeddings_week_umap_tsne.pdf
+│   │   ├── 01_tsne_harmony_by_week.png
+│   │   ├── 01_umap_harmony_by_week.png
 │   │   ├── celltype_proportions_by_week_and_version.png
 │   │   ├── gene_coordination_dotplot_all.png
 │   │   ├── gene_coordination_heatmap.png
@@ -647,6 +657,7 @@ hPlacenta-architecture
 │   │   └── 21_rpac_spatial_routes.log
 │   ├── objects
 │   │   ├── 01_merged_post_qc.rds
+│   │   ├── 01_post_harmony.rds
 │   │   ├── 01_post_sct.rds
 │   │   ├── cellchat_slidetags.rds
 │   │   ├── multiome_SCP2601_formatted.rds
@@ -956,6 +967,8 @@ hPlacenta-architecture
 │   └── RPAC
 │       ├── pj_phd_defense_slides_20220421_1000.pdf
 │       └── Rpac.pdf
+├── R
+│   └── spatial_color_themes.R
 ├── scripts
 │   ├── 00_archive
 │   │   ├── 02_preprocess
@@ -1021,7 +1034,8 @@ hPlacenta-architecture
 │   │   ├── 21_rpac_v2_corrected_routes.R
 │   │   └── utils.r
 │   ├── 01_active_pipeline
-│   │   └── 01_preprocess_harmony_embeddings.R
+│   │   ├── 01_preprocess_harmony_embeddings.R
+│   │   └── 01c_plot_spatial_embeddings.R
 │   └── R
 │       ├── utils-old.R
 │       ├── utils-old2.R
