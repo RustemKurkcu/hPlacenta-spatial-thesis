@@ -55,6 +55,7 @@ hPlacenta-architecture
 │       │   ├── STARmap-ISS_sample_W7_imputed_DORC.csv
 │       │   ├── STARmap-ISS_sample_W7_imputed_expression.csv
 │       │   ├── STARmap-ISS_sample_W7_imputed_gene_activity.csv
+│       │   ├── STARmap-ISS_sample_W7_raw_expression.csv
 │       │   ├── STARmap-ISS_sample_W7_spots_metadata.csv
 │       │   ├── STARmap-ISS_sample_W8-2_cell_metadata.csv
 │       │   ├── STARmap-ISS_sample_W8-2_imputed_DORC.csv
@@ -73,6 +74,7 @@ hPlacenta-architecture
 ├── docs
 │   ├── Additional
 │   │   ├── ANALYSIS_REPORT.md
+│   │   ├── Re-OrganizeScripts
 │   │   ├── README.md
 │   │   └── SOURCE_MANIFEST.md
 │   ├── 00_COUNTS_AND_PLATFORMS.md
@@ -618,6 +620,7 @@ hPlacenta-architecture
 │   │   ├── timecourse_NKG7_enhanced.png
 │   │   └── timecourse_PLD1_enhanced.png
 │   ├── logs
+│   │   ├── 01_preprocess_harmony_embeddings.log
 │   │   ├── 02A_preprocess_multiome_reference.log
 │   │   ├── 03A_map_slidetags_to_multiome.log
 │   │   ├── 03B_map_starmap_to_multiome.log
@@ -693,6 +696,7 @@ hPlacenta-architecture
 │   │       ├── timecourse_gene_module_summaries_enhanced.csv
 │   │       ├── timecourse_trend_significance_posthoc.csv
 │   │       └── timecourse_trend_significance_posthoc_significant_only.csv
+│   ├── reports
 │   └── tables
 │       ├── 05_spatial
 │       │   ├── DE_results
@@ -936,77 +940,82 @@ hPlacenta-architecture
 │       ├── pj_phd_defense_slides_20220421_1000.pdf
 │       └── Rpac.pdf
 ├── scripts
-│   ├── 02_preprocess
-│   │   └── 02A_preprocess_multiome_reference.R
-│   ├── 03_mapping
-│   │   ├── 03A_map_slidetags_to_multiome.R
-│   │   ├── 03B_map_starmap_to_multiome.R
-│   │   ├── 03B_map_starmap_to_multiome_original.R
-│   │   ├── 03C_harmonize_celltype_labels.R
-│   │   └── 03D_compare_celltype_proportions_across_versions.R
-│   ├── 04_timecourse
-│   │   ├── 04A_gene_of_interest_timecourse-2.R
-│   │   ├── 04A_gene_of_interest_timecourse.R
-│   │   ├── 04A_gene_of_interest_timecourse_ENHANCED.R
-│   │   ├── 04A_timecourse_posthoc_significance_plots.R.R
-│   │   ├── 04B_immune_subsets_refinement.R
-│   │   ├── 04C_gene_coordination_score.R
-│   │   └── 4C_gene_coordination_posthoc_plots.R.R
-│   ├── 05_spatial
-│   │   ├── 05A_spatial_overview_plots.R
-│   │   ├── 05B_neighborhood_enrichment.R
-│   │   ├── 05C_permissiveness_score_maps.R
-│   │   ├── 05D_neighborhood_DE.R
-│   │   ├── 05E_spatial_lr_proximity.R
-│   │   ├── 05F_and_05H_description.md
-│   │   ├── 05F_description
-│   │   ├── 05F_description.txt
-│   │   ├── 05F_interaction_adjacency_followup-2.R
-│   │   ├── 05F_interaction_adjacency_followup.R
-│   │   ├── 05H_description
-│   │   ├── 05H_description.txt
-│   │   ├── 05H_qc_summary.R
-│   │   ├── 05H_spatial_permissiveness_panels_global-original.R
-│   │   ├── 05H_spatial_permissiveness_panels_global.R
-│   │   ├── 05H_spatial_permissiveness_panels_global_W_FigurLegends.R
-│   │   ├── 05I_DE_hotspot_vs_background.R
-│   │   ├── 5g.R
-│   │   └── UntitledR.R
-│   ├── 06_cell_communication
-│   │   ├── 06A_cellchat_spatial_constrained.R
-│   │   ├── 06B_simple_LR_scoring.R
-│   │   └── 06C_cellchat_optional.R
-│   ├── 07_export
-│   │   └── 07A_export_shareable_outputs.R
-│   ├── 08_metagene
-│   │   ├── 08A_housekeeping_qc.R
-│   │   └── 08B_metagene_nmf.R
-│   ├── 08_metagenes
-│   │   ├── 08A_housekeeping_diagnostics.R
-│   │   ├── 08B_metagene_module_discovery.R
-│   │   └── 08C_metagene_spatiotemporal_maps.R
-│   ├── AltAnalysisScripts
-│   │   ├── 05B_load_and_format_SCP2601.R
-│   │   ├── 16_compute_misi_SCP2601_spatial.R
-│   │   └── 21_rpac_spatial_routes.R
-│   ├── R
-│   │   ├── utils-old.R
-│   │   ├── utils-old2.R
-│   │   ├── utils-old3.R
-│   │   └── utils.R
-│   ├── 06C_cellchat_optional.R
-│   ├── 16_compute_misi.R
-│   ├── 16b_misi_v2_subindices.R
-│   ├── 16c_plot_misi_embeddings_V2.R
-│   ├── 16d_plot_misi_violins.R
-│   ├── 17_cellchat_by_condition.R
-│   ├── 18_cellphonedb_export.R
-│   ├── 21_rpac_v2_corrected_routes.R
-│   └── utils.r
+│   ├── 00_archive
+│   │   ├── 02_preprocess
+│   │   │   └── 02A_preprocess_multiome_reference.R
+│   │   ├── 03_mapping
+│   │   │   ├── 03A_map_slidetags_to_multiome.R
+│   │   │   ├── 03B_map_starmap_to_multiome.R
+│   │   │   ├── 03B_map_starmap_to_multiome_original.R
+│   │   │   ├── 03C_harmonize_celltype_labels.R
+│   │   │   └── 03D_compare_celltype_proportions_across_versions.R
+│   │   ├── 04_timecourse
+│   │   │   ├── 04A_gene_of_interest_timecourse-2.R
+│   │   │   ├── 04A_gene_of_interest_timecourse.R
+│   │   │   ├── 04A_gene_of_interest_timecourse_ENHANCED.R
+│   │   │   ├── 04A_timecourse_posthoc_significance_plots.R.R
+│   │   │   ├── 04B_immune_subsets_refinement.R
+│   │   │   ├── 04C_gene_coordination_score.R
+│   │   │   └── 4C_gene_coordination_posthoc_plots.R.R
+│   │   ├── 05_spatial
+│   │   │   ├── 05A_spatial_overview_plots.R
+│   │   │   ├── 05B_neighborhood_enrichment.R
+│   │   │   ├── 05C_permissiveness_score_maps.R
+│   │   │   ├── 05D_neighborhood_DE.R
+│   │   │   ├── 05E_spatial_lr_proximity.R
+│   │   │   ├── 05F_and_05H_description.md
+│   │   │   ├── 05F_description
+│   │   │   ├── 05F_description.txt
+│   │   │   ├── 05F_interaction_adjacency_followup-2.R
+│   │   │   ├── 05F_interaction_adjacency_followup.R
+│   │   │   ├── 05H_description
+│   │   │   ├── 05H_description.txt
+│   │   │   ├── 05H_qc_summary.R
+│   │   │   ├── 05H_spatial_permissiveness_panels_global-original.R
+│   │   │   ├── 05H_spatial_permissiveness_panels_global.R
+│   │   │   ├── 05H_spatial_permissiveness_panels_global_W_FigurLegends.R
+│   │   │   ├── 05I_DE_hotspot_vs_background.R
+│   │   │   ├── 5g.R
+│   │   │   └── UntitledR.R
+│   │   ├── 06_cell_communication
+│   │   │   ├── 06A_cellchat_spatial_constrained.R
+│   │   │   ├── 06B_simple_LR_scoring.R
+│   │   │   └── 06C_cellchat_optional.R
+│   │   ├── 07_export
+│   │   │   └── 07A_export_shareable_outputs.R
+│   │   ├── 08_metagene
+│   │   │   ├── 08A_housekeeping_qc.R
+│   │   │   └── 08B_metagene_nmf.R
+│   │   ├── 08_metagenes
+│   │   │   ├── 08A_housekeeping_diagnostics.R
+│   │   │   ├── 08B_metagene_module_discovery.R
+│   │   │   └── 08C_metagene_spatiotemporal_maps.R
+│   │   ├── AltAnalysisScripts
+│   │   │   ├── 05B_load_and_format_SCP2601.R
+│   │   │   ├── 16_compute_misi_SCP2601_spatial.R
+│   │   │   └── 21_rpac_spatial_routes.R
+│   │   ├── 06C_cellchat_optional.R
+│   │   ├── 16_compute_misi.R
+│   │   ├── 16b_misi_v2_subindices.R
+│   │   ├── 16c_plot_misi_embeddings_V2.R
+│   │   ├── 16d_plot_misi_violins.R
+│   │   ├── 17_cellchat_by_condition.R
+│   │   ├── 18_cellphonedb_export.R
+│   │   ├── 21_rpac_v2_corrected_routes.R
+│   │   └── utils.r
+│   ├── 01_active_pipeline
+│   │   └── 01_preprocess_harmony_embeddings.R
+│   └── R
+│       ├── utils-old.R
+│       ├── utils-old2.R
+│       ├── utils-old3.R
+│       └── utils.R
 ├── Archiver_Script.R
 ├── Create-DorectoryTree.r
 ├── CRITICAL_FIXES.md
 ├── data_inventory_report.txt
+├── directory_tree.md
+├── directory_tree.txt
 ├── hPlacenta-architecture.Rproj
 ├── MASTER_PROJECT_MANIFEST.txt
 ├── Protect-GitHub.ps1
