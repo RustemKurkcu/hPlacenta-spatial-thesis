@@ -14,3 +14,11 @@ data/raw/Broad_SCP2601human-placenta-architecture/matrix.mtx
 data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv
 data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv
 data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_gene_activity.csv
+data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv
+data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_gene_activity.csv
+data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv
+data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_gene_activity.csv
+output/objects/SCP2601_combined_spatial.rds
+output/objects/starmap_W11_SCP2601.rds
+output/objects/starmap_W7_SCP2601.rds
+output/objects/starmap_W9_SCP2601.rds
