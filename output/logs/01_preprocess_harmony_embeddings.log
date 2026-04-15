@@ -392,3 +392,85 @@
 2026-04-15 15:38:17 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
 2026-04-15 15:38:17 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_cell_metadata.csv 
 2026-04-15 15:38:17 [INFO] --- Processing week W7 --- 
+2026-04-15 16:03:02 [INFO] ============================================================ 
+2026-04-15 16:03:02 [INFO] Starting 01_preprocess_harmony_embeddings v1.1.0 
+2026-04-15 16:03:02 [INFO] Run timestamp: 2026-04-15 16:03:02 EDT 
+2026-04-15 16:03:02 [INFO] Seed: 42 
+2026-04-15 16:03:02 [INFO] ============================================================ 
+2026-04-15 16:03:02 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 16:03:02 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 16:03:02 [INFO] VROOM_CONNECTION_SIZE set to 10485760 bytes 
+2026-04-15 16:03:02 [INFO] future.globals.maxSize set to 8 GiB 
+2026-04-15 16:03:02 [INFO] future::plan set to sequential 
+2026-04-15 16:03:02 [INFO] Resume mode: week_qc (use_checkpoints=TRUE) 
+2026-04-15 16:03:02 [INFO] QC thresholds: min_features=150, max_features=Inf, min_counts=300, max_counts=Inf, max_percent_mt=20 
+2026-04-15 16:03:03 [INFO] Week W7 file discovery: 
+2026-04-15 16:03:03 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 16:03:03 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 16:03:03 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 16:03:03 [INFO] Week W8-2 file discovery: 
+2026-04-15 16:03:03 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 16:03:03 [INFO]   spots_metadata  : NA 
+2026-04-15 16:03:03 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 16:03:03 [INFO] Week W9 file discovery: 
+2026-04-15 16:03:03 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 16:03:03 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 16:03:03 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 16:03:03 [INFO] Week W11 file discovery: 
+2026-04-15 16:03:03 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 16:03:03 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 16:03:03 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_cell_metadata.csv 
+2026-04-15 16:03:03 [INFO] --- Processing week W7 --- 
+2026-04-15 16:03:03 [INFO]   Using cell metadata as primary coordinate source for week W7. 
+2026-04-15 16:03:03 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W7. 
+2026-04-15 16:03:03 [INFO]   Reading expression with metadata alignment: data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 16:07:13 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W7. 
+2026-04-15 16:07:13 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=4640 
+2026-04-15 16:07:14 [WARN]   No MT- genes detected for week W7. percent.mt set to 0. 
+2026-04-15 16:07:14 [INFO]   QC retained 4640/4640 cells (100%). 
+2026-04-15 16:07:44 [INFO]   Saved week checkpoint: output/objects/01_week_W7_post_qc.rds 
+2026-04-15 16:07:44 [INFO] --- Processing week W8-2 --- 
+2026-04-15 16:07:44 [INFO]   Using cell metadata as primary coordinate source for week W8-2. 
+2026-04-15 16:07:44 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W8-2. 
+2026-04-15 16:07:44 [INFO]   Reading expression with metadata alignment: data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 16:10:41 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W8-2. 
+2026-04-15 16:10:41 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=1870 
+2026-04-15 16:10:42 [WARN]   No MT- genes detected for week W8-2. percent.mt set to 0. 
+2026-04-15 16:10:42 [INFO]   QC retained 1870/1870 cells (100%). 
+2026-04-15 16:10:54 [INFO]   Saved week checkpoint: output/objects/01_week_W8-2_post_qc.rds 
+2026-04-15 16:10:54 [INFO] --- Processing week W9 --- 
+2026-04-15 16:10:54 [INFO]   Using cell metadata as primary coordinate source for week W9. 
+2026-04-15 16:10:54 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W9. 
+2026-04-15 16:10:54 [INFO]   Reading expression with metadata alignment: data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 16:14:50 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W9. 
+2026-04-15 16:14:50 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=4554 
+2026-04-15 16:14:52 [WARN]   No MT- genes detected for week W9. percent.mt set to 0. 
+2026-04-15 16:14:52 [INFO]   QC retained 4554/4554 cells (100%). 
+2026-04-15 16:15:21 [INFO]   Saved week checkpoint: output/objects/01_week_W9_post_qc.rds 
+2026-04-15 16:15:21 [INFO] --- Processing week W11 --- 
+2026-04-15 16:15:21 [INFO]   Using cell metadata as primary coordinate source for week W11. 
+2026-04-15 16:15:21 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W11. 
+2026-04-15 16:15:21 [INFO]   Reading expression with metadata alignment: data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 16:18:07 [WARN]   Falling back to cell metadata for barcode/x/y harmonization in week W11. 
+2026-04-15 16:18:07 [INFO]   Counts loaded from STARmap CSV: genes=36546, cells=2498 
+2026-04-15 16:18:08 [WARN]   No MT- genes detected for week W11. percent.mt set to 0. 
+2026-04-15 16:18:08 [INFO]   QC retained 2498/2498 cells (100%). 
+2026-04-15 16:18:24 [INFO]   Saved week checkpoint: output/objects/01_week_W11_post_qc.rds 
+2026-04-15 16:18:24 [INFO] Per-week QC summary saved. 
+2026-04-15 16:18:24 [INFO] Merging week-level Seurat objects... 
+2026-04-15 16:18:24 [INFO] Loading merged checkpoint: output/objects/01_merged_post_qc.rds 
+2026-04-15 16:18:33 [INFO] Applying JoinLayers() for Seurat v5 compatibility. 
+2026-04-15 16:18:37 [INFO] Cells by week after merge+QC: W11=2498; W7=4640; W8-2=1870; W9=4554 
+2026-04-15 16:18:37 [INFO] Running SCTransform on merged object... 
+2026-04-15 16:18:37 [INFO] Loading SCTransform checkpoint: output/objects/01_post_sct.rds 
+2026-04-15 16:19:02 [INFO] SCTransform complete. Default assay set to SCT. 
+2026-04-15 16:19:02 [INFO] Running PCA... 
+2026-04-15 16:19:08 [INFO] Running Harmony integration by: week 
+2026-04-15 16:22:40 [INFO] Saved Harmony checkpoint: output/objects/01_post_harmony.rds 
+2026-04-15 16:22:40 [INFO] Computing UMAP (global structure) on Harmony dims... 
+2026-04-15 16:22:58 [INFO] Computing t-SNE (local neighborhoods) on Harmony dims... 
+2026-04-15 16:23:31 [INFO] Embedding figures saved. 
+2026-04-15 16:23:31 [INFO] Running neighbors + clusters on Harmony space... 
+2026-04-15 16:23:34 [INFO] Cluster composition diagnostics saved. 
+2026-04-15 16:26:50 [INFO] Saved integrated Seurat object: output/objects/01_integrated_harmony_sct_4weeks.rds 
+2026-04-15 16:26:50 [INFO] Saved run manifest: output/reports/01_preprocess_harmony_manifest.json 

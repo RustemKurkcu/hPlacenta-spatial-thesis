@@ -67,8 +67,6 @@ hPlacenta-architecture
 │       │   ├── STARmap-ISS_sample_W8-2_imputed_DORC.csv
 │       │   ├── STARmap-ISS_sample_W8-2_imputed_expression.csv
 │       │   ├── STARmap-ISS_sample_W8-2_imputed_gene_activity.csv
-│       │   ├── STARmap-ISS_sample_W8-2_raw_expression.csv
-│       │   ├── STARmap-ISS_sample_W8-2_spots_metadata.csv
 │       │   ├── STARmap-ISS_sample_W9_cell_metadata.csv
 │       │   ├── STARmap-ISS_sample_W9_imputed_DORC.csv
 │       │   ├── STARmap-ISS_sample_W9_imputed_expression.csv
@@ -464,6 +462,7 @@ hPlacenta-architecture
 │   │   │   ├── timecourse_score_Ethanolamine_Metabolism_mean.png
 │   │   │   ├── timecourse_score_Immune_Tolerance_mean.png
 │   │   │   └── timecourse_score_MMP_ECM_Remodeling_mean.png
+│   │   ├── 01_embeddings_clusters_umap_tsne.pdf
 │   │   ├── 01_embeddings_week_umap_tsne.pdf
 │   │   ├── 01_tsne_harmony_by_week.png
 │   │   ├── 01_umap_harmony_by_week.png
@@ -656,9 +655,14 @@ hPlacenta-architecture
 │   │   ├── 06C_cellchat_optional.log
 │   │   └── 21_rpac_spatial_routes.log
 │   ├── objects
+│   │   ├── 01_integrated_harmony_sct_4weeks.rds
 │   │   ├── 01_merged_post_qc.rds
 │   │   ├── 01_post_harmony.rds
 │   │   ├── 01_post_sct.rds
+│   │   ├── 01_week_W11_post_qc.rds
+│   │   ├── 01_week_W7_post_qc.rds
+│   │   ├── 01_week_W8-2_post_qc.rds
+│   │   ├── 01_week_W9_post_qc.rds
 │   │   ├── cellchat_slidetags.rds
 │   │   ├── multiome_SCP2601_formatted.rds
 │   │   ├── SCP2601_combined_spatial.rds
@@ -794,6 +798,7 @@ hPlacenta-architecture
 │   │   │   ├── SlideTags_hotspot_vs_coldspot_DE.csv
 │   │   │   ├── STARmap_hotspot_vs_coldspot_DE.csv
 │   │   │   └── summary_table_with_highlights.csv
+│   │   ├── 01_cluster_composition_by_week.csv
 │   │   ├── 01_qc_summary_by_week.csv
 │   │   ├── 06A_cellchat_run_summary.csv
 │   │   ├── cellchat_slidetags_interactions.csv
@@ -947,6 +952,7 @@ hPlacenta-architecture
 │           │   ├── diagnostics.txt
 │           │   ├── expression_preview_head200x50.csv
 │           │   ├── expression_raw_first20lines.txt
+│           │   ├── expression_raw_first256bytes_hex.txt
 │           │   ├── Made-Manual-expression_raw_first20lines.txt
 │           │   └── spots_preview_head500.csv
 │           └── week_W8-2

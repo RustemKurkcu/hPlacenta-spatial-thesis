@@ -26,3 +26,6 @@ output/objects/01_merged_post_qc.rds
 output/objects/01_post_sct.rds
 output/objects/01_post_harmony.rds
 data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_gene_activity.csv
+output/objects/01_integrated_harmony_sct_4weeks.rds
+output/objects/01_week_W7_post_qc.rds
+output/objects/01_week_W9_post_qc.rds
