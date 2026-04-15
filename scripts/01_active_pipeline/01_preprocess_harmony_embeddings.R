@@ -66,6 +66,58 @@ suppressPackageStartupMessages({
   library(future)
 })
 
+
+record_artifact_manifest <- function(
+  manifest_path,
+  pipeline,
+  version,
+  run_timestamp,
+  seed,
+  weeks_requested,
+  weeks_observed,
+  n_cells_final,
+  n_genes_final,
+  qc,
+  sct,
+  harmony,
+  umap,
+  tsne,
+  clustering,
+  object_output,
+  tables_output,
+  reports_output,
+  figures_output,
+  source_data = NULL,
+  compute_script = NULL,
+  plotting_script = NULL
+) {
+  manifest <- list(
+    pipeline = pipeline,
+    version = version,
+    run_timestamp = run_timestamp,
+    seed = seed,
+    weeks_requested = weeks_requested,
+    weeks_observed = weeks_observed,
+    n_cells_final = n_cells_final,
+    n_genes_final = n_genes_final,
+    qc = qc,
+    sct = sct,
+    harmony = harmony,
+    umap = umap,
+    tsne = tsne,
+    clustering = clustering,
+    object_output = object_output,
+    tables_output = tables_output,
+    reports_output = reports_output,
+    figures_output = figures_output,
+    source_data = source_data,
+    compute_script = compute_script,
+    plotting_script = plotting_script
+  )
+  jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
+  invisible(manifest)
+}
+
 # =============================================================================
 # A) Header + Run Manifest
 # =============================================================================
@@ -115,14 +167,14 @@ cfg <- list(
   io = list(
     vroom_connection_size = 10485760L  # 10 MB; helps very long header/line STARmap CSVs
   ),
-  
+
   # Data roots (course-corrected to match local project layout)
   data_roots = list(
     broad = "data/raw/Broad_SCP2601human-placenta-architecture",
     zenodo = "data/raw/zenodo_spatial"
   ),
   week_ids = c("W7", "W8-2", "W9", "W11"),
-  
+
   # STARmap file conventions used by Jian Shu lab exports
   expression_patterns = c(
     "STARmap-ISS_sample_{week}_imputed_expression\\.csv$",
@@ -134,7 +186,7 @@ cfg <- list(
   cell_metadata_patterns = c(
     "STARmap-ISS_sample_{week}_cell_metadata\\.csv$"
   ),
-  
+
   # QC thresholds (selected to balance STARmap sparsity vs biological retention)
   qc = list(
     min_features = 150L,
@@ -143,7 +195,7 @@ cfg <- list(
     max_counts = Inf,
     max_percent_mt = 20
   ),
-  
+
   # SCTransform settings
   sct = list(
     vst_flavor = "v2",
@@ -154,14 +206,14 @@ cfg <- list(
     future_maxsize_gb = 8,
     future_plan = "sequential"
   ),
-  
+
   # Resume/checkpoint controls
   resume = list(
     use_checkpoints = TRUE,
     force_recompute = FALSE,
     resume_from = "week_qc" # one of: week_qc, merged, sct, pca
   ),
-  
+
   # Dimensionality / integration settings
   dims_use = 1:30,
   harmony = list(
@@ -173,7 +225,7 @@ cfg <- list(
     lambda = 1,
     sigma = 0.1
   ),
-  
+
   # Embeddings
   umap = list(
     n_neighbors = 30L,
@@ -185,7 +237,7 @@ cfg <- list(
     perplexity = 30,
     check_duplicates = FALSE
   ),
-  
+
   # Clustering
   clustering = list(
     resolution = 0.6,
@@ -232,7 +284,7 @@ append_methods_provenance <- function(report_path, week, expression_file, spots_
     )
     writeLines(header, con = report_path)
   }
-  
+
   lines <- c(
     paste0("## Run: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")),
     paste0("- Script: ", PIPELINE_NAME, " v", PIPELINE_VERSION),
@@ -274,12 +326,12 @@ find_first_regex <- function(roots, patterns, week, prefer_root = NULL) {
 detect_delimiter <- function(path) {
   lines <- readLines(path, n = 100, warn = FALSE, encoding = "UTF-8")
   if (length(lines) == 0) return(list(delim = ",", skip = 0L))
-  
+
   cands <- c("," = ",", "tab" = "\t", ";" = ";", "|" = "|")
   best_score <- -1
   best_delim <- ","
   best_line <- 1L
-  
+
   for (i in seq_along(lines)) {
     li <- lines[[i]]
     scores <- vapply(cands, function(d) stringr::str_count(li, fixed(d)), numeric(1))
@@ -290,7 +342,7 @@ detect_delimiter <- function(path) {
       best_line <- i
     }
   }
-  
+
   if (best_score <= 0) {
     return(list(delim = ",", skip = 0L))
   }
@@ -301,7 +353,7 @@ read_csv_flexible <- function(path) {
   probe <- detect_delimiter(path)
   delim_guess <- probe$delim
   skip_guess <- probe$skip
-  
+
   safe_read_delim <- function(file, delim, skip) {
     tryCatch(
       readr::read_delim(
@@ -329,13 +381,13 @@ read_csv_flexible <- function(path) {
       }
     )
   }
-  
+
   df <- safe_read_delim(
     file = path,
     delim = delim_guess,
     skip = skip_guess
   )
-  
+
   # Fallback attempts if file parsed into one column
   if (ncol(df) < 2) {
     for (d in c(",", "\t", ";", "|")) {
@@ -347,7 +399,7 @@ read_csv_flexible <- function(path) {
       if (ncol(df) >= 2) break
     }
   }
-  
+
   # Last fallback: base reader (handles some odd quoting/encoding edge cases)
   if (ncol(df) < 2) {
     trial <- tryCatch(
@@ -358,7 +410,7 @@ read_csv_flexible <- function(path) {
       df <- tibble::as_tibble(trial, .name_repair = "minimal")
     }
   }
-  
+
   attr(df, "delim_used") <- delim_guess
   attr(df, "skip_used") <- skip_guess
   df
@@ -367,7 +419,7 @@ read_csv_flexible <- function(path) {
 write_troubleshooting_bundle <- function(week_id, expr_path, spots_path, expr_df = NULL, spots_df = NULL, err_msg = NULL) {
   wk_dir <- file.path(DIR_TROUBLE, paste0("week_", week_id))
   dir.create(wk_dir, recursive = TRUE, showWarnings = FALSE)
-  
+
   diag_lines <- c(
     paste0("timestamp: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")),
     paste0("week: ", week_id),
@@ -376,7 +428,7 @@ write_troubleshooting_bundle <- function(week_id, expr_path, spots_path, expr_df
     paste0("expression_file_size_bytes: ", ifelse(file.exists(expr_path), file.info(expr_path)$size, NA)),
     paste0("error: ", ifelse(is.null(err_msg), "none", err_msg))
   )
-  
+
   # Keep diagnostics compact (<100MB by design: only heads/previews)
   if (!is.null(expr_df)) {
     diag_lines <- c(diag_lines, paste0("expr_dims: ", nrow(expr_df), " x ", ncol(expr_df)))
@@ -406,14 +458,14 @@ write_troubleshooting_bundle <- function(week_id, expr_path, spots_path, expr_df
 
 standardize_spots_metadata <- function(md_raw, week_id, barcodes) {
   md <- md_raw
-  
+
   barcode_candidates <- c("barcode", "barcodes", "cell", "cell_id", "spot_id", "X")
   barcode_col <- intersect(barcode_candidates, names(md))
   if (length(barcode_col) == 0) {
     stop("No barcode-like column found in spots metadata for week ", week_id)
   }
   barcode_col <- barcode_col[[1]]
-  
+
   x_candidates <- c("x", "x_um", "spatial_x", "X_coord", "xcoord")
   y_candidates <- c("y", "y_um", "spatial_y", "Y_coord", "ycoord")
   x_col <- intersect(x_candidates, names(md))
@@ -423,7 +475,7 @@ standardize_spots_metadata <- function(md_raw, week_id, barcodes) {
   }
   x_col <- x_col[[1]]
   y_col <- y_col[[1]]
-  
+
   out <- md %>%
     mutate(
       barcode = as.character(.data[[barcode_col]]),
@@ -432,22 +484,22 @@ standardize_spots_metadata <- function(md_raw, week_id, barcodes) {
       week = week_id,
       sample_id = week_id
     )
-  
+
   out$barcode <- trimws(out$barcode)
   out <- out %>% distinct(barcode, .keep_all = TRUE)
-  
+
   if (length(barcodes) > 0) {
     # Keep only cells present in counts matrix
     out <- out %>% filter(barcode %in% barcodes)
     # Make rownames-compatible ordering
     out <- out[match(barcodes, out$barcode), , drop = FALSE]
-    
+
     missing_md <- sum(is.na(out$barcode))
     if (missing_md > 0) {
       stop("Metadata missing for ", missing_md, " barcodes in week ", week_id)
     }
   }
-  
+
   out
 }
 
@@ -464,7 +516,7 @@ coerce_expression_with_spots <- function(expr_path, spots_md, week_id) {
     )
     stop("Expression CSV has too few columns for week ", week_id, ": ", expr_path)
   }
-  
+
   first_name <- names(expr)[1]
   if (tolower(first_name) %in% c("x", "gene", "gene_name", "genes", "feature", "feature_id", "")) {
     expr <- expr %>% rename(gene = 1)
@@ -474,12 +526,12 @@ coerce_expression_with_spots <- function(expr_path, spots_md, week_id) {
   expr$gene <- as.character(expr$gene)
   expr$gene <- trimws(expr$gene)
   expr <- expr %>% filter(!is.na(gene), gene != "") %>% distinct(gene, .keep_all = TRUE)
-  
+
   candidate_cols <- setdiff(colnames(expr), "gene")
   spot_barcodes <- as.character(spots_md$barcode)
   col_overlap <- sum(candidate_cols %in% spot_barcodes)
   row_overlap <- sum(expr$gene %in% spot_barcodes)
-  
+
   if (row_overlap > col_overlap) {
     mat_raw <- as.matrix(expr[, setdiff(colnames(expr), "gene"), drop = FALSE])
     suppressWarnings(storage.mode(mat_raw) <- "numeric")
@@ -495,7 +547,7 @@ coerce_expression_with_spots <- function(expr_path, spots_md, week_id) {
     colnames(mat_raw) <- candidate_cols
     mat <- mat_raw
   }
-  
+
   keep_barcodes <- intersect(spot_barcodes, colnames(mat))
   if (length(keep_barcodes) == 0) {
     stop("No overlapping barcodes between expression and spots metadata for week ", week_id)
@@ -553,7 +605,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   log_msg("--- Processing week ", wk, " ---")
   wi <- week_inputs[[wk]]
   wk_ckpt <- file.path(DIR_OBJECTS, paste0("01_week_", wk, "_post_qc.rds"))
-  
+
   if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && file.exists(wk_ckpt)) {
     log_msg("  Loading week checkpoint: ", wk_ckpt)
     seu_w <- readRDS(wk_ckpt)
@@ -569,7 +621,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     )
     next
   }
-  
+
   spots_md_raw <- read_csv_flexible(wi$spots_metadata)
   names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
   spots_md <- standardize_spots_metadata(spots_md_raw, wk, barcodes = character(0))
@@ -588,17 +640,17 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     }
   )
   log_msg("  Counts loaded from STARmap CSV: genes=", nrow(counts), ", cells=", ncol(counts))
-  
+
   md <- standardize_spots_metadata(spots_md_raw, wk, colnames(counts))
-  
+
   seu_w <- CreateSeuratObject(counts = counts, project = paste0("STARmap_", wk))
-  
+
   # Add harmonized metadata in cell order
   md <- as.data.frame(md, stringsAsFactors = FALSE)
   rownames(md) <- md$barcode
   md <- md[colnames(seu_w), , drop = FALSE]
   seu_w <- AddMetaData(seu_w, metadata = md)
-  
+
   # Mito percent; if MT genes absent, set 0 and log warning
   mt_pattern <- "^MT-"
   mt_features <- grep(mt_pattern, rownames(seu_w), value = TRUE)
@@ -608,7 +660,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     seu_w[["percent.mt"]] <- 0
     log_msg("  No MT- genes detected for week ", wk, ". percent.mt set to 0.", .level = "WARN")
   }
-  
+
   # QC filters
   n_before <- ncol(seu_w)
   keep_primary <- (
@@ -619,7 +671,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
       seu_w$percent.mt <= cfg$qc$max_percent_mt &
       !is.na(seu_w$x_um) & !is.na(seu_w$y_um)
   )
-  
+
   n_keep_primary <- sum(keep_primary)
   if (n_keep_primary == 0) {
     log_msg(
@@ -631,19 +683,19 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   } else {
     keep <- keep_primary
   }
-  
+
   if (sum(keep) == 0) {
     stop(
       "No cells retained after fallback QC for week ", wk,
       ". Check barcode alignment and coordinate columns in spots metadata."
     )
   }
-  
+
   seu_w <- subset(seu_w, cells = colnames(seu_w)[keep])
   n_after <- ncol(seu_w)
-  
+
   log_msg("  QC retained ", n_after, "/", n_before, " cells (", round(100 * n_after / max(n_before, 1), 2), "%).")
-  
+
   qc_summary[[wk]] <- tibble(
     week = wk,
     cells_before_qc = n_before,
@@ -653,7 +705,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     median_nCount = median(seu_w$nCount_RNA),
     median_percent_mt = median(seu_w$percent.mt)
   )
-  
+
   append_methods_provenance(
     report_path = file.path(DIR_REPORTS, "01_methods_and_provenance.md"),
     week = wk,
@@ -661,7 +713,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     spots_file = wi$spots_metadata,
     cellmeta_file = wi$cell_metadata
   )
-  
+
   saveRDS(seu_w, wk_ckpt)
   log_msg("  Saved week checkpoint: ", wk_ckpt)
   week_objects[[wk]] <- seu_w
@@ -754,25 +806,17 @@ log_msg("Running PCA...")
 seu <- RunPCA(seu, assay = "SCT", npcs = max(cfg$dims_use), verbose = FALSE)
 
 log_msg("Running Harmony integration by: ", cfg$harmony$group_by)
-rh_formals <- names(formals(harmony::RunHarmony.Seurat))
-harmony_args <- list(
+seu <- harmony::RunHarmony(
   object = seu,
   group.by.vars = cfg$harmony$group_by,
+  reduction.use = cfg$harmony$reduction,
+  assay.use = cfg$harmony$assay_use,
   max.iter.harmony = cfg$harmony$max_iter_harmony,
   theta = cfg$harmony$theta,
   lambda = cfg$harmony$lambda,
   sigma = cfg$harmony$sigma,
   verbose = TRUE
 )
-if ("reduction.use" %in% rh_formals) {
-  harmony_args$reduction.use <- cfg$harmony$reduction
-} else if ("reduction" %in% rh_formals) {
-  harmony_args$reduction <- cfg$harmony$reduction
-}
-if ("assay.use" %in% rh_formals) {
-  harmony_args$assay.use <- cfg$harmony$assay_use
-}
-seu <- do.call(harmony::RunHarmony, harmony_args)
 saveRDS(seu, file.path(DIR_OBJECTS, "01_post_harmony.rds"))
 log_msg("Saved Harmony checkpoint: ", file.path(DIR_OBJECTS, "01_post_harmony.rds"))
 
@@ -832,10 +876,9 @@ seu <- FindClusters(
 )
 
 # Basic diagnostics table
-diag_tbl <- seu@meta.data %>%
-  as_tibble(rownames = "cell_id") %>%
-  count(week, seurat_clusters, name = "n_cells") %>%
-  arrange(week, seurat_clusters)
+diag_tbl <- as.data.frame(seu@meta.data[, c("week", "seurat_clusters")]) %>%
+  dplyr::count(week, seurat_clusters, name = "n_cells") %>%
+  dplyr::arrange(week, seurat_clusters)
 
 write_csv(diag_tbl, file.path(DIR_TABLES, "01_cluster_composition_by_week.csv"))
 log_msg("Cluster composition diagnostics saved.")
@@ -859,7 +902,9 @@ saveRDS(seu, obj_path)
 log_msg("Saved integrated Seurat object: ", obj_path)
 
 # Run manifest for reproducibility
-manifest <- list(
+manifest_path <- file.path(DIR_REPORTS, "01_preprocess_harmony_manifest.json")
+record_artifact_manifest(
+  manifest_path = manifest_path,
   pipeline = PIPELINE_NAME,
   version = PIPELINE_VERSION,
   run_timestamp = RUN_TIMESTAMP,
@@ -889,16 +934,14 @@ manifest <- list(
     file.path(DIR_FIGURES, "01_umap_harmony_by_week.png"),
     file.path(DIR_FIGURES, "01_tsne_harmony_by_week.png"),
     file.path(DIR_FIGURES, "01_embeddings_clusters_umap_tsne.pdf")
-  )
+  ),
+  source_data = unname(unlist(file_map$expression, use.names = FALSE)),
+  compute_script = "scripts/01_active_pipeline/01_preprocess_harmony_embeddings.R",
+  plotting_script = "scripts/01_active_pipeline/01c_plot_spatial_embeddings.R"
 )
-manifest_path <- file.path(DIR_REPORTS, "01_preprocess_harmony_manifest.json")
-write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
 log_msg("Saved run manifest: ", manifest_path)
 
 log_msg("============================================================")
 log_msg("Script complete: ", PIPELINE_NAME)
 log_msg("Final dimensions: ", nrow(seu), " genes x ", ncol(seu), " cells")
 log_msg("============================================================")
-io = list(
-  vroom_connection_size = 10485760L  # 10 MB; helps very long header/line STARmap CSVs
-),
