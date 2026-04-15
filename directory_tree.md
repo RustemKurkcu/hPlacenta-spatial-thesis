@@ -646,6 +646,8 @@ hPlacenta-architecture
 │   │   ├── 06C_cellchat_optional.log
 │   │   └── 21_rpac_spatial_routes.log
 │   ├── objects
+│   │   ├── 01_merged_post_qc.rds
+│   │   ├── 01_post_sct.rds
 │   │   ├── cellchat_slidetags.rds
 │   │   ├── multiome_SCP2601_formatted.rds
 │   │   ├── SCP2601_combined_spatial.rds
