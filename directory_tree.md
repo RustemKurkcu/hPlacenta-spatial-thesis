@@ -697,235 +697,243 @@ hPlacenta-architecture
 │   │       ├── timecourse_trend_significance_posthoc.csv
 │   │       └── timecourse_trend_significance_posthoc_significant_only.csv
 │   ├── reports
-│   └── tables
-│       ├── 05_spatial
-│       │   ├── DE_results
-│       │   │   ├── slidetags
-│       │   │   │   ├── W11_DE_hotspot_vs_background.csv
-│       │   │   │   ├── W11_volcano.png
-│       │   │   │   ├── W8-2_DE_hotspot_vs_background.csv
-│       │   │   │   ├── W8-2_volcano.png
-│       │   │   │   ├── W9_DE_hotspot_vs_background.csv
-│       │   │   │   └── W9_volcano.png
-│       │   │   └── starmap
-│       │   │       ├── W8-2_DE_hotspot_vs_background.csv
-│       │   │       ├── W8-2_volcano.png
-│       │   │       ├── W9_DE_hotspot_vs_background.csv
-│       │   │       └── W9_volcano.png
-│       │   ├── slidetags
-│       │   │   ├── W11
-│       │   │   │   ├── meta.json
-│       │   │   │   ├── README_sample.txt
-│       │   │   │   ├── slidetags_W11_hotspot_cells_top10pct.csv
-│       │   │   │   ├── slidetags_W11_mapped_coords_global.csv
-│       │   │   │   └── slidetags_W11_protected_cells_bottom10pct.csv
-│       │   │   ├── W8-2
-│       │   │   │   ├── meta.json
-│       │   │   │   ├── README_sample.txt
-│       │   │   │   ├── slidetags_W8-2_hotspot_cells_top10pct.csv
-│       │   │   │   ├── slidetags_W8-2_mapped_coords_global.csv
-│       │   │   │   └── slidetags_W8-2_protected_cells_bottom10pct.csv
-│       │   │   └── W9
-│       │   │       ├── meta.json
-│       │   │       ├── README_sample.txt
-│       │   │       ├── slidetags_W9_hotspot_cells_top10pct.csv
-│       │   │       ├── slidetags_W9_mapped_coords_global.csv
-│       │   │       └── slidetags_W9_protected_cells_bottom10pct.csv
-│       │   ├── slidetags_harmonized
-│       │   │   ├── W11
-│       │   │   │   ├── meta.json
-│       │   │   │   ├── README_sample.txt
-│       │   │   │   └── slidetags_harmonized_W11_mapped_coords.csv
-│       │   │   └── W8-2
-│       │   │       ├── meta.json
-│       │   │       ├── README_sample.txt
-│       │   │       └── slidetags_harmonized_W8-2_mapped_coords.csv
-│       │   ├── slidetags_with_permissiveness
-│       │   │   ├── W11
-│       │   │   │   ├── meta.json
-│       │   │   │   ├── README_sample.txt
-│       │   │   │   └── slidetags_with_permissiveness_W11_mapped_coords.csv
-│       │   │   └── W8-2
-│       │   │       ├── meta.json
-│       │   │       ├── README_sample.txt
-│       │   │       └── slidetags_with_permissiveness_W8-2_mapped_coords.csv
-│       │   ├── starmap
-│       │   │   ├── W8-2
-│       │   │   │   ├── meta.json
-│       │   │   │   ├── README_sample.txt
-│       │   │   │   ├── starmap_W8-2_hotspot_cells_top10pct.csv
-│       │   │   │   ├── starmap_W8-2_mapped_coords_global.csv
-│       │   │   │   └── starmap_W8-2_protected_cells_bottom10pct.csv
-│       │   │   └── W9
-│       │   │       ├── meta.json
-│       │   │       ├── README_sample.txt
-│       │   │       ├── starmap_W9_hotspot_cells_top10pct.csv
-│       │   │       ├── starmap_W9_mapped_coords_global.csv
-│       │   │       └── starmap_W9_protected_cells_bottom10pct.csv
-│       │   ├── starmap_harmonized
-│       │   │   └── W8-2
-│       │   │       ├── meta.json
-│       │   │       ├── README_sample.txt
-│       │   │       └── starmap_harmonized_W8-2_mapped_coords.csv
-│       │   ├── starmap_with_permissiveness
-│       │   │   └── W8-2
-│       │   │       ├── meta.json
-│       │   │       ├── README_sample.txt
-│       │   │       └── starmap_with_permissiveness_W8-2_mapped_coords.csv
-│       │   ├── permissiveness_global_allcells.csv
-│       │   ├── permissiveness_global_stats.json
-│       │   ├── PROCESS_LOG.txt
-│       │   ├── QC_hotspot_protected_counts_per_sample.csv
-│       │   ├── QC_permissiveness_global_finiteness.csv
-│       │   ├── SlideTags_hotspot_vs_coldspot_DE.csv
-│       │   ├── STARmap_hotspot_vs_coldspot_DE.csv
-│       │   └── summary_table_with_highlights.csv
-│       ├── 06A_cellchat_run_summary.csv
-│       ├── cellchat_slidetags_interactions.csv
-│       ├── celltype_proportions_by_week_and_version.csv
-│       ├── celltype_ratio_to_fibro_by_week_and_version.csv
-│       ├── celltype_week_trends_by_version.csv
-│       ├── gene_coordination_scores.csv
-│       ├── gene_coordination_scores_with_stats.csv
-│       ├── gene_coordination_significant_only.csv
-│       ├── Multiome_immune_subtype_counts.csv
-│       ├── SCP2601_gene_inventory.csv
-│       ├── SCP2601_spatial_qc_summary.csv
-│       ├── Slide-tags_niche_center_celltype_composition.csv
-│       ├── Slide-tags_niche_center_celltype_top5.csv
-│       ├── Slide-tags_niche_composition.csv
-│       ├── Slide-tags_niche_fraction_trends.csv
-│       ├── Slide-tags_niche_geneset_scores.csv
-│       ├── Slide-tags_niche_markers.csv
-│       ├── Slide-tags_niche_pseudobulk_de.csv
-│       ├── Slide-tags_niche_week_center_celltype_composition.csv
-│       ├── Slide-tags_niche_week_chisq_stdres.csv
-│       ├── Slide-tags_niche_week_composition.csv
-│       ├── Slide-tags_niche_week_geneset_scores.csv
-│       ├── Slide-tags_niche_week_rewiring_jsd.csv
-│       ├── SlideTags_adjacency_followup_summary.csv
-│       ├── SlideTags_celltype_harmonization_summary.csv
-│       ├── SlideTags_immune_subtype_counts.csv
-│       ├── SlideTags_neighbor_enrichment_effect_summary.csv
-│       ├── SlideTags_neighbor_enrichment_k_robustness.csv
-│       ├── SlideTags_neighbor_enrichment_long.csv
-│       ├── SlideTags_neighbor_enrichment_trend_shortlist.csv
-│       ├── SlideTags_neighbor_enrichment_trends.csv
-│       ├── SlideTags_NK_module_coverage_qc.csv
-│       ├── SlideTags_permissiveness_cell_level.csv
-│       ├── SlideTags_permissiveness_top10pct_composition.csv
-│       ├── SlideTags_spatial_lr_edges.csv
-│       ├── SlideTags_spatial_lr_k_robustness.csv
-│       ├── SlideTags_spatial_lr_summary.csv
-│       ├── SlideTags_week_11_k15_neighbor_expected.csv
-│       ├── SlideTags_week_11_k15_neighbor_observed.csv
-│       ├── SlideTags_week_11_k15_neighbor_z.csv
-│       ├── SlideTags_week_11_k25_neighbor_expected.csv
-│       ├── SlideTags_week_11_k25_neighbor_observed.csv
-│       ├── SlideTags_week_11_k25_neighbor_z.csv
-│       ├── SlideTags_week_11_k40_neighbor_expected.csv
-│       ├── SlideTags_week_11_k40_neighbor_observed.csv
-│       ├── SlideTags_week_11_k40_neighbor_z.csv
-│       ├── SlideTags_week_11_k8_neighbor_expected.csv
-│       ├── SlideTags_week_11_k8_neighbor_observed.csv
-│       ├── SlideTags_week_11_k8_neighbor_z.csv
-│       ├── SlideTags_week_11_neighbor_expected.csv
-│       ├── SlideTags_week_11_neighbor_observed.csv
-│       ├── SlideTags_week_11_neighbor_z.csv
-│       ├── SlideTags_week_8_k15_neighbor_expected.csv
-│       ├── SlideTags_week_8_k15_neighbor_observed.csv
-│       ├── SlideTags_week_8_k15_neighbor_z.csv
-│       ├── SlideTags_week_8_k25_neighbor_expected.csv
-│       ├── SlideTags_week_8_k25_neighbor_observed.csv
-│       ├── SlideTags_week_8_k25_neighbor_z.csv
-│       ├── SlideTags_week_8_k40_neighbor_expected.csv
-│       ├── SlideTags_week_8_k40_neighbor_observed.csv
-│       ├── SlideTags_week_8_k40_neighbor_z.csv
-│       ├── SlideTags_week_8_k8_neighbor_expected.csv
-│       ├── SlideTags_week_8_k8_neighbor_observed.csv
-│       ├── SlideTags_week_8_k8_neighbor_z.csv
-│       ├── SlideTags_week_8_neighbor_expected.csv
-│       ├── SlideTags_week_8_neighbor_observed.csv
-│       ├── SlideTags_week_8_neighbor_z.csv
-│       ├── SlideTags_week_9_k15_neighbor_expected.csv
-│       ├── SlideTags_week_9_k15_neighbor_observed.csv
-│       ├── SlideTags_week_9_k15_neighbor_z.csv
-│       ├── SlideTags_week_9_k25_neighbor_expected.csv
-│       ├── SlideTags_week_9_k25_neighbor_observed.csv
-│       ├── SlideTags_week_9_k25_neighbor_z.csv
-│       ├── SlideTags_week_9_k40_neighbor_expected.csv
-│       ├── SlideTags_week_9_k40_neighbor_observed.csv
-│       ├── SlideTags_week_9_k40_neighbor_z.csv
-│       ├── SlideTags_week_9_k8_neighbor_expected.csv
-│       ├── SlideTags_week_9_k8_neighbor_observed.csv
-│       ├── SlideTags_week_9_k8_neighbor_z.csv
-│       ├── SlideTags_week_9_neighbor_expected.csv
-│       ├── SlideTags_week_9_neighbor_observed.csv
-│       ├── SlideTags_week_9_neighbor_z.csv
-│       ├── STARmap_celltype_harmonization_summary.csv
-│       ├── STARmap_immune_subtype_counts.csv
-│       ├── STARmap_neighbor_enrichment_effect_summary.csv
-│       ├── STARmap_neighbor_enrichment_k_robustness.csv
-│       ├── STARmap_neighbor_enrichment_long.csv
-│       ├── STARmap_neighbor_enrichment_trend_shortlist.csv
-│       ├── STARmap_neighbor_enrichment_trends.csv
-│       ├── STARmap_niche_center_celltype_composition.csv
-│       ├── STARmap_niche_center_celltype_top5.csv
-│       ├── STARmap_niche_composition.csv
-│       ├── STARmap_niche_fraction_trends.csv
-│       ├── STARmap_niche_geneset_scores.csv
-│       ├── STARmap_niche_markers.csv
-│       ├── STARmap_niche_pseudobulk_de.csv
-│       ├── STARmap_niche_susceptibility_classification.csv
-│       ├── STARmap_niche_susceptibility_scores.csv
-│       ├── STARmap_niche_susceptibility_week_composition.csv
-│       ├── STARmap_niche_susceptibility_week_trends.csv
-│       ├── STARmap_niche_week_center_celltype_composition.csv
-│       ├── STARmap_niche_week_chisq_stdres.csv
-│       ├── STARmap_niche_week_composition.csv
-│       ├── STARmap_niche_week_geneset_scores.csv
-│       ├── STARmap_niche_week_rewiring_jsd.csv
-│       ├── STARmap_NK_module_coverage_qc.csv
-│       ├── STARmap_permissiveness_cell_level.csv
-│       ├── STARmap_permissiveness_top10pct_composition.csv
-│       ├── STARmap_spatial_lr_edges.csv
-│       ├── STARmap_spatial_lr_k_robustness.csv
-│       ├── STARmap_spatial_lr_summary.csv
-│       ├── STARmap_week_8_k15_neighbor_expected.csv
-│       ├── STARmap_week_8_k15_neighbor_observed.csv
-│       ├── STARmap_week_8_k15_neighbor_z.csv
-│       ├── STARmap_week_8_k25_neighbor_expected.csv
-│       ├── STARmap_week_8_k25_neighbor_observed.csv
-│       ├── STARmap_week_8_k25_neighbor_z.csv
-│       ├── STARmap_week_8_k40_neighbor_expected.csv
-│       ├── STARmap_week_8_k40_neighbor_observed.csv
-│       ├── STARmap_week_8_k40_neighbor_z.csv
-│       ├── STARmap_week_8_k8_neighbor_expected.csv
-│       ├── STARmap_week_8_k8_neighbor_observed.csv
-│       ├── STARmap_week_8_k8_neighbor_z.csv
-│       ├── STARmap_week_8_neighbor_expected.csv
-│       ├── STARmap_week_8_neighbor_observed.csv
-│       ├── STARmap_week_8_neighbor_z.csv
-│       ├── STARmap_week_9_k15_neighbor_expected.csv
-│       ├── STARmap_week_9_k15_neighbor_observed.csv
-│       ├── STARmap_week_9_k15_neighbor_z.csv
-│       ├── STARmap_week_9_k25_neighbor_expected.csv
-│       ├── STARmap_week_9_k25_neighbor_observed.csv
-│       ├── STARmap_week_9_k25_neighbor_z.csv
-│       ├── STARmap_week_9_k40_neighbor_expected.csv
-│       ├── STARmap_week_9_k40_neighbor_observed.csv
-│       ├── STARmap_week_9_k40_neighbor_z.csv
-│       ├── STARmap_week_9_k8_neighbor_expected.csv
-│       ├── STARmap_week_9_k8_neighbor_observed.csv
-│       ├── STARmap_week_9_k8_neighbor_z.csv
-│       ├── STARmap_week_9_neighbor_expected.csv
-│       ├── STARmap_week_9_neighbor_observed.csv
-│       ├── STARmap_week_9_neighbor_z.csv
-│       ├── timecourse_gene_module_summaries.csv
-│       ├── timecourse_gene_module_summaries_enhanced.csv
-│       ├── timecourse_trend_significance_posthoc.csv
-│       ├── timecourse_trend_significance_posthoc_significant_only.csv
-│       └── vulnerability_output_manifest.csv
+│   ├── tables
+│   │   ├── 05_spatial
+│   │   │   ├── DE_results
+│   │   │   │   ├── slidetags
+│   │   │   │   │   ├── W11_DE_hotspot_vs_background.csv
+│   │   │   │   │   ├── W11_volcano.png
+│   │   │   │   │   ├── W8-2_DE_hotspot_vs_background.csv
+│   │   │   │   │   ├── W8-2_volcano.png
+│   │   │   │   │   ├── W9_DE_hotspot_vs_background.csv
+│   │   │   │   │   └── W9_volcano.png
+│   │   │   │   └── starmap
+│   │   │   │       ├── W8-2_DE_hotspot_vs_background.csv
+│   │   │   │       ├── W8-2_volcano.png
+│   │   │   │       ├── W9_DE_hotspot_vs_background.csv
+│   │   │   │       └── W9_volcano.png
+│   │   │   ├── slidetags
+│   │   │   │   ├── W11
+│   │   │   │   │   ├── meta.json
+│   │   │   │   │   ├── README_sample.txt
+│   │   │   │   │   ├── slidetags_W11_hotspot_cells_top10pct.csv
+│   │   │   │   │   ├── slidetags_W11_mapped_coords_global.csv
+│   │   │   │   │   └── slidetags_W11_protected_cells_bottom10pct.csv
+│   │   │   │   ├── W8-2
+│   │   │   │   │   ├── meta.json
+│   │   │   │   │   ├── README_sample.txt
+│   │   │   │   │   ├── slidetags_W8-2_hotspot_cells_top10pct.csv
+│   │   │   │   │   ├── slidetags_W8-2_mapped_coords_global.csv
+│   │   │   │   │   └── slidetags_W8-2_protected_cells_bottom10pct.csv
+│   │   │   │   └── W9
+│   │   │   │       ├── meta.json
+│   │   │   │       ├── README_sample.txt
+│   │   │   │       ├── slidetags_W9_hotspot_cells_top10pct.csv
+│   │   │   │       ├── slidetags_W9_mapped_coords_global.csv
+│   │   │   │       └── slidetags_W9_protected_cells_bottom10pct.csv
+│   │   │   ├── slidetags_harmonized
+│   │   │   │   ├── W11
+│   │   │   │   │   ├── meta.json
+│   │   │   │   │   ├── README_sample.txt
+│   │   │   │   │   └── slidetags_harmonized_W11_mapped_coords.csv
+│   │   │   │   └── W8-2
+│   │   │   │       ├── meta.json
+│   │   │   │       ├── README_sample.txt
+│   │   │   │       └── slidetags_harmonized_W8-2_mapped_coords.csv
+│   │   │   ├── slidetags_with_permissiveness
+│   │   │   │   ├── W11
+│   │   │   │   │   ├── meta.json
+│   │   │   │   │   ├── README_sample.txt
+│   │   │   │   │   └── slidetags_with_permissiveness_W11_mapped_coords.csv
+│   │   │   │   └── W8-2
+│   │   │   │       ├── meta.json
+│   │   │   │       ├── README_sample.txt
+│   │   │   │       └── slidetags_with_permissiveness_W8-2_mapped_coords.csv
+│   │   │   ├── starmap
+│   │   │   │   ├── W8-2
+│   │   │   │   │   ├── meta.json
+│   │   │   │   │   ├── README_sample.txt
+│   │   │   │   │   ├── starmap_W8-2_hotspot_cells_top10pct.csv
+│   │   │   │   │   ├── starmap_W8-2_mapped_coords_global.csv
+│   │   │   │   │   └── starmap_W8-2_protected_cells_bottom10pct.csv
+│   │   │   │   └── W9
+│   │   │   │       ├── meta.json
+│   │   │   │       ├── README_sample.txt
+│   │   │   │       ├── starmap_W9_hotspot_cells_top10pct.csv
+│   │   │   │       ├── starmap_W9_mapped_coords_global.csv
+│   │   │   │       └── starmap_W9_protected_cells_bottom10pct.csv
+│   │   │   ├── starmap_harmonized
+│   │   │   │   └── W8-2
+│   │   │   │       ├── meta.json
+│   │   │   │       ├── README_sample.txt
+│   │   │   │       └── starmap_harmonized_W8-2_mapped_coords.csv
+│   │   │   ├── starmap_with_permissiveness
+│   │   │   │   └── W8-2
+│   │   │   │       ├── meta.json
+│   │   │   │       ├── README_sample.txt
+│   │   │   │       └── starmap_with_permissiveness_W8-2_mapped_coords.csv
+│   │   │   ├── permissiveness_global_allcells.csv
+│   │   │   ├── permissiveness_global_stats.json
+│   │   │   ├── PROCESS_LOG.txt
+│   │   │   ├── QC_hotspot_protected_counts_per_sample.csv
+│   │   │   ├── QC_permissiveness_global_finiteness.csv
+│   │   │   ├── SlideTags_hotspot_vs_coldspot_DE.csv
+│   │   │   ├── STARmap_hotspot_vs_coldspot_DE.csv
+│   │   │   └── summary_table_with_highlights.csv
+│   │   ├── 06A_cellchat_run_summary.csv
+│   │   ├── cellchat_slidetags_interactions.csv
+│   │   ├── celltype_proportions_by_week_and_version.csv
+│   │   ├── celltype_ratio_to_fibro_by_week_and_version.csv
+│   │   ├── celltype_week_trends_by_version.csv
+│   │   ├── gene_coordination_scores.csv
+│   │   ├── gene_coordination_scores_with_stats.csv
+│   │   ├── gene_coordination_significant_only.csv
+│   │   ├── Multiome_immune_subtype_counts.csv
+│   │   ├── SCP2601_gene_inventory.csv
+│   │   ├── SCP2601_spatial_qc_summary.csv
+│   │   ├── Slide-tags_niche_center_celltype_composition.csv
+│   │   ├── Slide-tags_niche_center_celltype_top5.csv
+│   │   ├── Slide-tags_niche_composition.csv
+│   │   ├── Slide-tags_niche_fraction_trends.csv
+│   │   ├── Slide-tags_niche_geneset_scores.csv
+│   │   ├── Slide-tags_niche_markers.csv
+│   │   ├── Slide-tags_niche_pseudobulk_de.csv
+│   │   ├── Slide-tags_niche_week_center_celltype_composition.csv
+│   │   ├── Slide-tags_niche_week_chisq_stdres.csv
+│   │   ├── Slide-tags_niche_week_composition.csv
+│   │   ├── Slide-tags_niche_week_geneset_scores.csv
+│   │   ├── Slide-tags_niche_week_rewiring_jsd.csv
+│   │   ├── SlideTags_adjacency_followup_summary.csv
+│   │   ├── SlideTags_celltype_harmonization_summary.csv
+│   │   ├── SlideTags_immune_subtype_counts.csv
+│   │   ├── SlideTags_neighbor_enrichment_effect_summary.csv
+│   │   ├── SlideTags_neighbor_enrichment_k_robustness.csv
+│   │   ├── SlideTags_neighbor_enrichment_long.csv
+│   │   ├── SlideTags_neighbor_enrichment_trend_shortlist.csv
+│   │   ├── SlideTags_neighbor_enrichment_trends.csv
+│   │   ├── SlideTags_NK_module_coverage_qc.csv
+│   │   ├── SlideTags_permissiveness_cell_level.csv
+│   │   ├── SlideTags_permissiveness_top10pct_composition.csv
+│   │   ├── SlideTags_spatial_lr_edges.csv
+│   │   ├── SlideTags_spatial_lr_k_robustness.csv
+│   │   ├── SlideTags_spatial_lr_summary.csv
+│   │   ├── SlideTags_week_11_k15_neighbor_expected.csv
+│   │   ├── SlideTags_week_11_k15_neighbor_observed.csv
+│   │   ├── SlideTags_week_11_k15_neighbor_z.csv
+│   │   ├── SlideTags_week_11_k25_neighbor_expected.csv
+│   │   ├── SlideTags_week_11_k25_neighbor_observed.csv
+│   │   ├── SlideTags_week_11_k25_neighbor_z.csv
+│   │   ├── SlideTags_week_11_k40_neighbor_expected.csv
+│   │   ├── SlideTags_week_11_k40_neighbor_observed.csv
+│   │   ├── SlideTags_week_11_k40_neighbor_z.csv
+│   │   ├── SlideTags_week_11_k8_neighbor_expected.csv
+│   │   ├── SlideTags_week_11_k8_neighbor_observed.csv
+│   │   ├── SlideTags_week_11_k8_neighbor_z.csv
+│   │   ├── SlideTags_week_11_neighbor_expected.csv
+│   │   ├── SlideTags_week_11_neighbor_observed.csv
+│   │   ├── SlideTags_week_11_neighbor_z.csv
+│   │   ├── SlideTags_week_8_k15_neighbor_expected.csv
+│   │   ├── SlideTags_week_8_k15_neighbor_observed.csv
+│   │   ├── SlideTags_week_8_k15_neighbor_z.csv
+│   │   ├── SlideTags_week_8_k25_neighbor_expected.csv
+│   │   ├── SlideTags_week_8_k25_neighbor_observed.csv
+│   │   ├── SlideTags_week_8_k25_neighbor_z.csv
+│   │   ├── SlideTags_week_8_k40_neighbor_expected.csv
+│   │   ├── SlideTags_week_8_k40_neighbor_observed.csv
+│   │   ├── SlideTags_week_8_k40_neighbor_z.csv
+│   │   ├── SlideTags_week_8_k8_neighbor_expected.csv
+│   │   ├── SlideTags_week_8_k8_neighbor_observed.csv
+│   │   ├── SlideTags_week_8_k8_neighbor_z.csv
+│   │   ├── SlideTags_week_8_neighbor_expected.csv
+│   │   ├── SlideTags_week_8_neighbor_observed.csv
+│   │   ├── SlideTags_week_8_neighbor_z.csv
+│   │   ├── SlideTags_week_9_k15_neighbor_expected.csv
+│   │   ├── SlideTags_week_9_k15_neighbor_observed.csv
+│   │   ├── SlideTags_week_9_k15_neighbor_z.csv
+│   │   ├── SlideTags_week_9_k25_neighbor_expected.csv
+│   │   ├── SlideTags_week_9_k25_neighbor_observed.csv
+│   │   ├── SlideTags_week_9_k25_neighbor_z.csv
+│   │   ├── SlideTags_week_9_k40_neighbor_expected.csv
+│   │   ├── SlideTags_week_9_k40_neighbor_observed.csv
+│   │   ├── SlideTags_week_9_k40_neighbor_z.csv
+│   │   ├── SlideTags_week_9_k8_neighbor_expected.csv
+│   │   ├── SlideTags_week_9_k8_neighbor_observed.csv
+│   │   ├── SlideTags_week_9_k8_neighbor_z.csv
+│   │   ├── SlideTags_week_9_neighbor_expected.csv
+│   │   ├── SlideTags_week_9_neighbor_observed.csv
+│   │   ├── SlideTags_week_9_neighbor_z.csv
+│   │   ├── STARmap_celltype_harmonization_summary.csv
+│   │   ├── STARmap_immune_subtype_counts.csv
+│   │   ├── STARmap_neighbor_enrichment_effect_summary.csv
+│   │   ├── STARmap_neighbor_enrichment_k_robustness.csv
+│   │   ├── STARmap_neighbor_enrichment_long.csv
+│   │   ├── STARmap_neighbor_enrichment_trend_shortlist.csv
+│   │   ├── STARmap_neighbor_enrichment_trends.csv
+│   │   ├── STARmap_niche_center_celltype_composition.csv
+│   │   ├── STARmap_niche_center_celltype_top5.csv
+│   │   ├── STARmap_niche_composition.csv
+│   │   ├── STARmap_niche_fraction_trends.csv
+│   │   ├── STARmap_niche_geneset_scores.csv
+│   │   ├── STARmap_niche_markers.csv
+│   │   ├── STARmap_niche_pseudobulk_de.csv
+│   │   ├── STARmap_niche_susceptibility_classification.csv
+│   │   ├── STARmap_niche_susceptibility_scores.csv
+│   │   ├── STARmap_niche_susceptibility_week_composition.csv
+│   │   ├── STARmap_niche_susceptibility_week_trends.csv
+│   │   ├── STARmap_niche_week_center_celltype_composition.csv
+│   │   ├── STARmap_niche_week_chisq_stdres.csv
+│   │   ├── STARmap_niche_week_composition.csv
+│   │   ├── STARmap_niche_week_geneset_scores.csv
+│   │   ├── STARmap_niche_week_rewiring_jsd.csv
+│   │   ├── STARmap_NK_module_coverage_qc.csv
+│   │   ├── STARmap_permissiveness_cell_level.csv
+│   │   ├── STARmap_permissiveness_top10pct_composition.csv
+│   │   ├── STARmap_spatial_lr_edges.csv
+│   │   ├── STARmap_spatial_lr_k_robustness.csv
+│   │   ├── STARmap_spatial_lr_summary.csv
+│   │   ├── STARmap_week_8_k15_neighbor_expected.csv
+│   │   ├── STARmap_week_8_k15_neighbor_observed.csv
+│   │   ├── STARmap_week_8_k15_neighbor_z.csv
+│   │   ├── STARmap_week_8_k25_neighbor_expected.csv
+│   │   ├── STARmap_week_8_k25_neighbor_observed.csv
+│   │   ├── STARmap_week_8_k25_neighbor_z.csv
+│   │   ├── STARmap_week_8_k40_neighbor_expected.csv
+│   │   ├── STARmap_week_8_k40_neighbor_observed.csv
+│   │   ├── STARmap_week_8_k40_neighbor_z.csv
+│   │   ├── STARmap_week_8_k8_neighbor_expected.csv
+│   │   ├── STARmap_week_8_k8_neighbor_observed.csv
+│   │   ├── STARmap_week_8_k8_neighbor_z.csv
+│   │   ├── STARmap_week_8_neighbor_expected.csv
+│   │   ├── STARmap_week_8_neighbor_observed.csv
+│   │   ├── STARmap_week_8_neighbor_z.csv
+│   │   ├── STARmap_week_9_k15_neighbor_expected.csv
+│   │   ├── STARmap_week_9_k15_neighbor_observed.csv
+│   │   ├── STARmap_week_9_k15_neighbor_z.csv
+│   │   ├── STARmap_week_9_k25_neighbor_expected.csv
+│   │   ├── STARmap_week_9_k25_neighbor_observed.csv
+│   │   ├── STARmap_week_9_k25_neighbor_z.csv
+│   │   ├── STARmap_week_9_k40_neighbor_expected.csv
+│   │   ├── STARmap_week_9_k40_neighbor_observed.csv
+│   │   ├── STARmap_week_9_k40_neighbor_z.csv
+│   │   ├── STARmap_week_9_k8_neighbor_expected.csv
+│   │   ├── STARmap_week_9_k8_neighbor_observed.csv
+│   │   ├── STARmap_week_9_k8_neighbor_z.csv
+│   │   ├── STARmap_week_9_neighbor_expected.csv
+│   │   ├── STARmap_week_9_neighbor_observed.csv
+│   │   ├── STARmap_week_9_neighbor_z.csv
+│   │   ├── timecourse_gene_module_summaries.csv
+│   │   ├── timecourse_gene_module_summaries_enhanced.csv
+│   │   ├── timecourse_trend_significance_posthoc.csv
+│   │   ├── timecourse_trend_significance_posthoc_significant_only.csv
+│   │   └── vulnerability_output_manifest.csv
+│   └── troubleshooting
+│       └── 01_preprocess_harmony_embeddings
+│           └── week_W7
+│               ├── diagnostics.txt
+│               ├── expression_preview_head200x50.csv
+│               ├── expression_raw_first20lines.txt
+│               ├── Made-Manual-expression_raw_first20lines.txt
+│               └── spots_preview_head500.csv
 ├── Papers
 │   ├── Acute response to pathogens in the early human development main.pdf
 │   ├── Bioengineering   Transla Med - 2022 - Cui - Engineering placenta‐like organoids containing endogenous vascular cells from.pdf
