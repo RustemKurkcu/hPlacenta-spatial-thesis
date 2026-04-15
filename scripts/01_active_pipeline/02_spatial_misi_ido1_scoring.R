@@ -99,6 +99,7 @@ if (is.na(input_obj_found)) {
 
 log_msg("Loading input object: ", input_obj_found)
 seu <- read_object(input_obj_found)
+seu <- augment_seurat_with_predicted_celltypes(seu)
 seu <- add_true_celltype_metadata(seu)
 if ("celltype_true_name" %in% colnames(seu@meta.data)) {
   seu$celltype_corrected <- seu$celltype_true_name

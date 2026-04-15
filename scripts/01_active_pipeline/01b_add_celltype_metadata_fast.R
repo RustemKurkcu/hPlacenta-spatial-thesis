@@ -60,6 +60,11 @@ log_msg("Loading object: ", input_obj)
 seu <- read_object(input_obj)
 n_before <- ncol(seu@meta.data)
 
+before_pred <- if ("predicted.celltype" %in% colnames(seu@meta.data)) sum(!is.na(seu@meta.data$predicted.celltype)) else 0
+seu <- augment_seurat_with_predicted_celltypes(seu)
+after_pred <- if ("predicted.celltype" %in% colnames(seu@meta.data)) sum(!is.na(seu@meta.data$predicted.celltype)) else 0
+log_msg("Predicted celltype coverage: ", before_pred, " -> ", after_pred)
+
 seu <- add_true_celltype_metadata(seu)
 n_after <- ncol(seu@meta.data)
 log_msg("Added/updated celltype metadata columns. meta.data cols: ", n_before, " -> ", n_after)
