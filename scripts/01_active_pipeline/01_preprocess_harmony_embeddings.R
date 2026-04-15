@@ -20,7 +20,7 @@
 #   J) Export Artifacts
 #
 # Author: Thesis Pipeline Team
-# Version: 1.0.5
+# Version: 1.1.0
 # Date: 2026-04-15
 # =============================================================================
 
@@ -39,7 +39,8 @@ required_pkgs <- c(
   "readr",
   "stringr",
   "purrr",
-  "tibble"
+  "tibble",
+  "future"
 )
 missing_pkgs <- required_pkgs[!vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)]
 if (length(missing_pkgs) > 0) {
@@ -62,6 +63,7 @@ suppressPackageStartupMessages({
   library(stringr)
   library(purrr)
   library(tibble)
+  library(future)
 })
 
 # =============================================================================
@@ -69,7 +71,7 @@ suppressPackageStartupMessages({
 # =============================================================================
 
 PIPELINE_NAME <- "01_preprocess_harmony_embeddings"
-PIPELINE_VERSION <- "1.0.5"
+PIPELINE_VERSION <- "1.1.0"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 RUN_SEED <- 42L
 set.seed(RUN_SEED)
@@ -148,7 +150,16 @@ cfg <- list(
     variable_features_n = 3000L,
     regress_vars = c("percent.mt"),
     conserve_memory = TRUE,
-    return_only_var_genes = FALSE
+    return_only_var_genes = FALSE,
+    future_maxsize_gb = 8,
+    future_plan = "sequential"
+  ),
+  
+  # Resume/checkpoint controls
+  resume = list(
+    use_checkpoints = TRUE,
+    force_recompute = FALSE,
+    resume_from = "week_qc" # one of: week_qc, merged, sct, pca
   ),
   
   # Dimensionality / integration settings
@@ -186,6 +197,24 @@ log_msg("Config loaded. Weeks: ", paste(cfg$week_ids, collapse = ", "))
 log_msg("Data roots: broad=", cfg$data_roots$broad, " ; zenodo=", cfg$data_roots$zenodo)
 Sys.setenv(VROOM_CONNECTION_SIZE = as.character(cfg$io$vroom_connection_size))
 log_msg("VROOM_CONNECTION_SIZE set to ", cfg$io$vroom_connection_size, " bytes")
+options(future.globals.maxSize = as.numeric(cfg$sct$future_maxsize_gb) * 1024^3)
+tryCatch(
+  future::plan(cfg$sct$future_plan),
+  error = function(e) {
+    log_msg("future::plan with string failed; retrying explicit strategy. Error: ", conditionMessage(e), .level = "WARN")
+    if (identical(cfg$sct$future_plan, "sequential")) {
+      future::plan(future::sequential)
+    } else if (identical(cfg$sct$future_plan, "multisession")) {
+      future::plan(future::multisession)
+    } else {
+      future::plan(future::sequential)
+      log_msg("Unknown future plan '", cfg$sct$future_plan, "'. Falling back to sequential.", .level = "WARN")
+    }
+  }
+)
+log_msg("future.globals.maxSize set to ", cfg$sct$future_maxsize_gb, " GiB")
+log_msg("future::plan set to ", cfg$sct$future_plan)
+log_msg("Resume mode: ", cfg$resume$resume_from, " (use_checkpoints=", cfg$resume$use_checkpoints, ")")
 log_msg("QC thresholds: min_features=", cfg$qc$min_features,
         ", max_features=", cfg$qc$max_features,
         ", min_counts=", cfg$qc$min_counts,
@@ -518,10 +547,28 @@ for (wk in cfg$week_ids) {
 
 week_objects <- list()
 qc_summary <- list()
+resume_stage <- cfg$resume$resume_from
 
-for (wk in cfg$week_ids) {
+if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   log_msg("--- Processing week ", wk, " ---")
   wi <- week_inputs[[wk]]
+  wk_ckpt <- file.path(DIR_OBJECTS, paste0("01_week_", wk, "_post_qc.rds"))
+  
+  if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && file.exists(wk_ckpt)) {
+    log_msg("  Loading week checkpoint: ", wk_ckpt)
+    seu_w <- readRDS(wk_ckpt)
+    week_objects[[wk]] <- seu_w
+    qc_summary[[wk]] <- tibble(
+      week = wk,
+      cells_before_qc = ncol(seu_w),
+      cells_after_qc = ncol(seu_w),
+      pct_retained = 100,
+      median_nFeature = median(seu_w$nFeature_RNA),
+      median_nCount = median(seu_w$nCount_RNA),
+      median_percent_mt = median(seu_w$percent.mt)
+    )
+    next
+  }
   
   spots_md_raw <- read_csv_flexible(wi$spots_metadata)
   names(spots_md_raw) <- make.names(names(spots_md_raw), unique = TRUE)
@@ -615,19 +662,39 @@ for (wk in cfg$week_ids) {
     cellmeta_file = wi$cell_metadata
   )
   
+  saveRDS(seu_w, wk_ckpt)
+  log_msg("  Saved week checkpoint: ", wk_ckpt)
   week_objects[[wk]] <- seu_w
 }
 
-qc_summary_tbl <- bind_rows(qc_summary)
-write_csv(qc_summary_tbl, file.path(DIR_TABLES, "01_qc_summary_by_week.csv"))
-log_msg("Per-week QC summary saved.")
+if (length(qc_summary) > 0) {
+  qc_summary_tbl <- bind_rows(qc_summary)
+  write_csv(qc_summary_tbl, file.path(DIR_TABLES, "01_qc_summary_by_week.csv"))
+  log_msg("Per-week QC summary saved.")
+} else {
+  log_msg("QC summary not regenerated in this run (resume_from=", resume_stage, ").", .level = "WARN")
+}
 
 # =============================================================================
 # E) Merge + Seurat v5 Hygiene
 # =============================================================================
 
 log_msg("Merging week-level Seurat objects...")
-seu <- Reduce(function(x, y) merge(x, y), week_objects)
+merged_ckpt <- file.path(DIR_OBJECTS, "01_merged_post_qc.rds")
+if (resume_stage %in% c("merged", "sct", "pca")) {
+  if (!file.exists(merged_ckpt)) {
+    stop("resume_from='", resume_stage, "' requires merged checkpoint: ", merged_ckpt)
+  }
+  log_msg("Loading merged checkpoint for resume: ", merged_ckpt)
+  seu <- readRDS(merged_ckpt)
+} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && file.exists(merged_ckpt)) {
+  log_msg("Loading merged checkpoint: ", merged_ckpt)
+  seu <- readRDS(merged_ckpt)
+} else {
+  seu <- Reduce(function(x, y) merge(x, y), week_objects)
+  saveRDS(seu, merged_ckpt)
+  log_msg("Saved merged checkpoint: ", merged_ckpt)
+}
 
 # Seurat v5 required for merged-layer workflows
 log_msg("Applying JoinLayers() for Seurat v5 compatibility.")
@@ -651,17 +718,31 @@ if (!"W9" %in% names(wk_counts)) {
 # =============================================================================
 
 log_msg("Running SCTransform on merged object...")
-seu <- SCTransform(
-  object = seu,
-  assay = "RNA",
-  new.assay.name = "SCT",
-  vst.flavor = cfg$sct$vst_flavor,
-  variable.features.n = cfg$sct$variable_features_n,
-  vars.to.regress = cfg$sct$regress_vars,
-  conserve.memory = cfg$sct$conserve_memory,
-  return.only.var.genes = cfg$sct$return_only_var_genes,
-  verbose = TRUE
-)
+post_sct_ckpt <- file.path(DIR_OBJECTS, "01_post_sct.rds")
+if (resume_stage %in% c("sct", "pca")) {
+  if (!file.exists(post_sct_ckpt)) {
+    stop("resume_from='", resume_stage, "' requires SCT checkpoint: ", post_sct_ckpt)
+  }
+  log_msg("Loading SCTransform checkpoint for resume: ", post_sct_ckpt)
+  seu <- readRDS(post_sct_ckpt)
+} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && file.exists(post_sct_ckpt)) {
+  log_msg("Loading SCTransform checkpoint: ", post_sct_ckpt)
+  seu <- readRDS(post_sct_ckpt)
+} else {
+  seu <- SCTransform(
+    object = seu,
+    assay = "RNA",
+    new.assay.name = "SCT",
+    vst.flavor = cfg$sct$vst_flavor,
+    variable.features.n = cfg$sct$variable_features_n,
+    vars.to.regress = cfg$sct$regress_vars,
+    conserve.memory = cfg$sct$conserve_memory,
+    return.only.var.genes = cfg$sct$return_only_var_genes,
+    verbose = TRUE
+  )
+  saveRDS(seu, post_sct_ckpt)
+  log_msg("Saved SCTransform checkpoint: ", post_sct_ckpt)
+}
 DefaultAssay(seu) <- "SCT"
 log_msg("SCTransform complete. Default assay set to SCT.")
 
@@ -673,17 +754,27 @@ log_msg("Running PCA...")
 seu <- RunPCA(seu, assay = "SCT", npcs = max(cfg$dims_use), verbose = FALSE)
 
 log_msg("Running Harmony integration by: ", cfg$harmony$group_by)
-seu <- RunHarmony(
+rh_formals <- names(formals(harmony::RunHarmony.Seurat))
+harmony_args <- list(
   object = seu,
   group.by.vars = cfg$harmony$group_by,
-  reduction = cfg$harmony$reduction,
-  assay.use = cfg$harmony$assay_use,
   max.iter.harmony = cfg$harmony$max_iter_harmony,
   theta = cfg$harmony$theta,
   lambda = cfg$harmony$lambda,
   sigma = cfg$harmony$sigma,
   verbose = TRUE
 )
+if ("reduction.use" %in% rh_formals) {
+  harmony_args$reduction.use <- cfg$harmony$reduction
+} else if ("reduction" %in% rh_formals) {
+  harmony_args$reduction <- cfg$harmony$reduction
+}
+if ("assay.use" %in% rh_formals) {
+  harmony_args$assay.use <- cfg$harmony$assay_use
+}
+seu <- do.call(harmony::RunHarmony, harmony_args)
+saveRDS(seu, file.path(DIR_OBJECTS, "01_post_harmony.rds"))
+log_msg("Saved Harmony checkpoint: ", file.path(DIR_OBJECTS, "01_post_harmony.rds"))
 
 # =============================================================================
 # H) UMAP + t-SNE
