@@ -697,6 +697,7 @@ hPlacenta-architecture
 │   │       ├── timecourse_trend_significance_posthoc.csv
 │   │       └── timecourse_trend_significance_posthoc_significant_only.csv
 │   ├── reports
+│   │   └── 01_methods_and_provenance.md
 │   ├── tables
 │   │   ├── 05_spatial
 │   │   │   ├── DE_results
@@ -928,11 +929,14 @@ hPlacenta-architecture
 │   │   └── vulnerability_output_manifest.csv
 │   └── troubleshooting
 │       └── 01_preprocess_harmony_embeddings
-│           └── week_W7
+│           ├── week_W7
+│           │   ├── diagnostics.txt
+│           │   ├── expression_preview_head200x50.csv
+│           │   ├── expression_raw_first20lines.txt
+│           │   ├── Made-Manual-expression_raw_first20lines.txt
+│           │   └── spots_preview_head500.csv
+│           └── week_W8-2
 │               ├── diagnostics.txt
-│               ├── expression_preview_head200x50.csv
-│               ├── expression_raw_first20lines.txt
-│               ├── Made-Manual-expression_raw_first20lines.txt
 │               └── spots_preview_head500.csv
 ├── Papers
 │   ├── Acute response to pathogens in the early human development main.pdf
