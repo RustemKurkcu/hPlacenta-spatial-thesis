@@ -944,7 +944,9 @@ hPlacenta-architecture
 │   ├── Bioengineering   Transla Med - 2022 - Cui - Engineering placenta‐like organoids containing endogenous vascular cells from.pdf
 │   ├── RPAC-Deep_Pathway_Analysis_V2.0_A_Pathway_Analysis_Framework_Incorporating_Multi-Dimensional_Omics_Data.pdf
 │   ├── RPAC-pj_phd_defense_slides_20220421_1000.pdf
-│   └── Single-cell reconstruction of the early maternal–fetal interface in.pdf
+│   ├── s41591-024-03073-9-Spatial multiomic landscape of the human.pdf
+│   ├── Single-cell reconstruction of the early maternal–fetal interface in.pdf
+│   └── Spatial multiomic landscape of the human-SupplementalData.pdf
 ├── Projects-to-consider-for-alt-aproach
 │   ├── BO'sWork
 │   │   ├── Bo Thesis final.pdf
