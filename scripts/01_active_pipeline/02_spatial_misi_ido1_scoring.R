@@ -33,6 +33,31 @@ log_msg <- function(..., .level = "INFO") {
   cat(line, "\n", file = LOG_FILE, append = TRUE)
 }
 
+resolve_object_path <- function(path_rds) {
+  path_qs <- sub("\\.rds$", ".qs", path_rds)
+  if (file.exists(path_qs)) return(path_qs)
+  if (file.exists(path_rds)) return(path_rds)
+  NA_character_
+}
+
+read_object <- function(path) {
+  if (grepl("\\.qs$", path)) {
+    if (!requireNamespace("qs", quietly = TRUE)) stop("Need package 'qs' to read: ", path)
+    return(qs::qread(path))
+  }
+  readRDS(path)
+}
+
+write_object <- function(object, path_rds) {
+  if (requireNamespace("qs", quietly = TRUE)) {
+    path_qs <- sub("\\.rds$", ".qs", path_rds)
+    qs::qsave(object, path_qs, preset = "high")
+    return(path_qs)
+  }
+  saveRDS(object, path_rds)
+  path_rds
+}
+
 record_artifact_manifest <- function(
   manifest_path,
   pipeline,
@@ -65,13 +90,14 @@ record_artifact_manifest <- function(
 }
 
 input_obj <- file.path(DIR_OBJECTS, "01_integrated_harmony_sct_4weeks.rds")
-if (!file.exists(input_obj)) {
+input_obj_found <- resolve_object_path(input_obj)
+if (is.na(input_obj_found)) {
   stop("Missing input object: ", input_obj,
        "\nRun scripts/01_active_pipeline/01_preprocess_harmony_embeddings.R first.")
 }
 
-log_msg("Loading input object: ", input_obj)
-seu <- readRDS(input_obj)
+log_msg("Loading input object: ", input_obj_found)
+seu <- read_object(input_obj_found)
 
 if (!"RNA" %in% names(seu@assays)) {
   stop("RNA assay not found. Available assays: ", paste(names(seu@assays), collapse = ", "))
@@ -107,8 +133,8 @@ seu$MISI_Vulnerability <- with(
 )
 
 output_obj <- file.path(DIR_OBJECTS, "02_scored_misi_ido1.rds")
-saveRDS(seu, output_obj)
-log_msg("Saved scored object: ", output_obj)
+output_obj_saved <- write_object(seu, output_obj)
+log_msg("Saved scored object: ", output_obj_saved)
 
 manifest_path <- file.path(DIR_REPORTS, "02_spatial_misi_ido1_manifest.json")
 record_artifact_manifest(
@@ -117,10 +143,10 @@ record_artifact_manifest(
   version = PIPELINE_VERSION,
   run_timestamp = RUN_TIMESTAMP,
   seed = RUN_SEED,
-  source_data = input_obj,
+  source_data = input_obj_found,
   compute_script = "scripts/01_active_pipeline/02_spatial_misi_ido1_scoring.R",
   plotting_script = "scripts/01_active_pipeline/02c_plot_spatial_misi.R",
-  object_output = output_obj,
+  object_output = output_obj_saved,
   reports_output = manifest_path,
   module_definitions = signatures,
   assay_used = "RNA"

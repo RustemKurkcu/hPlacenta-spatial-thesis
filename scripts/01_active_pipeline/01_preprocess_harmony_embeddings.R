@@ -314,6 +314,22 @@ assert_no_spot_level_metadata <- function(seu_obj, context_label = "object") {
   }
 }
 
+load_clean_checkpoint <- function(path_rds, context_label = "checkpoint") {
+  if (!ckpt_exists(path_rds)) return(NULL)
+  obj <- ckpt_read(path_rds)
+  forbidden <- intersect(c("gene", "spot_id"), colnames(obj@meta.data))
+  if (length(forbidden) > 0) {
+    log_msg(
+      "Ignoring contaminated ", context_label, " (",
+      paste(forbidden, collapse = ", "),
+      " present). Will recompute from upstream stage.",
+      .level = "WARN"
+    )
+    return(NULL)
+  }
+  obj
+}
+
 log_msg("QC thresholds: min_features=", cfg$qc$min_features,
         ", max_features=", cfg$qc$max_features,
         ", min_counts=", cfg$qc$min_counts,
@@ -742,19 +758,20 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   wk_ckpt <- file.path(DIR_OBJECTS, paste0("01_week_", wk, "_post_qc.rds"))
 
   if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(wk_ckpt)) {
-    seu_w <- ckpt_read(wk_ckpt)
-    assert_no_spot_level_metadata(seu_w, context_label = paste0("week checkpoint ", wk))
-    week_objects[[wk]] <- seu_w
-    qc_summary[[wk]] <- tibble(
-      week = wk,
-      cells_before_qc = ncol(seu_w),
-      cells_after_qc = ncol(seu_w),
-      pct_retained = 100,
-      median_nFeature = median(seu_w$nFeature_RNA),
-      median_nCount = median(seu_w$nCount_RNA),
-      median_percent_mt = median(seu_w$percent.mt)
-    )
-    next
+    seu_w <- load_clean_checkpoint(wk_ckpt, context_label = paste0("week checkpoint ", wk))
+    if (!is.null(seu_w)) {
+      week_objects[[wk]] <- seu_w
+      qc_summary[[wk]] <- tibble(
+        week = wk,
+        cells_before_qc = ncol(seu_w),
+        cells_after_qc = ncol(seu_w),
+        pct_retained = 100,
+        median_nFeature = median(seu_w$nFeature_RNA),
+        median_nCount = median(seu_w$nCount_RNA),
+        median_percent_mt = median(seu_w$percent.mt)
+      )
+      next
+    }
   }
 
   spots_ptr <- !is.na(wi$spots_metadata) && is_git_lfs_pointer_file(wi$spots_metadata)
@@ -916,17 +933,17 @@ if (length(qc_summary) > 0) {
 # =============================================================================
 
 log_msg("Merging week-level Seurat objects...")
+seu <- NULL
 merged_ckpt <- file.path(DIR_OBJECTS, "01_merged_post_qc.rds")
 if (resume_stage %in% c("merged", "sct", "pca")) {
-  if (!ckpt_exists(merged_ckpt)) {
-    stop("resume_from='", resume_stage, "' requires merged checkpoint: ", merged_ckpt)
+  seu <- load_clean_checkpoint(merged_ckpt, context_label = "merged checkpoint")
+  if (is.null(seu)) {
+    stop("resume_from='", resume_stage, "' requires a clean merged checkpoint: ", merged_ckpt)
   }
-  seu <- ckpt_read(merged_ckpt)
-  assert_no_spot_level_metadata(seu, context_label = "merged checkpoint")
 } else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(merged_ckpt)) {
-  seu <- ckpt_read(merged_ckpt)
-  assert_no_spot_level_metadata(seu, context_label = "merged checkpoint")
-} else {
+  seu <- load_clean_checkpoint(merged_ckpt, context_label = "merged checkpoint")
+}
+if (!exists("seu") || is.null(seu)) {
   seu <- Reduce(function(x, y) merge(x, y), week_objects)
   assert_no_spot_level_metadata(seu, context_label = "merged object")
   merged_ckpt_saved <- ckpt_write(seu, merged_ckpt)
@@ -957,15 +974,14 @@ if (!"W9" %in% names(wk_counts)) {
 log_msg("Running SCTransform on merged object...")
 post_sct_ckpt <- file.path(DIR_OBJECTS, "01_post_sct.rds")
 if (resume_stage %in% c("sct", "pca")) {
-  if (!ckpt_exists(post_sct_ckpt)) {
-    stop("resume_from='", resume_stage, "' requires SCT checkpoint: ", post_sct_ckpt)
+  seu <- load_clean_checkpoint(post_sct_ckpt, context_label = "SCTransform checkpoint")
+  if (is.null(seu)) {
+    stop("resume_from='", resume_stage, "' requires a clean SCT checkpoint: ", post_sct_ckpt)
   }
-  seu <- ckpt_read(post_sct_ckpt)
-  assert_no_spot_level_metadata(seu, context_label = "SCTransform checkpoint")
 } else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(post_sct_ckpt)) {
-  seu <- ckpt_read(post_sct_ckpt)
-  assert_no_spot_level_metadata(seu, context_label = "SCTransform checkpoint")
-} else {
+  seu <- load_clean_checkpoint(post_sct_ckpt, context_label = "SCTransform checkpoint")
+}
+if (DefaultAssay(seu) != "SCT") {
   seu <- SCTransform(
     object = seu,
     assay = "RNA",

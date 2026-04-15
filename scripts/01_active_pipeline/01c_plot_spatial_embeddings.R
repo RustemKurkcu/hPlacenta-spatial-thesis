@@ -18,6 +18,21 @@ log_msg <- function(...) {
   cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "[INFO]", paste0(..., collapse = ""), "\n")
 }
 
+resolve_object_path <- function(path_rds) {
+  path_qs <- sub("\\.rds$", ".qs", path_rds)
+  if (file.exists(path_qs)) return(path_qs)
+  if (file.exists(path_rds)) return(path_rds)
+  NA_character_
+}
+
+read_object <- function(path) {
+  if (grepl("\\.qs$", path) || (!grepl("\\.rds$", path) && requireNamespace("qs", quietly = TRUE))) {
+    if (!requireNamespace("qs", quietly = TRUE)) stop("Need package 'qs' to read: ", path)
+    return(qs::qread(path))
+  }
+  readRDS(path)
+}
+
 record_artifact_manifest <- function(
   manifest_path,
   source_data,
@@ -36,12 +51,13 @@ record_artifact_manifest <- function(
 }
 
 obj_path <- file.path(DIR_OBJECTS, "01_integrated_harmony_sct_4weeks.rds")
-if (!file.exists(obj_path)) {
+obj_path_found <- resolve_object_path(obj_path)
+if (is.na(obj_path_found)) {
   stop("Missing expected compute artifact: ", obj_path,
        "\nRun scripts/01_active_pipeline/01_preprocess_harmony_embeddings.R first.")
 }
 
-seu <- readRDS(obj_path)
+seu <- read_object(obj_path_found)
 
 p_umap_week <- DimPlot(seu, reduction = "umap_harmony", group.by = "week", pt.size = 0.2) +
   scale_color_manual(values = misi_week_colors, drop = FALSE) +
@@ -79,7 +95,7 @@ ggsave(out_files[4], cluster_patch, width = 14, height = 6, dpi = 320)
 plot_manifest_path <- file.path(DIR_REPORTS, "01c_plot_spatial_embeddings_manifest.json")
 record_artifact_manifest(
   manifest_path = plot_manifest_path,
-  source_data = obj_path,
+  source_data = obj_path_found,
   compute_script = "scripts/01_active_pipeline/01_preprocess_harmony_embeddings.R",
   plotting_script = "scripts/01_active_pipeline/01c_plot_spatial_embeddings.R",
   figures_output = out_files
