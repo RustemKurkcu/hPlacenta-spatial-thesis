@@ -325,3 +325,70 @@
 2026-04-15 14:33:08 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
 2026-04-15 14:33:08 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_cell_metadata.csv 
 2026-04-15 14:33:08 [INFO] --- Processing week W7 --- 
+2026-04-15 15:31:38 [INFO] ============================================================ 
+2026-04-15 15:31:38 [INFO] Starting 01_preprocess_harmony_embeddings v1.1.0 
+2026-04-15 15:31:38 [INFO] Run timestamp: 2026-04-15 15:31:38 EDT 
+2026-04-15 15:31:38 [INFO] Seed: 42 
+2026-04-15 15:31:38 [INFO] ============================================================ 
+2026-04-15 15:31:38 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 15:31:38 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 15:31:38 [INFO] VROOM_CONNECTION_SIZE set to 10485760 bytes 
+2026-04-15 15:31:38 [INFO] future.globals.maxSize set to 8 GiB 
+2026-04-15 15:31:38 [INFO] future::plan set to sequential 
+2026-04-15 15:31:38 [INFO] Resume mode: week_qc (use_checkpoints=TRUE) 
+2026-04-15 15:31:38 [INFO] QC thresholds: min_features=150, max_features=Inf, min_counts=300, max_counts=Inf, max_percent_mt=20 
+2026-04-15 15:31:38 [INFO] Week W7 file discovery: 
+2026-04-15 15:31:38 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 15:31:38 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 15:31:38 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN spots_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN cell_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 15:31:38 [INFO] Week W8-2 file discovery: 
+2026-04-15 15:31:38 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 15:31:38 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-15 15:31:38 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN spots_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN cell_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 15:31:38 [INFO] Week W9 file discovery: 
+2026-04-15 15:31:38 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 15:31:38 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 15:31:38 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN spots_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN cell_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 15:31:38 [INFO] Week W11 file discovery: 
+2026-04-15 15:31:38 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 15:31:38 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 15:31:38 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_cell_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN spots_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 15:31:38 [WARN]   WARN cell_metadata is Git LFS pointer: data/raw/zenodo_spatial/STARmap-ISS_sample_W11_cell_metadata.csv 
+2026-04-15 15:31:38 [INFO] --- Processing week W7 --- 
+2026-04-15 15:31:38 [WARN]   Spots/cell metadata unavailable as real CSVs for week W7. Building placeholder metadata from expression matrix. 
+2026-04-15 15:38:16 [INFO] ============================================================ 
+2026-04-15 15:38:16 [INFO] Starting 01_preprocess_harmony_embeddings v1.1.0 
+2026-04-15 15:38:17 [INFO] Run timestamp: 2026-04-15 15:38:16 EDT 
+2026-04-15 15:38:17 [INFO] Seed: 42 
+2026-04-15 15:38:17 [INFO] ============================================================ 
+2026-04-15 15:38:17 [INFO] Config loaded. Weeks: W7, W8-2, W9, W11 
+2026-04-15 15:38:17 [INFO] Data roots: broad=data/raw/Broad_SCP2601human-placenta-architecture ; zenodo=data/raw/zenodo_spatial 
+2026-04-15 15:38:17 [INFO] VROOM_CONNECTION_SIZE set to 10485760 bytes 
+2026-04-15 15:38:17 [INFO] future.globals.maxSize set to 8 GiB 
+2026-04-15 15:38:17 [INFO] future::plan set to sequential 
+2026-04-15 15:38:17 [INFO] Resume mode: week_qc (use_checkpoints=TRUE) 
+2026-04-15 15:38:17 [INFO] QC thresholds: min_features=150, max_features=Inf, min_counts=300, max_counts=Inf, max_percent_mt=20 
+2026-04-15 15:38:17 [INFO] Week W7 file discovery: 
+2026-04-15 15:38:17 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_imputed_expression.csv 
+2026-04-15 15:38:17 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_spots_metadata.csv 
+2026-04-15 15:38:17 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W7_cell_metadata.csv 
+2026-04-15 15:38:17 [INFO] Week W8-2 file discovery: 
+2026-04-15 15:38:17 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_imputed_expression.csv 
+2026-04-15 15:38:17 [INFO]   spots_metadata  : NA 
+2026-04-15 15:38:17 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_cell_metadata.csv 
+2026-04-15 15:38:17 [INFO] Week W9 file discovery: 
+2026-04-15 15:38:17 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_imputed_expression.csv 
+2026-04-15 15:38:17 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv 
+2026-04-15 15:38:17 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W9_cell_metadata.csv 
+2026-04-15 15:38:17 [INFO] Week W11 file discovery: 
+2026-04-15 15:38:17 [INFO]   expression      : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_imputed_expression.csv 
+2026-04-15 15:38:17 [INFO]   spots_metadata  : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_spots_metadata.csv 
+2026-04-15 15:38:17 [INFO]   cell_metadata   : data/raw/zenodo_spatial/STARmap-ISS_sample_W11_cell_metadata.csv 
+2026-04-15 15:38:17 [INFO] --- Processing week W7 --- 
