@@ -20,7 +20,7 @@
 #   J) Export Artifacts
 #
 # Author: Thesis Pipeline Team
-# Version: 1.1.0
+# Version: 1.1.1
 # Date: 2026-04-15
 # =============================================================================
 
@@ -123,7 +123,7 @@ record_artifact_manifest <- function(
 # =============================================================================
 
 PIPELINE_NAME <- "01_preprocess_harmony_embeddings"
-PIPELINE_VERSION <- "1.1.0"
+PIPELINE_VERSION <- "1.1.1"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 RUN_SEED <- 42L
 set.seed(RUN_SEED)
@@ -165,7 +165,8 @@ log_msg("============================================================")
 # ---- Config block (tunable, fully logged) ----
 cfg <- list(
   io = list(
-    vroom_connection_size = 10485760L  # 10 MB; helps very long header/line STARmap CSVs
+    vroom_connection_size = 10485760L, # 10 MB; helps very long header/line STARmap CSVs
+    prefer_qs_checkpoints = TRUE
   ),
 
   # Data roots (course-corrected to match local project layout)
@@ -261,6 +262,58 @@ if (identical(cfg$sct$future_plan, "sequential")) {
 log_msg("future.globals.maxSize set to ", cfg$sct$future_maxsize_gb, " GiB")
 log_msg("future::plan set to ", cfg$sct$future_plan)
 log_msg("Resume mode: ", cfg$resume$resume_from, " (use_checkpoints=", cfg$resume$use_checkpoints, ")")
+
+# Prefer qs for large object checkpoints when available, with .rds fallback for portability.
+qs_available <- isTRUE(cfg$io$prefer_qs_checkpoints) && requireNamespace("qs", quietly = TRUE)
+if (isTRUE(cfg$io$prefer_qs_checkpoints) && !qs_available) {
+  log_msg("Package 'qs' not installed; checkpoint IO will use .rds fallback.", .level = "WARN")
+}
+
+ckpt_qs_path <- function(path_rds) sub("\\.rds$", ".qs", path_rds)
+
+ckpt_exists <- function(path_rds) {
+  path_qs <- ckpt_qs_path(path_rds)
+  file.exists(path_qs) || file.exists(path_rds)
+}
+
+ckpt_read <- function(path_rds) {
+  path_qs <- ckpt_qs_path(path_rds)
+  if (qs_available && file.exists(path_qs)) {
+    log_msg("Loading qs checkpoint: ", path_qs)
+    return(qs::qread(path_qs))
+  }
+  if (file.exists(path_rds)) {
+    log_msg("Loading rds checkpoint: ", path_rds)
+    return(readRDS(path_rds))
+  }
+  if (file.exists(path_qs)) {
+    log_msg("Loading qs checkpoint: ", path_qs)
+    return(qs::qread(path_qs))
+  }
+  stop("Checkpoint not found (.rds or .qs): ", path_rds)
+}
+
+ckpt_write <- function(object, path_rds) {
+  if (qs_available) {
+    path_qs <- ckpt_qs_path(path_rds)
+    qs::qsave(object, path_qs, preset = "high")
+    return(path_qs)
+  }
+  saveRDS(object, path_rds)
+  path_rds
+}
+
+assert_no_spot_level_metadata <- function(seu_obj, context_label = "object") {
+  forbidden <- intersect(c("gene", "spot_id"), colnames(seu_obj@meta.data))
+  if (length(forbidden) > 0) {
+    stop(
+      "Detected spot-level metadata columns in ", context_label, ": ",
+      paste(forbidden, collapse = ", "),
+      ". Remove stale checkpoints and rerun from resume_from='week_qc' with force_recompute=TRUE."
+    )
+  }
+}
+
 log_msg("QC thresholds: min_features=", cfg$qc$min_features,
         ", max_features=", cfg$qc$max_features,
         ", min_counts=", cfg$qc$min_counts,
@@ -688,9 +741,9 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   wi <- week_inputs[[wk]]
   wk_ckpt <- file.path(DIR_OBJECTS, paste0("01_week_", wk, "_post_qc.rds"))
 
-  if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && file.exists(wk_ckpt)) {
-    log_msg("  Loading week checkpoint: ", wk_ckpt)
-    seu_w <- readRDS(wk_ckpt)
+  if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(wk_ckpt)) {
+    seu_w <- ckpt_read(wk_ckpt)
+    assert_no_spot_level_metadata(seu_w, context_label = paste0("week checkpoint ", wk))
     week_objects[[wk]] <- seu_w
     qc_summary[[wk]] <- tibble(
       week = wk,
@@ -776,6 +829,7 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
   rownames(md) <- md$barcode
   md <- md[colnames(seu_w), , drop = FALSE]
   seu_w <- AddMetaData(seu_w, metadata = md)
+  assert_no_spot_level_metadata(seu_w, context_label = paste0("week object ", wk, " after AddMetaData"))
 
   # Mito percent; if MT genes absent, set 0 and log warning
   mt_pattern <- "^MT-"
@@ -844,8 +898,8 @@ if (resume_stage == "week_qc") for (wk in cfg$week_ids) {
     cellmeta_file = wi$cell_metadata
   )
 
-  saveRDS(seu_w, wk_ckpt)
-  log_msg("  Saved week checkpoint: ", wk_ckpt)
+  wk_ckpt_saved <- ckpt_write(seu_w, wk_ckpt)
+  log_msg("  Saved week checkpoint: ", wk_ckpt_saved)
   week_objects[[wk]] <- seu_w
 }
 
@@ -864,18 +918,19 @@ if (length(qc_summary) > 0) {
 log_msg("Merging week-level Seurat objects...")
 merged_ckpt <- file.path(DIR_OBJECTS, "01_merged_post_qc.rds")
 if (resume_stage %in% c("merged", "sct", "pca")) {
-  if (!file.exists(merged_ckpt)) {
+  if (!ckpt_exists(merged_ckpt)) {
     stop("resume_from='", resume_stage, "' requires merged checkpoint: ", merged_ckpt)
   }
-  log_msg("Loading merged checkpoint for resume: ", merged_ckpt)
-  seu <- readRDS(merged_ckpt)
-} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && file.exists(merged_ckpt)) {
-  log_msg("Loading merged checkpoint: ", merged_ckpt)
-  seu <- readRDS(merged_ckpt)
+  seu <- ckpt_read(merged_ckpt)
+  assert_no_spot_level_metadata(seu, context_label = "merged checkpoint")
+} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(merged_ckpt)) {
+  seu <- ckpt_read(merged_ckpt)
+  assert_no_spot_level_metadata(seu, context_label = "merged checkpoint")
 } else {
   seu <- Reduce(function(x, y) merge(x, y), week_objects)
-  saveRDS(seu, merged_ckpt)
-  log_msg("Saved merged checkpoint: ", merged_ckpt)
+  assert_no_spot_level_metadata(seu, context_label = "merged object")
+  merged_ckpt_saved <- ckpt_write(seu, merged_ckpt)
+  log_msg("Saved merged checkpoint: ", merged_ckpt_saved)
 }
 
 # Seurat v5 required for merged-layer workflows
@@ -902,14 +957,14 @@ if (!"W9" %in% names(wk_counts)) {
 log_msg("Running SCTransform on merged object...")
 post_sct_ckpt <- file.path(DIR_OBJECTS, "01_post_sct.rds")
 if (resume_stage %in% c("sct", "pca")) {
-  if (!file.exists(post_sct_ckpt)) {
+  if (!ckpt_exists(post_sct_ckpt)) {
     stop("resume_from='", resume_stage, "' requires SCT checkpoint: ", post_sct_ckpt)
   }
-  log_msg("Loading SCTransform checkpoint for resume: ", post_sct_ckpt)
-  seu <- readRDS(post_sct_ckpt)
-} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && file.exists(post_sct_ckpt)) {
-  log_msg("Loading SCTransform checkpoint: ", post_sct_ckpt)
-  seu <- readRDS(post_sct_ckpt)
+  seu <- ckpt_read(post_sct_ckpt)
+  assert_no_spot_level_metadata(seu, context_label = "SCTransform checkpoint")
+} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(post_sct_ckpt)) {
+  seu <- ckpt_read(post_sct_ckpt)
+  assert_no_spot_level_metadata(seu, context_label = "SCTransform checkpoint")
 } else {
   seu <- SCTransform(
     object = seu,
@@ -922,9 +977,10 @@ if (resume_stage %in% c("sct", "pca")) {
     return.only.var.genes = cfg$sct$return_only_var_genes,
     verbose = TRUE
   )
-  saveRDS(seu, post_sct_ckpt)
-  log_msg("Saved SCTransform checkpoint: ", post_sct_ckpt)
+  post_sct_ckpt_saved <- ckpt_write(seu, post_sct_ckpt)
+  log_msg("Saved SCTransform checkpoint: ", post_sct_ckpt_saved)
 }
+assert_no_spot_level_metadata(seu, context_label = "post-SCT object")
 DefaultAssay(seu) <- "SCT"
 log_msg("SCTransform complete. Default assay set to SCT.")
 
@@ -947,8 +1003,9 @@ seu <- harmony::RunHarmony(
   sigma = cfg$harmony$sigma,
   verbose = TRUE
 )
-saveRDS(seu, file.path(DIR_OBJECTS, "01_post_harmony.rds"))
-log_msg("Saved Harmony checkpoint: ", file.path(DIR_OBJECTS, "01_post_harmony.rds"))
+assert_no_spot_level_metadata(seu, context_label = "post-Harmony object")
+post_harmony_saved <- ckpt_write(seu, file.path(DIR_OBJECTS, "01_post_harmony.rds"))
+log_msg("Saved Harmony checkpoint: ", post_harmony_saved)
 
 # =============================================================================
 # H) UMAP + t-SNE
@@ -1028,8 +1085,8 @@ dev.off()
 # =============================================================================
 
 obj_path <- file.path(DIR_OBJECTS, "01_integrated_harmony_sct_4weeks.rds")
-saveRDS(seu, obj_path)
-log_msg("Saved integrated Seurat object: ", obj_path)
+obj_path_saved <- ckpt_write(seu, obj_path)
+log_msg("Saved integrated Seurat object: ", obj_path_saved)
 
 # Run manifest for reproducibility
 manifest_path <- file.path(DIR_REPORTS, "01_preprocess_harmony_manifest.json")
@@ -1049,7 +1106,7 @@ record_artifact_manifest(
   umap = cfg$umap,
   tsne = cfg$tsne,
   clustering = cfg$clustering,
-  object_output = obj_path,
+  object_output = obj_path_saved,
   tables_output = c(
     file.path(DIR_TABLES, "01_qc_summary_by_week.csv"),
     file.path(DIR_TABLES, "01_cluster_composition_by_week.csv")
