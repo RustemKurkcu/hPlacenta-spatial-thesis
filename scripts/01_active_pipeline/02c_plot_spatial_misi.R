@@ -48,7 +48,7 @@ read_object <- function(path) {
   readRDS(path)
 }
 
-record_artifact_manifest <- function(
+record_plot_manifest_02c <- function(
   manifest_path,
   pipeline,
   version,
@@ -71,6 +71,13 @@ record_artifact_manifest <- function(
   )
   jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
   invisible(manifest)
+}
+
+choose_celltype_col <- function(md) {
+  for (cand in c("predicted.celltype", "cell_label_display", "celltype_corrected", "celltype_true_name", "celltype_original", "seurat_clusters")) {
+    if (cand %in% colnames(md)) return(cand)
+  }
+  NA_character_
 }
 
 input_obj <- file.path(DIR_OBJECTS, "02_scored_misi_ido1.rds")
@@ -103,7 +110,8 @@ if (length(missing_reductions) > 0) {
 }
 
 fig_paths <- character(0)
-celltype_col <- pick_celltype_source_column(seu@meta.data)
+celltype_col <- choose_celltype_col(seu@meta.data)
+if (!is.na(celltype_col)) log_msg("Using celltype column for overlays: ", celltype_col)
 
 for (red in reductions) {
   for (feat in features_to_plot) {
@@ -163,7 +171,7 @@ if (all(c("x_um", "y_um", "week") %in% colnames(seu@meta.data))) {
 
     p_red <- ggplot(d, aes(x = x_um, y = y_um, color = score)) +
       geom_point(size = 0.15, alpha = 0.8) +
-      facet_wrap(~week, scales = "free") +
+      facet_wrap(~week, scales = "fixed") +
       scale_color_gradient(low = "white", high = "#8B0000") +
       coord_equal() +
       ggtitle(paste0(feat, " spatial heatmap (white → dark red)")) +
@@ -171,7 +179,7 @@ if (all(c("x_um", "y_um", "week") %in% colnames(seu@meta.data))) {
 
     p_div <- ggplot(d, aes(x = x_um, y = y_um, color = score)) +
       geom_point(size = 0.15, alpha = 0.8) +
-      facet_wrap(~week, scales = "free") +
+      facet_wrap(~week, scales = "fixed") +
       scale_color_gradient2(low = "#0B1F5E", mid = "white", high = "#CB181D", midpoint = median(d$score, na.rm = TRUE)) +
       coord_equal() +
       ggtitle(paste0(feat, " spatial heatmap (navy → white → red)")) +
@@ -194,7 +202,7 @@ if (all(c("x_um", "y_um", "week") %in% colnames(seu@meta.data))) {
 }
 
 manifest_path <- file.path(DIR_REPORTS, "02c_plot_spatial_misi_manifest.json")
-record_artifact_manifest(
+record_plot_manifest_02c(
   manifest_path = manifest_path,
   pipeline = PIPELINE_NAME,
   version = PIPELINE_VERSION,

@@ -34,7 +34,7 @@ read_object <- function(path) {
   readRDS(path)
 }
 
-record_artifact_manifest <- function(
+record_plot_manifest_01c <- function(
   manifest_path,
   source_data,
   compute_script,
@@ -49,6 +49,13 @@ record_artifact_manifest <- function(
     run_timestamp = format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
   )
   jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
+}
+
+choose_celltype_col <- function(md) {
+  for (cand in c("predicted.celltype", "cell_label_display", "celltype_corrected", "celltype_true_name", "celltype_original", "seurat_clusters")) {
+    if (cand %in% colnames(md)) return(cand)
+  }
+  NA_character_
 }
 
 obj_path <- file.path(DIR_OBJECTS, "01_integrated_harmony_sct_4weeks.rds")
@@ -93,8 +100,9 @@ ggsave(out_files[2], week_patch, width = 14, height = 6, dpi = 320)
 ggsave(out_files[3], cluster_patch, width = 14, height = 6)
 ggsave(out_files[4], cluster_patch, width = 14, height = 6, dpi = 320)
 
-celltype_col <- pick_celltype_source_column(seu@meta.data)
+celltype_col <- choose_celltype_col(seu@meta.data)
 if (!is.na(celltype_col)) {
+  log_msg("Using celltype column for overlays: ", celltype_col)
   cell_levels <- sort(unique(as.character(seu@meta.data[[celltype_col]])))
   cell_cols <- get_universal_colors(cell_levels)
   p_umap_celltype <- DimPlot(seu, reduction = "umap_harmony", group.by = celltype_col, label = TRUE, pt.size = 0.2) +
@@ -114,7 +122,7 @@ if (!is.na(celltype_col)) {
 }
 
 plot_manifest_path <- file.path(DIR_REPORTS, "01c_plot_spatial_embeddings_manifest.json")
-record_artifact_manifest(
+record_plot_manifest_01c(
   manifest_path = plot_manifest_path,
   source_data = obj_path_found,
   compute_script = "scripts/01_active_pipeline/01_preprocess_harmony_embeddings.R",
