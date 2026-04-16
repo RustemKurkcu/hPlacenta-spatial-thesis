@@ -10,6 +10,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(jsonlite)
   library(dplyr)
+  library(patchwork)
 })
 
 source("R/spatial_color_themes.R")
@@ -93,9 +94,30 @@ features_to_plot <- c(
 # A) Existing embedding feature plots (for consistency)
 # -----------------------------------------------------------------------------
 fig_paths <- character(0)
+celltype_col <- if ("predicted.celltype" %in% colnames(seu@meta.data)) "predicted.celltype" else pick_celltype_source_column(seu@meta.data)
+if (is.na(celltype_col)) celltype_col <- "seurat_clusters"
+seu$celltype_plot <- rename_with_true_names(as.character(seu@meta.data[[celltype_col]]))
+
 for (red in c("umap_harmony", "tsne_harmony")) {
+  p_celltype <- DimPlot(
+    object = seu,
+    reduction = red,
+    group.by = "celltype_plot",
+    label = TRUE,
+    repel = TRUE,
+    pt.size = 0.2
+  ) +
+    guides(color = guide_legend(override.aes = list(size = 3, alpha = 1))) +
+    labs(
+      title = paste0(toupper(sub("_harmony", "", red)), " Cell Type Map"),
+      subtitle = "Reference map for interpreting signature hotspots",
+      color = "Cell Type"
+    ) +
+    theme_thesis_spatial() +
+    theme(legend.position = "bottom", legend.key.height = grid::unit(0.35, "cm"))
+
   for (feat in features_to_plot) {
-    p <- FeaturePlot(
+    p_feat <- FeaturePlot(
       object = seu,
       features = feat,
       reduction = red,
@@ -103,13 +125,24 @@ for (red in c("umap_harmony", "tsne_harmony")) {
       pt.size = 0.25,
       order = TRUE
     ) +
-      ggtitle(paste0(feat, " on ", red)) +
+      ggtitle(paste0(feat, " on ", red, " (score overlay)")) +
       theme_thesis_spatial()
 
-    base <- file.path(DIR_FIGURES, paste0("02c_", feat, "_", red))
-    ggsave(paste0(base, ".pdf"), p, width = 8, height = 6)
-    ggsave(paste0(base, ".png"), p, width = 8, height = 6, dpi = 300)
-    fig_paths <- c(fig_paths, paste0(base, ".pdf"), paste0(base, ".png"))
+    p_side_by_side <- p_celltype + p_feat + patchwork::plot_layout(widths = c(1, 1))
+
+    base_single <- file.path(DIR_FIGURES, paste0("02c_", feat, "_", red))
+    base_pair <- file.path(DIR_FIGURES, paste0("02c_", feat, "_", red, "_with_celltype"))
+
+    ggsave(paste0(base_single, ".pdf"), p_feat, width = 8, height = 6)
+    ggsave(paste0(base_single, ".png"), p_feat, width = 8, height = 6, dpi = 320)
+    ggsave(paste0(base_pair, ".pdf"), p_side_by_side, width = 16, height = 6.5)
+    ggsave(paste0(base_pair, ".png"), p_side_by_side, width = 16, height = 6.5, dpi = 320)
+
+    fig_paths <- c(
+      fig_paths,
+      paste0(base_single, ".pdf"), paste0(base_single, ".png"),
+      paste0(base_pair, ".pdf"), paste0(base_pair, ".png")
+    )
   }
 }
 
@@ -119,7 +152,7 @@ for (red in c("umap_harmony", "tsne_harmony")) {
 spatial_df <- seu@meta.data %>%
   dplyr::mutate(
     week = factor(as.character(week), levels = c("W7", "W8-2", "W9", "W11")),
-    celltype_plot = rename_with_true_names(as.character(predicted.celltype))
+    celltype_plot = rename_with_true_names(as.character(.data[[celltype_col]]))
   )
 
 q75 <- stats::quantile(spatial_df$MISI_Vulnerability, probs = 0.75, na.rm = TRUE)
@@ -141,22 +174,36 @@ p_vuln_overlay <- ggplot(spatial_df, aes(x = x_um, y = y_um)) +
   ) +
   theme_thesis_spatial()
 
-# Secondary layer: show which cell types occupy top-vulnerability zones.
-p_vuln_celltypes <- ggplot(
-  subset(spatial_df, is_vulnerable_top25),
-  aes(x = x_um, y = y_um, color = celltype_plot)
-) +
-  geom_point(size = 0.30, alpha = 0.95) +
+# Secondary layer: reduce clutter by restricting to top 3 vulnerable cell types.
+top3_celltypes <- spatial_df %>%
+  dplyr::filter(is_vulnerable_top25) %>%
+  dplyr::group_by(celltype_plot) %>%
+  dplyr::summarise(mean_vuln = mean(MISI_Vulnerability, na.rm = TRUE), n = dplyr::n(), .groups = "drop") %>%
+  dplyr::filter(n >= 20) %>%
+  dplyr::arrange(dplyr::desc(mean_vuln), dplyr::desc(n)) %>%
+  dplyr::slice_head(n = 3) %>%
+  dplyr::pull(celltype_plot)
+
+vuln_top3_df <- spatial_df %>%
+  dplyr::filter(is_vulnerable_top25, celltype_plot %in% top3_celltypes)
+
+p_vuln_celltypes <- ggplot(vuln_top3_df, aes(x = x_um, y = y_um, color = celltype_plot)) +
+  geom_point(size = 0.22, alpha = 0.9) +
   facet_grid(celltype_plot ~ week, scales = "fixed") +
-  scale_color_manual(values = get_universal_colors(sort(unique(as.character(subset(spatial_df, is_vulnerable_top25)$celltype_plot))))) +
+  scale_color_manual(values = get_universal_colors(sort(unique(as.character(vuln_top3_df$celltype_plot))))) +
   coord_fixed() +
   labs(
-    title = "Top-Quartile Vulnerable Cells by Cell Type and Week",
-    subtitle = "Secondary niche view to identify biological combinations in toxic-switch zones",
+    title = "Top-Quartile Vulnerable Cells: Top 3 Cell Types by Week",
+    subtitle = "Decluttered niche view focused on the strongest vulnerable cell-type compartments",
     x = "x_um", y = "y_um", color = "Cell Type"
   ) +
   theme_thesis_spatial() +
-  theme(legend.position = "none")
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    strip.text.y = element_text(size = 8),
+    strip.text.x = element_text(size = 9)
+  )
 
 base_overlay <- file.path(DIR_FIGURES, "02c_vulnerability_niche_overlay")
 base_combo <- file.path(DIR_FIGURES, "02c_vulnerability_niche_celltype_combo")

@@ -161,17 +161,23 @@ p_spatial_niche <- ggplot(spatial_df, aes(x = x_um, y = y_um)) +
 # -----------------------------------------------------------------------------
 out_files <- c(
   file.path(DIR_FIGURES, "00c_heatmap_celltype_week_misi.pdf"),
+  file.path(DIR_FIGURES, "00c_heatmap_celltype_week_misi.png"),
   file.path(DIR_FIGURES, "00c_bar_top10_misi_celltypes.pdf"),
+  file.path(DIR_FIGURES, "00c_bar_top10_misi_celltypes.png"),
   file.path(DIR_FIGURES, "00c_bar_bottom10_misi_celltypes.pdf"),
+  file.path(DIR_FIGURES, "00c_bar_bottom10_misi_celltypes.png"),
   file.path(DIR_FIGURES, "00c_spatial_top_quartile_misi.pdf"),
   file.path(DIR_FIGURES, "00c_spatial_top_quartile_misi.png")
 )
 
 ggsave(out_files[1], p_heat_celltype_week, width = 10, height = 8)
-ggsave(out_files[2], p_top, width = 8, height = 6)
-ggsave(out_files[3], p_bottom, width = 8, height = 6)
-ggsave(out_files[4], p_spatial_niche, width = 16, height = 6)
-ggsave(out_files[5], p_spatial_niche, width = 16, height = 6, dpi = 320)
+ggsave(out_files[2], p_heat_celltype_week, width = 10, height = 8, dpi = 320)
+ggsave(out_files[3], p_top, width = 8, height = 6)
+ggsave(out_files[4], p_top, width = 8, height = 6, dpi = 320)
+ggsave(out_files[5], p_bottom, width = 8, height = 6)
+ggsave(out_files[6], p_bottom, width = 8, height = 6, dpi = 320)
+ggsave(out_files[7], p_spatial_niche, width = 16, height = 6)
+ggsave(out_files[8], p_spatial_niche, width = 16, height = 6, dpi = 320)
 
 manifest_path <- file.path(DIR_REPORTS, "00c_figure_customization_sandbox_manifest.json")
 record_artifact_manifest(

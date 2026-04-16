@@ -103,15 +103,19 @@ p_tissue_celltype <- ggplot(spatial_df, aes(x = x_um, y = y_um, color = celltype
 
 out_files <- c(
   file.path(DIR_FIGURES, "01c_embeddings_week_umap_tsne.pdf"),
+  file.path(DIR_FIGURES, "01c_embeddings_week_umap_tsne.png"),
   file.path(DIR_FIGURES, "01c_embeddings_clusters_umap_tsne.pdf"),
+  file.path(DIR_FIGURES, "01c_embeddings_clusters_umap_tsne.png"),
   file.path(DIR_FIGURES, "01c_tissue_map_celltype_by_week.pdf"),
   file.path(DIR_FIGURES, "01c_tissue_map_celltype_by_week.png")
 )
 
 ggsave(out_files[1], p_umap_week + p_tsne_week, width = 14, height = 6)
-ggsave(out_files[2], p_umap_cluster + p_tsne_cluster, width = 14, height = 6)
-ggsave(out_files[3], p_tissue_celltype, width = 16, height = 7)
-ggsave(out_files[4], p_tissue_celltype, width = 16, height = 7, dpi = 320)
+ggsave(out_files[2], p_umap_week + p_tsne_week, width = 14, height = 6, dpi = 320)
+ggsave(out_files[3], p_umap_cluster + p_tsne_cluster, width = 14, height = 6)
+ggsave(out_files[4], p_umap_cluster + p_tsne_cluster, width = 14, height = 6, dpi = 320)
+ggsave(out_files[5], p_tissue_celltype, width = 16, height = 7)
+ggsave(out_files[6], p_tissue_celltype, width = 16, height = 7, dpi = 320)
 
 plot_manifest_path <- file.path(DIR_REPORTS, "01c_plot_spatial_embeddings_manifest.json")
 record_plot_manifest_01c(
