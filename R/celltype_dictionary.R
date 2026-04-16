@@ -31,11 +31,27 @@ rename_with_true_names <- function(x) {
            "STB.progenitor" = "STB Progenitor",
 
            # Trophoblasts (extravillous)
+           "EVT1" = "Extravillous Trophoblast 1",
            "EVT_1" = "Extravillous Trophoblast 1",
+           "EVT2" = "Extravillous Trophoblast 2",
            "EVT_2" = "Extravillous Trophoblast 2",
+           "EVT3" = "EVT",
            "iEVT" = "Interstitial EVT",
            "EVT.progenitor" = "EVT Progenitor",
            "EVT" = "EVT",
+
+           # Common STARmap labels used in this project
+           "vCTB1" = "Villous Cytotrophoblast",
+           "vCTB2" = "Villous Cytotrophoblast",
+           "vCTB3" = "Villous Cytotrophoblast",
+           "vCTBp" = "Prolif. Cytotrophoblast",
+           "vCTB" = "Villous Cytotrophoblast",
+           "Hofbauer cells" = "Hofbauer Macrophages",
+           "maternal macrophages" = "PAMM1 Macrophages",
+           "Endothelial_cells" = "Maternal Endothelial",
+           "unknown1" = "Unknown Cell Type",
+           "unknown2" = "Unknown Cell Type",
+           "unknown3" = "Unknown Cell Type",
 
            # Other
            "Erythroblasts" = "Erythroblasts",

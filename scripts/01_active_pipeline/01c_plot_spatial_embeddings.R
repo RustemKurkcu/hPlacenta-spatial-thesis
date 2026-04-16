@@ -20,7 +20,11 @@ log_msg <- function(...) {
 }
 
 resolve_object_path <- function(path_rds) {
+  path_with_ct_qs <- sub("\\.rds$", "_with_celltypes.qs", path_rds)
+  path_with_ct_rds <- sub("\\.rds$", "_with_celltypes.rds", path_rds)
   path_qs <- sub("\\.rds$", ".qs", path_rds)
+  if (file.exists(path_with_ct_qs)) return(path_with_ct_qs)
+  if (file.exists(path_with_ct_rds)) return(path_with_ct_rds)
   if (file.exists(path_qs)) return(path_qs)
   if (file.exists(path_rds)) return(path_rds)
   NA_character_
