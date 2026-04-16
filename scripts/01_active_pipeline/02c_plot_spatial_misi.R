@@ -118,6 +118,8 @@ celltype_col <- choose_celltype_col(seu@meta.data)
 if (!is.na(celltype_col)) {
   log_msg("Using celltype column for overlays: ", celltype_col)
   seu$celltype_plot <- rename_with_true_names(as.character(seu@meta.data[[celltype_col]]))
+  unk_frac <- mean(seu$celltype_plot %in% c("Unknown Cell Type", "unknown1", "unknown2", "unknown3"), na.rm = TRUE)
+  log_msg("Canonical celltype coverage (non-unknown): ", round(100 * (1 - unk_frac), 2), "%")
 }
 
 for (red in reductions) {
