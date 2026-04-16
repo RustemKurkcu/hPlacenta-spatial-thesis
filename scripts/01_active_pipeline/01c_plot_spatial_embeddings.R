@@ -107,15 +107,16 @@ ggsave(out_files[4], cluster_patch, width = 14, height = 6, dpi = 320)
 celltype_col <- choose_celltype_col(seu@meta.data)
 if (!is.na(celltype_col)) {
   log_msg("Using celltype column for overlays: ", celltype_col)
-  cell_levels <- sort(unique(as.character(seu@meta.data[[celltype_col]])))
+  seu$celltype_plot <- rename_with_true_names(as.character(seu@meta.data[[celltype_col]]))
+  cell_levels <- sort(unique(as.character(seu$celltype_plot)))
   cell_cols <- get_universal_colors(cell_levels)
-  p_umap_celltype <- DimPlot(seu, reduction = "umap_harmony", group.by = celltype_col, label = TRUE, pt.size = 0.2) +
+  p_umap_celltype <- DimPlot(seu, reduction = "umap_harmony", group.by = "celltype_plot", label = TRUE, pt.size = 0.2) +
     scale_color_manual(values = cell_cols, drop = FALSE) +
-    ggtitle(paste0("UMAP (Harmony) by Cell Type (", celltype_col, ")")) +
+    ggtitle(paste0("UMAP (Harmony) by Cell Type (", celltype_col, " → canonical)")) +
     theme_thesis_spatial()
-  p_tsne_celltype <- DimPlot(seu, reduction = "tsne_harmony", group.by = celltype_col, label = TRUE, pt.size = 0.2) +
+  p_tsne_celltype <- DimPlot(seu, reduction = "tsne_harmony", group.by = "celltype_plot", label = TRUE, pt.size = 0.2) +
     scale_color_manual(values = cell_cols, drop = FALSE) +
-    ggtitle(paste0("t-SNE (Harmony) by Cell Type (", celltype_col, ")")) +
+    ggtitle(paste0("t-SNE (Harmony) by Cell Type (", celltype_col, " → canonical)")) +
     theme_thesis_spatial()
   p_ct <- p_umap_celltype + p_tsne_celltype
   ct_pdf <- file.path(DIR_FIGURES, "01c_embeddings_celltype_umap_tsne.pdf")

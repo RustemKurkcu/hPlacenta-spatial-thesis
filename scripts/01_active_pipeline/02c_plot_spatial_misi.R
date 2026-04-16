@@ -115,7 +115,10 @@ if (length(missing_reductions) > 0) {
 
 fig_paths <- character(0)
 celltype_col <- choose_celltype_col(seu@meta.data)
-if (!is.na(celltype_col)) log_msg("Using celltype column for overlays: ", celltype_col)
+if (!is.na(celltype_col)) {
+  log_msg("Using celltype column for overlays: ", celltype_col)
+  seu$celltype_plot <- rename_with_true_names(as.character(seu@meta.data[[celltype_col]]))
+}
 
 for (red in reductions) {
   for (feat in features_to_plot) {
@@ -141,17 +144,17 @@ for (red in reductions) {
   }
 
   if (!is.na(celltype_col)) {
-    cell_levels <- sort(unique(as.character(seu@meta.data[[celltype_col]])))
+    cell_levels <- sort(unique(as.character(seu$celltype_plot)))
     cell_cols <- get_universal_colors(cell_levels)
     p_ct <- DimPlot(
       object = seu,
       reduction = red,
-      group.by = celltype_col,
+      group.by = "celltype_plot",
       label = TRUE,
       pt.size = 0.2
     ) +
       scale_color_manual(values = cell_cols, drop = FALSE) +
-      ggtitle(paste0("Cell type overlay on ", red, " (", celltype_col, ")")) +
+      ggtitle(paste0("Cell type overlay on ", red, " (", celltype_col, " → canonical)")) +
       theme_thesis_spatial()
 
     base_ct <- file.path(DIR_FIGURES, paste0("02c_celltype_overlay_", red))
