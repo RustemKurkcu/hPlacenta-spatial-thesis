@@ -7,7 +7,6 @@
 
 suppressPackageStartupMessages({
   library(Seurat)
-  library(CellChat)
   library(ggplot2)
   library(dplyr)
   library(patchwork)
@@ -110,6 +109,16 @@ cellchat <- bundle$cellchat
 spatial_df <- bundle$spatial_meta
 spatial_df$week <- factor(as.character(spatial_df$week), levels = c("W7", "W8-2", "W9", "W11"))
 
+if (requireNamespace("SpatialCellChat", quietly = TRUE)) {
+  net_visual_circle_fn <- SpatialCellChat::netVisual_circle
+  log_msg("Using SpatialCellChat visualization backend.")
+} else if (requireNamespace("CellChat", quietly = TRUE)) {
+  net_visual_circle_fn <- CellChat::netVisual_circle
+  log_msg("Using CellChat visualization backend.", .level = "WARN")
+} else {
+  stop("Neither 'SpatialCellChat' nor 'CellChat' is installed for visualization.")
+}
+
 # -----------------------------------------------------------------------------
 # Cell-type reference spatial map
 # -----------------------------------------------------------------------------
@@ -136,7 +145,7 @@ circle_pdf <- file.path(DIR_FIGURES, "03c_global_communication_circle.pdf")
 circle_png <- file.path(DIR_FIGURES, "03c_global_communication_circle.png")
 
 pdf(circle_pdf, width = 10, height = 10)
-netVisual_circle(
+net_visual_circle_fn(
   cellchat@net$weight,
   vertex.weight = group_size,
   weight.scale = TRUE,
@@ -146,7 +155,7 @@ netVisual_circle(
 dev.off()
 
 png(circle_png, width = 3000, height = 3000, res = 300)
-netVisual_circle(
+net_visual_circle_fn(
   cellchat@net$weight,
   vertex.weight = group_size,
   weight.scale = TRUE,

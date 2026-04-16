@@ -8,7 +8,6 @@
 
 suppressPackageStartupMessages({
   library(Seurat)
-  library(CellChat)
   library(dplyr)
   library(jsonlite)
 })
@@ -49,6 +48,22 @@ read_object <- function(path) {
     return(qs::qread(path))
   }
   readRDS(path)
+}
+
+get_normalized_assay_data <- function(seu, assay = "RNA", preferred_layers = c("data", "lognorm", "counts")) {
+  # SeuratObject v5 uses `layer`; older objects/scripts may still rely on slot.
+  for (ly in preferred_layers) {
+    mat <- tryCatch(
+      SeuratObject::GetAssayData(seu, assay = assay, layer = ly),
+      error = function(e) NULL
+    )
+    if (!is.null(mat)) return(mat)
+  }
+  stop(
+    "Unable to extract assay data from assay '", assay, "'. ",
+    "Tried layers: ", paste(preferred_layers, collapse = ", "),
+    ". Please confirm assay/layer names in this Seurat object."
+  )
 }
 
 record_artifact_manifest <- function(
@@ -107,26 +122,63 @@ meta <- seu@meta.data %>%
   dplyr::mutate(group = as.character(celltype_plot))
 rownames(meta) <- colnames(seu)
 
-data.input <- GetAssayData(seu, assay = "RNA", slot = "data")
+data.input <- get_normalized_assay_data(seu, assay = "RNA")
 scale.factors <- list(spot = 1, spot.diameter = 1)
 
-log_msg("Creating spatial CellChat object using physical coordinates.")
-cellchat <- CellChat::createCellChat(
+using_spatial_cellchat <- requireNamespace("SpatialCellChat", quietly = TRUE)
+if (using_spatial_cellchat) {
+  log_msg("Detected SpatialCellChat package; using SpatialCellChat API (CellChat v3).")
+  create_fn <- SpatialCellChat::createCellChat
+  db_human <- SpatialCellChat::CellChatDB.human
+  subset_fn <- SpatialCellChat::subsetData
+  over_gene_fn <- SpatialCellChat::identifyOverExpressedGenes
+  over_inter_fn <- SpatialCellChat::identifyOverExpressedInteractions
+  commprob_fn <- SpatialCellChat::computeCommunProb
+  filter_fn <- SpatialCellChat::filterCommunication
+  pathway_fn <- SpatialCellChat::computeCommunProbPathway
+  aggregate_fn <- SpatialCellChat::aggregateNet
+  subset_comm_fn <- SpatialCellChat::subsetCommunication
+} else {
+  if (!requireNamespace("CellChat", quietly = TRUE)) {
+    stop("Neither 'SpatialCellChat' nor 'CellChat' is installed.")
+  }
+  log_msg("Using CellChat package (v1/v2 API). Install SpatialCellChat for CellChat v3 features.", .level = "WARN")
+  create_fn <- CellChat::createCellChat
+  db_human <- CellChat::CellChatDB.human
+  subset_fn <- CellChat::subsetData
+  over_gene_fn <- CellChat::identifyOverExpressedGenes
+  over_inter_fn <- CellChat::identifyOverExpressedInteractions
+  commprob_fn <- CellChat::computeCommunProb
+  filter_fn <- CellChat::filterCommunication
+  pathway_fn <- CellChat::computeCommunProbPathway
+  aggregate_fn <- CellChat::aggregateNet
+  subset_comm_fn <- CellChat::subsetCommunication
+}
+
+create_args <- list(
   object = data.input,
   meta = meta,
   group.by = "group",
   datatype = "spatial",
-  coordinates = coords,
-  scale.factors = scale.factors
+  coordinates = coords
 )
+create_formals <- names(formals(create_fn))
+if ("spatial.factors" %in% create_formals) {
+  create_args$spatial.factors <- scale.factors
+} else if ("scale.factors" %in% create_formals) {
+  create_args$scale.factors <- scale.factors
+}
 
-cellchat@DB <- CellChatDB.human
-cellchat <- subsetData(cellchat)
-cellchat <- identifyOverExpressedGenes(cellchat)
-cellchat <- identifyOverExpressedInteractions(cellchat)
+log_msg("Creating spatial CellChat object using physical coordinates.")
+cellchat <- do.call(create_fn, create_args)
+
+cellchat@DB <- db_human
+cellchat <- subset_fn(cellchat)
+cellchat <- over_gene_fn(cellchat)
+cellchat <- over_inter_fn(cellchat)
 
 log_msg("Computing communication probabilities with spatial distance penalty.")
-cellchat <- computeCommunProb(
+cellchat <- commprob_fn(
   cellchat,
   type = "truncatedMean",
   trim = 0.1,
@@ -135,9 +187,9 @@ cellchat <- computeCommunProb(
   scale.distance = 0.01,
   contact.dependent = FALSE
 )
-cellchat <- filterCommunication(cellchat, min.cells = 10)
-cellchat <- computeCommunProbPathway(cellchat)
-cellchat <- aggregateNet(cellchat)
+cellchat <- filter_fn(cellchat, min.cells = 10)
+cellchat <- pathway_fn(cellchat)
+cellchat <- aggregate_fn(cellchat)
 
 cluster_tbl <- seu@meta.data %>%
   dplyr::mutate(seurat_clusters = as.character(seurat_clusters)) %>%
@@ -149,7 +201,7 @@ cluster_tbl <- seu@meta.data %>%
 top2_vulnerable_clusters <- head(cluster_tbl$seurat_clusters, 2)
 top2_celltypes <- unique(as.character(seu$celltype_plot[seu$seurat_clusters %in% top2_vulnerable_clusters]))
 
-comm_df <- subsetCommunication(cellchat)
+comm_df <- subset_comm_fn(cellchat)
 comm_vulnerable <- comm_df %>%
   dplyr::filter(source %in% top2_celltypes | target %in% top2_celltypes)
 
