@@ -1,9 +1,15 @@
 #!/usr/bin/env Rscript
 
+# =============================================================================
+# Script: 02c_plot_spatial_misi.R
+# Purpose: Decoupled visualization-only script for precomputed MISI scores.
+# =============================================================================
+
 suppressPackageStartupMessages({
   library(Seurat)
   library(ggplot2)
   library(jsonlite)
+  library(dplyr)
 })
 
 source("R/spatial_color_themes.R")
@@ -20,9 +26,7 @@ DIR_LOGS <- file.path(OUT_ROOT, "logs")
 DIR_OBJECTS <- file.path(OUT_ROOT, "objects")
 DIR_FIGURES <- file.path(OUT_ROOT, "figures")
 DIR_REPORTS <- file.path(OUT_ROOT, "reports")
-for (d in c(DIR_LOGS, DIR_OBJECTS, DIR_FIGURES, DIR_REPORTS)) {
-  if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
-}
+for (d in c(DIR_LOGS, DIR_OBJECTS, DIR_FIGURES, DIR_REPORTS)) if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 LOG_FILE <- file.path(DIR_LOGS, "02c_plot_spatial_misi.log")
 
 log_msg <- function(..., .level = "INFO") {
@@ -34,14 +38,10 @@ log_msg <- function(..., .level = "INFO") {
 }
 
 resolve_object_path <- function(path_rds) {
-  path_with_ct_qs <- sub("\\.rds$", "_with_celltypes.qs", path_rds)
-  path_with_ct_rds <- sub("\\.rds$", "_with_celltypes.rds", path_rds)
   path_qs <- sub("\\.rds$", ".qs", path_rds)
-  if (file.exists(path_with_ct_qs)) return(path_with_ct_qs)
-  if (file.exists(path_with_ct_rds)) return(path_with_ct_rds)
   if (file.exists(path_qs)) return(path_qs)
   if (file.exists(path_rds)) return(path_rds)
-  NA_character_
+  stop("Missing object: ", path_rds)
 }
 
 read_object <- function(path) {
@@ -59,7 +59,6 @@ record_plot_manifest_02c <- function(
   run_timestamp,
   seed,
   source_data,
-  compute_script,
   plotting_script,
   figures_output
 ) {
@@ -69,30 +68,18 @@ record_plot_manifest_02c <- function(
     run_timestamp = run_timestamp,
     seed = seed,
     source_data = source_data,
-    compute_script = compute_script,
     plotting_script = plotting_script,
     figures_output = figures_output
   )
   jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
-  invisible(manifest)
 }
 
-choose_celltype_col <- function(md) {
-  for (cand in c("predicted.celltype", "cell_label_display", "celltype_corrected", "celltype_true_name", "celltype_original", "seurat_clusters")) {
-    if (cand %in% colnames(md)) return(cand)
-  }
-  NA_character_
-}
+input_obj <- resolve_object_path(file.path(DIR_OBJECTS, "02_scored_misi_ido1.rds"))
+log_msg("Loading scored object: ", input_obj)
+seu <- read_object(input_obj)
 
-input_obj <- file.path(DIR_OBJECTS, "02_scored_misi_ido1.rds")
-input_obj_found <- resolve_object_path(input_obj)
-if (is.na(input_obj_found)) {
-  stop("Missing scored object: ", input_obj,
-       "\nRun scripts/01_active_pipeline/02_spatial_misi_ido1_scoring.R first.")
-}
-
-log_msg("Loading scored object: ", input_obj_found)
-seu <- read_object(input_obj_found)
+# Directive 1: force developmental order.
+seu$week <- factor(as.character(seu$week), levels = c("W7", "W8-2", "W9", "W11"))
 
 features_to_plot <- c(
   "MMP_ECM_Remodeling",
@@ -102,27 +89,11 @@ features_to_plot <- c(
   "MISI_Vulnerability"
 )
 
-missing_features <- setdiff(features_to_plot, colnames(seu@meta.data))
-if (length(missing_features) > 0) {
-  stop("Missing required score columns: ", paste(missing_features, collapse = ", "))
-}
-
-reductions <- c("umap_harmony", "tsne_harmony")
-missing_reductions <- setdiff(reductions, names(seu@reductions))
-if (length(missing_reductions) > 0) {
-  stop("Missing required reductions: ", paste(missing_reductions, collapse = ", "))
-}
-
+# -----------------------------------------------------------------------------
+# A) Existing embedding feature plots (for consistency)
+# -----------------------------------------------------------------------------
 fig_paths <- character(0)
-celltype_col <- choose_celltype_col(seu@meta.data)
-if (!is.na(celltype_col)) {
-  log_msg("Using celltype column for overlays: ", celltype_col)
-  seu$celltype_plot <- rename_with_true_names(as.character(seu@meta.data[[celltype_col]]))
-  unk_frac <- mean(seu$celltype_plot %in% c("Unknown Cell Type", "unknown1", "unknown2", "unknown3"), na.rm = TRUE)
-  log_msg("Canonical celltype coverage (non-unknown): ", round(100 * (1 - unk_frac), 2), "%")
-}
-
-for (red in reductions) {
+for (red in c("umap_harmony", "tsne_harmony")) {
   for (feat in features_to_plot) {
     p <- FeaturePlot(
       object = seu,
@@ -136,79 +107,66 @@ for (red in reductions) {
       theme_thesis_spatial()
 
     base <- file.path(DIR_FIGURES, paste0("02c_", feat, "_", red))
-    pdf_path <- paste0(base, ".pdf")
-    png_path <- paste0(base, ".png")
-
-    ggsave(pdf_path, p, width = 8, height = 6)
-    ggsave(png_path, p, width = 8, height = 6, dpi = 300)
-
-    fig_paths <- c(fig_paths, pdf_path, png_path)
-  }
-
-  if (!is.na(celltype_col)) {
-    cell_levels <- sort(unique(as.character(seu$celltype_plot)))
-    cell_cols <- get_universal_colors(cell_levels)
-    p_ct <- DimPlot(
-      object = seu,
-      reduction = red,
-      group.by = "celltype_plot",
-      label = TRUE,
-      pt.size = 0.2
-    ) +
-      scale_color_manual(values = cell_cols, drop = FALSE) +
-      ggtitle(paste0("Cell type overlay on ", red, " (", celltype_col, " → canonical)")) +
-      theme_thesis_spatial()
-
-    base_ct <- file.path(DIR_FIGURES, paste0("02c_celltype_overlay_", red))
-    pdf_ct <- paste0(base_ct, ".pdf")
-    png_ct <- paste0(base_ct, ".png")
-    ggsave(pdf_ct, p_ct, width = 10, height = 8)
-    ggsave(png_ct, p_ct, width = 10, height = 8, dpi = 300)
-    fig_paths <- c(fig_paths, pdf_ct, png_ct)
+    ggsave(paste0(base, ".pdf"), p, width = 8, height = 6)
+    ggsave(paste0(base, ".png"), p, width = 8, height = 6, dpi = 300)
+    fig_paths <- c(fig_paths, paste0(base, ".pdf"), paste0(base, ".png"))
   }
 }
 
-# Spatial heat maps in physical coordinates for each score
-if (all(c("x_um", "y_um", "week") %in% colnames(seu@meta.data))) {
-  spatial_df <- seu@meta.data
-  spatial_df$week <- as.character(spatial_df$week)
-  for (feat in features_to_plot) {
-    d <- spatial_df[, c("x_um", "y_um", "week", feat), drop = FALSE]
-    names(d)[4] <- "score"
-    d <- d[is.finite(d$x_um) & is.finite(d$y_um) & is.finite(d$score), , drop = FALSE]
-    if (nrow(d) == 0) next
+# -----------------------------------------------------------------------------
+# B) Directive 3: Vulnerability niche combo plot in physical space
+# -----------------------------------------------------------------------------
+spatial_df <- seu@meta.data %>%
+  dplyr::mutate(
+    week = factor(as.character(week), levels = c("W7", "W8-2", "W9", "W11")),
+    celltype_plot = rename_with_true_names(as.character(predicted.celltype))
+  )
 
-    p_red <- ggplot(d, aes(x = x_um, y = y_um, color = score)) +
-      geom_point(size = 0.15, alpha = 0.8) +
-      facet_wrap(~week, scales = "fixed") +
-      scale_color_gradient(low = "white", high = "#8B0000") +
-      coord_equal() +
-      ggtitle(paste0(feat, " spatial heatmap (white → dark red)")) +
-      theme_thesis_spatial()
+q75 <- stats::quantile(spatial_df$MISI_Vulnerability, probs = 0.75, na.rm = TRUE)
+spatial_df$is_vulnerable_top25 <- spatial_df$MISI_Vulnerability >= q75
 
-    p_div <- ggplot(d, aes(x = x_um, y = y_um, color = score)) +
-      geom_point(size = 0.15, alpha = 0.8) +
-      facet_wrap(~week, scales = "fixed") +
-      scale_color_gradient2(low = "#0B1F5E", mid = "white", high = "#CB181D", midpoint = median(d$score, na.rm = TRUE)) +
-      coord_equal() +
-      ggtitle(paste0(feat, " spatial heatmap (navy → white → red)")) +
-      theme_thesis_spatial()
+# Overlay plot: all cells in light gray; top-25% vulnerability in bright red.
+p_vuln_overlay <- ggplot(spatial_df, aes(x = x_um, y = y_um)) +
+  geom_point(color = "grey85", size = 0.15, alpha = 0.6) +
+  geom_point(
+    data = subset(spatial_df, is_vulnerable_top25),
+    color = "#CB181D", size = 0.30, alpha = 0.95
+  ) +
+  facet_wrap(~week, ncol = 4) +
+  coord_fixed() +
+  labs(
+    title = "Vulnerability Niche Overlay (Top 25% MISI_Vulnerability)",
+    subtitle = "Background: all cells (gray); Highlight: top quartile vulnerability (red)",
+    x = "x_um", y = "y_um"
+  ) +
+  theme_thesis_spatial()
 
-    base_red <- file.path(DIR_FIGURES, paste0("02c_spatial_", feat, "_white_to_red"))
-    base_div <- file.path(DIR_FIGURES, paste0("02c_spatial_", feat, "_navy_white_red"))
-    ggsave(paste0(base_red, ".pdf"), p_red, width = 12, height = 8)
-    ggsave(paste0(base_red, ".png"), p_red, width = 12, height = 8, dpi = 320)
-    ggsave(paste0(base_div, ".pdf"), p_div, width = 12, height = 8)
-    ggsave(paste0(base_div, ".png"), p_div, width = 12, height = 8, dpi = 320)
-    fig_paths <- c(
-      fig_paths,
-      paste0(base_red, ".pdf"), paste0(base_red, ".png"),
-      paste0(base_div, ".pdf"), paste0(base_div, ".png")
-    )
-  }
-} else {
-  log_msg("Skipping spatial heat maps: need x_um, y_um, and week columns in metadata.", .level = "WARN")
-}
+# Secondary layer: show which cell types occupy top-vulnerability zones.
+p_vuln_celltypes <- ggplot(
+  subset(spatial_df, is_vulnerable_top25),
+  aes(x = x_um, y = y_um, color = celltype_plot)
+) +
+  geom_point(size = 0.30, alpha = 0.95) +
+  facet_grid(celltype_plot ~ week, scales = "fixed") +
+  scale_color_manual(values = get_universal_colors(sort(unique(as.character(subset(spatial_df, is_vulnerable_top25)$celltype_plot))))) +
+  coord_fixed() +
+  labs(
+    title = "Top-Quartile Vulnerable Cells by Cell Type and Week",
+    subtitle = "Secondary niche view to identify biological combinations in toxic-switch zones",
+    x = "x_um", y = "y_um", color = "Cell Type"
+  ) +
+  theme_thesis_spatial() +
+  theme(legend.position = "none")
+
+base_overlay <- file.path(DIR_FIGURES, "02c_vulnerability_niche_overlay")
+base_combo <- file.path(DIR_FIGURES, "02c_vulnerability_niche_celltype_combo")
+ggsave(paste0(base_overlay, ".pdf"), p_vuln_overlay, width = 16, height = 6)
+ggsave(paste0(base_overlay, ".png"), p_vuln_overlay, width = 16, height = 6, dpi = 320)
+ggsave(paste0(base_combo, ".pdf"), p_vuln_celltypes, width = 18, height = 14)
+ggsave(paste0(base_combo, ".png"), p_vuln_celltypes, width = 18, height = 14, dpi = 320)
+fig_paths <- c(fig_paths,
+               paste0(base_overlay, ".pdf"), paste0(base_overlay, ".png"),
+               paste0(base_combo, ".pdf"), paste0(base_combo, ".png"))
 
 manifest_path <- file.path(DIR_REPORTS, "02c_plot_spatial_misi_manifest.json")
 record_plot_manifest_02c(
@@ -217,8 +175,7 @@ record_plot_manifest_02c(
   version = PIPELINE_VERSION,
   run_timestamp = RUN_TIMESTAMP,
   seed = RUN_SEED,
-  source_data = input_obj_found,
-  compute_script = "scripts/01_active_pipeline/02_spatial_misi_ido1_scoring.R",
+  source_data = input_obj,
   plotting_script = "scripts/01_active_pipeline/02c_plot_spatial_misi.R",
   figures_output = fig_paths
 )
