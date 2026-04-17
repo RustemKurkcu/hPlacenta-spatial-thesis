@@ -38,13 +38,21 @@ log_msg <- function(..., .level = "INFO") {
 configure_future_runtime <- function(max_size_gb = 8, workers = 10) {
   old_plan <- NULL
   old_max <- getOption("future.globals.maxSize")
+  safe_workers <- as.integer(workers)
+  if (as.numeric(max_size_gb) > 10 && safe_workers > 6) {
+    safe_workers <- 6L
+    log_msg(
+      "Safe worker cap applied: max_size_gb=", max_size_gb,
+      " => workers capped to ", safe_workers, " to avoid swap pressure."
+    )
+  }
 
   if (requireNamespace("future", quietly = TRUE)) {
     old_plan <- future::plan()
     options(future.globals.maxSize = as.numeric(max_size_gb) * 1024^3)
-    future::plan(future::multisession, workers = workers)
+    future::plan(future::multisession, workers = safe_workers)
     log_msg(
-      "Configured future runtime: plan=multisession (workers=", workers,
+      "Configured future runtime: plan=multisession (workers=", safe_workers,
       "), future.globals.maxSize=", round(getOption("future.globals.maxSize") / 1024^3, 2), " GiB."
     )
   } else {
@@ -294,7 +302,7 @@ if (!"annotation" %in% colnames(cellchat_base@DB$interaction)) {
   cellchat_base@DB$interaction$annotation <- "Secreted Signaling"
 }
 
-future_state <- configure_future_runtime(max_size_gb = 32, workers = 10)
+future_state <- configure_future_runtime(max_size_gb = 48, workers = 10)
 on.exit(restore_future_runtime(future_state), add = TRUE)
 
 subset_db_fn <- if (using_spatial_cellchat) SpatialCellChat::subsetDB else CellChat::subsetDB
