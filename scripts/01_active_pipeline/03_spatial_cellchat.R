@@ -59,9 +59,18 @@ get_normalized_assay_data <- function(seu, assay = "RNA", preferred_layers = c("
     )
     if (!is.null(mat)) return(mat)
   }
+  # Legacy Seurat (v4 and older) fallback.
+  legacy_slots <- unique(c(preferred_layers, "data", "counts"))
+  for (sl in legacy_slots) {
+    mat <- tryCatch(
+      SeuratObject::GetAssayData(seu, assay = assay, slot = sl),
+      error = function(e) NULL
+    )
+    if (!is.null(mat)) return(mat)
+  }
   stop(
     "Unable to extract assay data from assay '", assay, "'. ",
-    "Tried layers: ", paste(preferred_layers, collapse = ", "),
+    "Tried layers/slots: ", paste(unique(c(preferred_layers, legacy_slots)), collapse = ", "),
     ". Please confirm assay/layer names in this Seurat object."
   )
 }
@@ -123,6 +132,7 @@ meta <- seu@meta.data %>%
 rownames(meta) <- colnames(seu)
 
 data.input <- get_normalized_assay_data(seu, assay = "RNA")
+log_msg("Assay matrix extracted for CellChat: ", nrow(data.input), " genes x ", ncol(data.input), " cells.")
 scale.factors <- list(spot = 1, spot.diameter = 1)
 
 using_spatial_cellchat <- requireNamespace("SpatialCellChat", quietly = TRUE)
