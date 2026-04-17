@@ -51,13 +51,16 @@ read_object <- function(path) {
 }
 
 get_normalized_assay_data <- function(seu, assay = "RNA", preferred_layers = c("data", "lognorm", "counts")) {
+  is_valid_matrix <- function(x) !is.null(x) && (is.matrix(x) || inherits(x, "Matrix"))
+  has_shape <- function(x) is_valid_matrix(x) && nrow(x) > 0 && ncol(x) > 0
+
   # SeuratObject v5 uses `layer`; older objects/scripts may still rely on slot.
   for (ly in preferred_layers) {
     mat <- tryCatch(
       SeuratObject::GetAssayData(seu, assay = assay, layer = ly),
       error = function(e) NULL
     )
-    if (!is.null(mat)) return(mat)
+    if (has_shape(mat)) return(list(mat = mat, source = paste0("layer:", ly)))
   }
   # Legacy Seurat (v4 and older) fallback.
   legacy_slots <- unique(c(preferred_layers, "data", "counts"))
@@ -66,7 +69,7 @@ get_normalized_assay_data <- function(seu, assay = "RNA", preferred_layers = c("
       SeuratObject::GetAssayData(seu, assay = assay, slot = sl),
       error = function(e) NULL
     )
-    if (!is.null(mat)) return(mat)
+    if (has_shape(mat)) return(list(mat = mat, source = paste0("slot:", sl)))
   }
   stop(
     "Unable to extract assay data from assay '", assay, "'. ",
@@ -131,15 +134,50 @@ meta <- seu@meta.data %>%
   dplyr::mutate(group = as.character(celltype_plot))
 rownames(meta) <- colnames(seu)
 
-data.input <- get_normalized_assay_data(seu, assay = "RNA")
-log_msg("Assay matrix extracted for CellChat: ", nrow(data.input), " genes x ", ncol(data.input), " cells.")
+assay_payload <- get_normalized_assay_data(seu, assay = "RNA")
+data.input <- assay_payload$mat
+log_msg(
+  "Assay matrix extracted for CellChat from ", assay_payload$source, ": ",
+  nrow(data.input), " genes x ", ncol(data.input), " cells."
+)
+if (!grepl("data|lognorm", assay_payload$source)) {
+  log_msg(
+    "Expression matrix came from counts-like layer/slot (", assay_payload$source, "). ",
+    "Applying log-normalization in-script for CellChat compatibility.",
+    .level = "WARN"
+  )
+  if (!requireNamespace("Matrix", quietly = TRUE)) {
+    stop("Package 'Matrix' is required to normalize count matrices for CellChat.")
+  }
+  lib_size <- Matrix::colSums(data.input)
+  lib_size[lib_size == 0] <- 1
+  data.input <- Matrix::t(Matrix::t(data.input) / lib_size) * 1e4
+  data.input <- log1p(data.input)
+}
 scale.factors <- list(spot = 1, spot.diameter = 1)
+spatial.factors <- list(ratio = 1, tol = 0)
 
 using_spatial_cellchat <- requireNamespace("SpatialCellChat", quietly = TRUE)
+resolve_cellchat_db <- function() {
+  if (requireNamespace("CellChat", quietly = TRUE) &&
+      exists("CellChatDB.human", envir = asNamespace("CellChat"), inherits = FALSE)) {
+    return(get("CellChatDB.human", envir = asNamespace("CellChat"), inherits = FALSE))
+  }
+  if (requireNamespace("SpatialCellChat", quietly = TRUE) &&
+      exists("CellChatDB.human", envir = asNamespace("SpatialCellChat"), inherits = FALSE)) {
+    return(get("CellChatDB.human", envir = asNamespace("SpatialCellChat"), inherits = FALSE))
+  }
+  NULL
+}
+
 if (using_spatial_cellchat) {
   log_msg("Detected SpatialCellChat package; using SpatialCellChat API (CellChat v3).")
-  create_fn <- SpatialCellChat::createCellChat
-  db_human <- SpatialCellChat::CellChatDB.human
+  create_fn <- if ("createSpatialCellChat" %in% getNamespaceExports("SpatialCellChat")) {
+    SpatialCellChat::createSpatialCellChat
+  } else {
+    stop("SpatialCellChat is installed but `createSpatialCellChat` is not exported.")
+  }
+  db_human <- resolve_cellchat_db()
   subset_fn <- SpatialCellChat::subsetData
   over_gene_fn <- SpatialCellChat::identifyOverExpressedGenes
   over_inter_fn <- SpatialCellChat::identifyOverExpressedInteractions
@@ -154,7 +192,7 @@ if (using_spatial_cellchat) {
   }
   log_msg("Using CellChat package (v1/v2 API). Install SpatialCellChat for CellChat v3 features.", .level = "WARN")
   create_fn <- CellChat::createCellChat
-  db_human <- CellChat::CellChatDB.human
+  db_human <- resolve_cellchat_db()
   subset_fn <- CellChat::subsetData
   over_gene_fn <- CellChat::identifyOverExpressedGenes
   over_inter_fn <- CellChat::identifyOverExpressedInteractions
@@ -174,7 +212,7 @@ create_args <- list(
 )
 create_formals <- names(formals(create_fn))
 if ("spatial.factors" %in% create_formals) {
-  create_args$spatial.factors <- scale.factors
+  create_args$spatial.factors <- spatial.factors
 } else if ("scale.factors" %in% create_formals) {
   create_args$scale.factors <- scale.factors
 }
@@ -182,7 +220,16 @@ if ("spatial.factors" %in% create_formals) {
 log_msg("Creating spatial CellChat object using physical coordinates.")
 cellchat <- do.call(create_fn, create_args)
 
-cellchat@DB <- db_human
+if (!is.null(db_human)) cellchat@DB <- db_human
+if (is.null(cellchat@DB) || is.null(cellchat@DB$interaction)) {
+  stop(
+    "CellChat DB is missing. Please ensure CellChat ligand-receptor DB is available ",
+    "(e.g., install/load CellChat package data)."
+  )
+}
+if (!"annotation" %in% colnames(cellchat@DB$interaction)) {
+  cellchat@DB$interaction$annotation <- "Secreted Signaling"
+}
 cellchat <- subset_fn(cellchat)
 cellchat <- over_gene_fn(cellchat)
 cellchat <- over_inter_fn(cellchat)
