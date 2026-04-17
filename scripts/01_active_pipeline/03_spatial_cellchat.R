@@ -255,15 +255,20 @@ cellchat <- over_gene_fn(cellchat)
 cellchat <- over_inter_fn(cellchat)
 
 log_msg("Computing communication probabilities with spatial distance penalty.")
-cellchat <- commprob_fn(
-  cellchat,
-  type = "truncatedMean",
-  trim = 0.1,
+comm_formals <- names(formals(commprob_fn))
+comm_args <- list(
+  object = cellchat,
   distance.use = TRUE,
   interaction.range = 2500,
   scale.distance = 0.01,
   contact.dependent = FALSE
 )
+if ("type" %in% comm_formals) comm_args$type <- "truncatedMean"
+if ("trim" %in% comm_formals) comm_args$trim <- 0.1
+if ("raw.use" %in% comm_formals) comm_args$raw.use <- TRUE
+if ("contact.dependent.forced" %in% comm_formals) comm_args$contact.dependent.forced <- FALSE
+
+cellchat <- do.call(commprob_fn, comm_args)
 cellchat <- filter_fn(cellchat, min.cells = 10)
 cellchat <- pathway_fn(cellchat)
 cellchat <- aggregate_fn(cellchat)
