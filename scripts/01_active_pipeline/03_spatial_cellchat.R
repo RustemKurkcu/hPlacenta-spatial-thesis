@@ -61,6 +61,33 @@ restore_future_runtime <- function(state) {
   invisible(NULL)
 }
 
+compute_min_nonzero_distance <- function(coords_mat) {
+  if (nrow(coords_mat) < 2) stop("Need at least two cells to compute spatial distances.")
+  xy <- as.matrix(coords_mat[, c("x_cent", "y_cent"), drop = FALSE])
+
+  if (requireNamespace("RANN", quietly = TRUE)) {
+    nn <- RANN::nn2(data = xy, query = xy, k = 2)
+    d <- nn$nn.dists[, 2]
+    d <- d[is.finite(d) & d > 0]
+    if (length(d) > 0) return(min(d))
+  }
+  if (requireNamespace("FNN", quietly = TRUE)) {
+    nn <- FNN::get.knn(xy, k = 2)
+    d <- nn$nn.dist[, 2]
+    d <- d[is.finite(d) & d > 0]
+    if (length(d) > 0) return(min(d))
+  }
+
+  # Fallback: brute force on a capped subset to avoid O(N^2) memory blowups.
+  set.seed(42L)
+  idx <- sample(seq_len(nrow(xy)), size = min(5000, nrow(xy)))
+  dmat <- as.matrix(stats::dist(xy[idx, , drop = FALSE]))
+  dvec <- dmat[upper.tri(dmat)]
+  dvec <- dvec[is.finite(dvec) & dvec > 0]
+  if (length(dvec) == 0) stop("Could not compute a non-zero inter-cell distance.")
+  min(dvec)
+}
+
 resolve_object_path <- function(path_rds) {
   path_qs <- sub("\\.rds$", ".qs", path_rds)
   if (file.exists(path_qs)) return(path_qs)
@@ -276,13 +303,20 @@ cellchat <- over_inter_fn(cellchat)
 
 log_msg("Computing communication probabilities with spatial distance penalty.")
 comm_formals <- names(formals(commprob_fn))
+min_dist <- compute_min_nonzero_distance(coords)
+dynamic_scale_distance <- 1 / min_dist
+log_msg(
+  "Dynamic scale.distance computed from min non-zero physical distance: ",
+  signif(min_dist, 6), " um -> scale.distance=", signif(dynamic_scale_distance, 6), "."
+)
+
 comm_args <- list(
   object = cellchat,
   distance.use = TRUE,
   interaction.range = 2500,
-  scale.distance = 0.01,
   contact.dependent = FALSE
 )
+if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance
 if ("type" %in% comm_formals) comm_args$type <- "truncatedMean"
 if ("trim" %in% comm_formals) comm_args$trim <- 0.1
 if ("raw.use" %in% comm_formals) comm_args$raw.use <- TRUE
