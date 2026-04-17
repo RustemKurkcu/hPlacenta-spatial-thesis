@@ -35,6 +35,32 @@ log_msg <- function(..., .level = "INFO") {
   cat(line, "\n", file = LOG_FILE, append = TRUE)
 }
 
+configure_future_runtime <- function(max_size_gb = 12) {
+  old_plan <- NULL
+  old_max <- getOption("future.globals.maxSize")
+
+  if (requireNamespace("future", quietly = TRUE)) {
+    old_plan <- future::plan()
+    options(future.globals.maxSize = as.numeric(max_size_gb) * 1024^3)
+    future::plan(future::sequential)
+    log_msg(
+      "Configured future runtime: plan=sequential, future.globals.maxSize=",
+      round(getOption("future.globals.maxSize") / 1024^3, 2), " GiB."
+    )
+  } else {
+    log_msg("Package 'future' not installed; skipping future runtime configuration.", .level = "WARN")
+  }
+
+  list(old_plan = old_plan, old_max = old_max)
+}
+
+restore_future_runtime <- function(state) {
+  if (!requireNamespace("future", quietly = TRUE)) return(invisible(NULL))
+  if (!is.null(state$old_max)) options(future.globals.maxSize = state$old_max)
+  if (!is.null(state$old_plan)) future::plan(state$old_plan)
+  invisible(NULL)
+}
+
 resolve_object_path <- function(path_rds) {
   path_qs <- sub("\\.rds$", ".qs", path_rds)
   if (file.exists(path_qs)) return(path_qs)
@@ -158,17 +184,10 @@ scale.factors <- list(spot = 1, spot.diameter = 1)
 spatial.factors <- list(ratio = 1, tol = 0)
 
 using_spatial_cellchat <- requireNamespace("SpatialCellChat", quietly = TRUE)
-resolve_cellchat_db <- function() {
-  if (requireNamespace("CellChat", quietly = TRUE) &&
-      exists("CellChatDB.human", envir = asNamespace("CellChat"), inherits = FALSE)) {
-    return(get("CellChatDB.human", envir = asNamespace("CellChat"), inherits = FALSE))
-  }
-  if (requireNamespace("SpatialCellChat", quietly = TRUE) &&
-      exists("CellChatDB.human", envir = asNamespace("SpatialCellChat"), inherits = FALSE)) {
-    return(get("CellChatDB.human", envir = asNamespace("SpatialCellChat"), inherits = FALSE))
-  }
-  NULL
-}
+db_human <- tryCatch(
+  SpatialCellChat::CellChatDB.human,
+  error = function(e) CellChat::CellChatDB.human
+)
 
 if (using_spatial_cellchat) {
   log_msg("Detected SpatialCellChat package; using SpatialCellChat API (CellChat v3).")
@@ -177,7 +196,6 @@ if (using_spatial_cellchat) {
   } else {
     stop("SpatialCellChat is installed but `createSpatialCellChat` is not exported.")
   }
-  db_human <- resolve_cellchat_db()
   subset_fn <- SpatialCellChat::subsetData
   over_gene_fn <- SpatialCellChat::identifyOverExpressedGenes
   over_inter_fn <- SpatialCellChat::identifyOverExpressedInteractions
@@ -192,7 +210,6 @@ if (using_spatial_cellchat) {
   }
   log_msg("Using CellChat package (v1/v2 API). Install SpatialCellChat for CellChat v3 features.", .level = "WARN")
   create_fn <- CellChat::createCellChat
-  db_human <- resolve_cellchat_db()
   subset_fn <- CellChat::subsetData
   over_gene_fn <- CellChat::identifyOverExpressedGenes
   over_inter_fn <- CellChat::identifyOverExpressedInteractions
@@ -220,7 +237,7 @@ if ("spatial.factors" %in% create_formals) {
 log_msg("Creating spatial CellChat object using physical coordinates.")
 cellchat <- do.call(create_fn, create_args)
 
-if (!is.null(db_human)) cellchat@DB <- db_human
+cellchat@DB <- db_human
 if (is.null(cellchat@DB) || is.null(cellchat@DB$interaction)) {
   stop(
     "CellChat DB is missing. Please ensure CellChat ligand-receptor DB is available ",
@@ -230,6 +247,9 @@ if (is.null(cellchat@DB) || is.null(cellchat@DB$interaction)) {
 if (!"annotation" %in% colnames(cellchat@DB$interaction)) {
   cellchat@DB$interaction$annotation <- "Secreted Signaling"
 }
+future_state <- configure_future_runtime(max_size_gb = 12)
+on.exit(restore_future_runtime(future_state), add = TRUE)
+
 cellchat <- subset_fn(cellchat)
 cellchat <- over_gene_fn(cellchat)
 cellchat <- over_inter_fn(cellchat)
