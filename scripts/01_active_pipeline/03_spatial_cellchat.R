@@ -281,7 +281,7 @@ if (is.null(cellchat_base@DB) || is.null(cellchat_base@DB$interaction)) {
   )
 }
 
-future_state <- configure_future_runtime(max_size_gb = 48, workers = 10)
+future_state <- configure_future_runtime(max_size_gb = 80, workers = 10)
 on.exit(restore_future_runtime(future_state), add = TRUE)
 
 subset_db_fn <- if (using_spatial_cellchat) SpatialCellChat::subsetDB else CellChat::subsetDB
@@ -320,23 +320,25 @@ run_cellchat_architecture <- function(architecture_name, db_search, interaction_
   cellchat <- over_gene_fn(cellchat)
   cellchat <- over_inter_fn(cellchat)
 
-  # THE MATRIX FIX: trim=0 and contact.dependent=FALSE prevents dimension collisions
+  # THE MATRIX FIX: contact.dependent=FALSE prevents dimension collisions.
+  # (raw.use is intentionally omitted to allow matching subsetted matrices)
   comm_args <- list(
     object = cellchat,
     distance.use = TRUE,
     interaction.range = interaction_range,
-    contact.dependent = FALSE,
-    type = "truncatedMean",
-    trim = 0,
-    raw.use = TRUE
+    contact.dependent = FALSE
   )
+
+  # API Patch: Only add legacy arguments if the specific API version accepts them
   if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance
+  if ("type" %in% comm_formals) comm_args$type <- "truncatedMean"
+  if ("trim" %in% comm_formals) comm_args$trim <- 0
 
   log_msg("Computing probabilities...")
   cellchat <- do.call(commprob_fn, comm_args)
 
   tryCatch({
-    cellchat <- filter_fn(cellchat, min.cells = 10)
+    cellchat <- filter_fn(cellchat, min.cells = 4)
     cellchat <- pathway_fn(cellchat)
     cellchat <- aggregate_fn(cellchat)
   }, error = function(e) log_msg("  WARN during aggregation: ", conditionMessage(e)))
