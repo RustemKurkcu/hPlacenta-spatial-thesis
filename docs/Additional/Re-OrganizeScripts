@@ -1,0 +1,78 @@
+> print_dir_tree_to_file("E:/hPlacenta-architecture")
+Directory tree saved to: E:/hPlacenta-architecture/directory_tree.txt
+> # =============================================================================
+> # Pipeline Directory Reorganization Script
+> # =============================================================================
+> 
+> # 1. Define the base scripts directory
+> base_dir <- "E:/hPlacenta-architecture/scripts"
+> 
+> # 2. Define the new target directories
+> archive_dir <- file.path(base_dir, "00_archive")
+> active_dir  <- file.path(base_dir, "01_active_pipeline")
+> 
+> # 3. Create the new directories if they don't exist
+> if (!dir.exists(archive_dir)) {
++   dir.create(archive_dir, recursive = TRUE)
++   message("Created: ", archive_dir)
++ }
+Created: E:/hPlacenta-architecture/scripts/00_archive
+> if (!dir.exists(active_dir)) {
++   dir.create(active_dir, recursive = TRUE)
++   message("Created: ", active_dir)
++ }
+Created: E:/hPlacenta-architecture/scripts/01_active_pipeline
+> 
+> # 4. List all current items in the scripts folder
+> all_items <- list.files(base_dir, full.names = TRUE)
+> 
+> # 5. Define what we MUST NOT move
+> # We want to keep the new folders we just made, and the 'R' folder containing utils
+> do_not_move <- c(
++   archive_dir, 
++   active_dir, 
++   file.path(base_dir, "R")
++ )
+> 
+> # 6. Filter the list to only the items that need to be archived
+> items_to_move <- all_items[!all_items %in% do_not_move]
+> 
+> # 7. Execute the move
+> moved_count <- 0
+> for (item in items_to_move) {
++   target_path <- file.path(archive_dir, basename(item))
++   
++   # Rename effectively moves the file/folder
++   success <- file.rename(from = item, to = target_path)
++   
++   if (success) {
++     moved_count <- moved_count + 1
++     message("Moved: ", basename(item), " -> 00_archive/")
++   } else {
++     warning("Failed to move: ", basename(item))
++   }
++ }
+Moved: 02_preprocess -> 00_archive/
+Moved: 03_mapping -> 00_archive/
+Moved: 04_timecourse -> 00_archive/
+Moved: 05_spatial -> 00_archive/
+Moved: 06_cell_communication -> 00_archive/
+Moved: 06C_cellchat_optional.R -> 00_archive/
+Moved: 07_export -> 00_archive/
+Moved: 08_metagene -> 00_archive/
+Moved: 08_metagenes -> 00_archive/
+Moved: 16_compute_misi.R -> 00_archive/
+Moved: 16b_misi_v2_subindices.R -> 00_archive/
+Moved: 16c_plot_misi_embeddings_V2.R -> 00_archive/
+Moved: 16d_plot_misi_violins.R -> 00_archive/
+Moved: 17_cellchat_by_condition.R -> 00_archive/
+Moved: 18_cellphonedb_export.R -> 00_archive/
+Moved: 21_rpac_v2_corrected_routes.R -> 00_archive/
+Moved: AltAnalysisScripts -> 00_archive/
+Moved: utils.r -> 00_archive/
+> 
+> message("\n✅ Reorganization Complete! Moved ", moved_count, " items to the archive.")
+
+✅ Reorganization Complete! Moved 18 items to the archive.
+> message("Ready for Codex to drop Script 01 into 01_active_pipeline.")
+Ready for Codex to drop Script 01 into 01_active_pipeline.
