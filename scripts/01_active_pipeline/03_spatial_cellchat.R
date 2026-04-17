@@ -35,17 +35,17 @@ log_msg <- function(..., .level = "INFO") {
   cat(line, "\n", file = LOG_FILE, append = TRUE)
 }
 
-configure_future_runtime <- function(max_size_gb = 12) {
+configure_future_runtime <- function(max_size_gb = 8, workers = 10) {
   old_plan <- NULL
   old_max <- getOption("future.globals.maxSize")
 
   if (requireNamespace("future", quietly = TRUE)) {
     old_plan <- future::plan()
     options(future.globals.maxSize = as.numeric(max_size_gb) * 1024^3)
-    future::plan(future::sequential)
+    future::plan(future::multisession, workers = workers)
     log_msg(
-      "Configured future runtime: plan=sequential, future.globals.maxSize=",
-      round(getOption("future.globals.maxSize") / 1024^3, 2), " GiB."
+      "Configured future runtime: plan=multisession (workers=", workers,
+      "), future.globals.maxSize=", round(getOption("future.globals.maxSize") / 1024^3, 2), " GiB."
     )
   } else {
     log_msg("Package 'future' not installed; skipping future runtime configuration.", .level = "WARN")
@@ -294,7 +294,7 @@ if (is.null(cellchat@DB) || is.null(cellchat@DB$interaction)) {
 if (!"annotation" %in% colnames(cellchat@DB$interaction)) {
   cellchat@DB$interaction$annotation <- "Secreted Signaling"
 }
-future_state <- configure_future_runtime(max_size_gb = 12)
+future_state <- configure_future_runtime(max_size_gb = 8, workers = 10)
 on.exit(restore_future_runtime(future_state), add = TRUE)
 
 cellchat <- subset_fn(cellchat)
@@ -313,7 +313,7 @@ log_msg(
 comm_args <- list(
   object = cellchat,
   distance.use = TRUE,
-  interaction.range = 2500,
+  interaction.range = 10,
   contact.dependent = FALSE
 )
 if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance

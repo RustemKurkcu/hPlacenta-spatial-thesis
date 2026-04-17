@@ -1,7 +1,7 @@
 # =============================================================================
 # Script: 01_preprocess_harmony_embeddings.R
 # Purpose: Preprocess and integrate 4-week STARmap data (W7, W8-2, W9, W11)
-#          using Seurat v5 + SCTransform + Harmony, then produce UMAP/t-SNE.
+#          using Seurat v5 + log-normalization + Harmony, then produce UMAP/t-SNE.
 #
 # Thesis Context:
 #   - This script is Script 01 of the active spatial thesis pipeline.
@@ -13,14 +13,14 @@
 #   C) Data Ingestion + Metadata Harmonization
 #   D) Per-week Seurat Object Construction + QC
 #   E) Merge + Seurat v5 Hygiene
-#   F) SCTransform Workflow
+#   F) Standard Normalization Workflow
 #   G) PCA + Harmony Integration
 #   H) UMAP + t-SNE
 #   I) Clustering + Diagnostics
 #   J) Export Artifacts
 #
 # Author: Thesis Pipeline Team
-# Version: 1.1.1
+# Version: 1.2.0
 # Date: 2026-04-15
 # =============================================================================
 
@@ -78,7 +78,7 @@ record_artifact_manifest <- function(
   n_cells_final,
   n_genes_final,
   qc,
-  sct,
+  normalization,
   harmony,
   umap,
   tsne,
@@ -101,7 +101,7 @@ record_artifact_manifest <- function(
     n_cells_final = n_cells_final,
     n_genes_final = n_genes_final,
     qc = qc,
-    sct = sct,
+    normalization = normalization,
     harmony = harmony,
     umap = umap,
     tsne = tsne,
@@ -123,7 +123,7 @@ record_artifact_manifest <- function(
 # =============================================================================
 
 PIPELINE_NAME <- "01_preprocess_harmony_embeddings"
-PIPELINE_VERSION <- "1.1.1"
+PIPELINE_VERSION <- "1.2.0"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 RUN_SEED <- 42L
 set.seed(RUN_SEED)
@@ -197,13 +197,10 @@ cfg <- list(
     max_percent_mt = 20
   ),
 
-  # SCTransform settings
-  sct = list(
-    vst_flavor = "v2",
+  # Standard normalization settings (imputed dense matrices; no SCTransform)
+  normalization = list(
     variable_features_n = 3000L,
-    regress_vars = c("percent.mt"),
-    conserve_memory = TRUE,
-    return_only_var_genes = FALSE,
+    selection_method = "vst",
     future_maxsize_gb = 8,
     future_plan = "sequential"
   ),
@@ -212,7 +209,7 @@ cfg <- list(
   resume = list(
     use_checkpoints = TRUE,
     force_recompute = FALSE,
-    resume_from = "week_qc" # one of: week_qc, merged, sct, pca
+    resume_from = "week_qc" # one of: week_qc, merged, norm, pca
   ),
 
   # Dimensionality / integration settings
@@ -220,7 +217,7 @@ cfg <- list(
   harmony = list(
     group_by = "week",
     reduction = "pca",
-    assay_use = "SCT",
+    assay_use = "RNA",
     max_iter_harmony = 20L,
     theta = 2,
     lambda = 1,
@@ -250,17 +247,17 @@ log_msg("Config loaded. Weeks: ", paste(cfg$week_ids, collapse = ", "))
 log_msg("Data roots: broad=", cfg$data_roots$broad, " ; zenodo=", cfg$data_roots$zenodo)
 Sys.setenv(VROOM_CONNECTION_SIZE = as.character(cfg$io$vroom_connection_size))
 log_msg("VROOM_CONNECTION_SIZE set to ", cfg$io$vroom_connection_size, " bytes")
-options(future.globals.maxSize = as.numeric(cfg$sct$future_maxsize_gb) * 1024^3)
-if (identical(cfg$sct$future_plan, "sequential")) {
+options(future.globals.maxSize = as.numeric(cfg$normalization$future_maxsize_gb) * 1024^3)
+if (identical(cfg$normalization$future_plan, "sequential")) {
   future::plan(future::sequential)
-} else if (identical(cfg$sct$future_plan, "multisession")) {
+} else if (identical(cfg$normalization$future_plan, "multisession")) {
   future::plan(future::multisession)
 } else {
   future::plan(future::sequential)
-  log_msg("Unknown future plan '", cfg$sct$future_plan, "'. Falling back to sequential.", .level = "WARN")
+  log_msg("Unknown future plan '", cfg$normalization$future_plan, "'. Falling back to sequential.", .level = "WARN")
 }
-log_msg("future.globals.maxSize set to ", cfg$sct$future_maxsize_gb, " GiB")
-log_msg("future::plan set to ", cfg$sct$future_plan)
+log_msg("future.globals.maxSize set to ", cfg$normalization$future_maxsize_gb, " GiB")
+log_msg("future::plan set to ", cfg$normalization$future_plan)
 log_msg("Resume mode: ", cfg$resume$resume_from, " (use_checkpoints=", cfg$resume$use_checkpoints, ")")
 
 # Prefer qs for large object checkpoints when available, with .rds fallback for portability.
@@ -359,7 +356,7 @@ append_methods_provenance <- function(report_path, week, expression_file, spots_
     "- Method notes:",
     "  - Expression + spots metadata were sourced from split raw directories (Broad + Zenodo).",
     "  - Spatial coordinates are harmonized to x_um/y_um before Seurat construction.",
-    "  - SCTransform + Harmony embeddings are generated downstream in this script."
+    "  - Standard log-normalization + Harmony embeddings are generated downstream in this script."
   )
   if (!is.null(notes) && length(notes) > 0) lines <- c(lines, paste0("- Additional notes: ", notes))
   lines <- c(lines, "")
@@ -942,7 +939,7 @@ if (length(qc_summary) > 0) {
 log_msg("Merging week-level Seurat objects...")
 seu <- NULL
 merged_ckpt <- file.path(DIR_OBJECTS, "01_merged_post_qc.rds")
-if (resume_stage %in% c("merged", "sct", "pca")) {
+if (resume_stage %in% c("merged", "norm", "pca")) {
   seu <- load_clean_checkpoint(merged_ckpt, context_label = "merged checkpoint")
   if (is.null(seu)) {
     stop("resume_from='", resume_stage, "' requires a clean merged checkpoint: ", merged_ckpt)
@@ -975,51 +972,51 @@ if (!"W9" %in% names(wk_counts)) {
 }
 
 # =============================================================================
-# F) SCTransform Workflow
+# F) Standard Normalization Workflow
 # =============================================================================
 
-log_msg("Running SCTransform on merged object...")
-post_sct_ckpt <- file.path(DIR_OBJECTS, "01_post_sct.rds")
-if (resume_stage %in% c("sct", "pca")) {
-  seu <- load_clean_checkpoint(post_sct_ckpt, context_label = "SCTransform checkpoint")
+log_msg("Running standard log-normalization workflow on merged object (dense imputed matrix compatible)...")
+post_norm_ckpt <- file.path(DIR_OBJECTS, "01_post_norm.rds")
+if (resume_stage %in% c("norm", "pca")) {
+  seu <- load_clean_checkpoint(post_norm_ckpt, context_label = "normalization checkpoint")
   if (is.null(seu)) {
-    stop("resume_from='", resume_stage, "' requires a clean SCT checkpoint: ", post_sct_ckpt)
+    stop("resume_from='", resume_stage, "' requires a clean normalization checkpoint: ", post_norm_ckpt)
   }
-} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(post_sct_ckpt)) {
-  seu <- load_clean_checkpoint(post_sct_ckpt, context_label = "SCTransform checkpoint")
+} else if (isTRUE(cfg$resume$use_checkpoints) && isFALSE(cfg$resume$force_recompute) && ckpt_exists(post_norm_ckpt)) {
+  seu <- load_clean_checkpoint(post_norm_ckpt, context_label = "normalization checkpoint")
 }
-if (DefaultAssay(seu) != "SCT") {
-  seu <- SCTransform(
-    object = seu,
+
+if (!"pca" %in% Reductions(seu) || isTRUE(cfg$resume$force_recompute) || DefaultAssay(seu) != "RNA") {
+  DefaultAssay(seu) <- "RNA"
+  seu <- NormalizeData(seu, assay = "RNA", verbose = FALSE)
+  seu <- FindVariableFeatures(
+    seu,
     assay = "RNA",
-    new.assay.name = "SCT",
-    vst.flavor = cfg$sct$vst_flavor,
-    variable.features.n = cfg$sct$variable_features_n,
-    vars.to.regress = cfg$sct$regress_vars,
-    conserve.memory = cfg$sct$conserve_memory,
-    return.only.var.genes = cfg$sct$return_only_var_genes,
-    verbose = TRUE
+    selection.method = cfg$normalization$selection_method,
+    nfeatures = cfg$normalization$variable_features_n,
+    verbose = FALSE
   )
-  post_sct_ckpt_saved <- ckpt_write(seu, post_sct_ckpt)
-  log_msg("Saved SCTransform checkpoint: ", post_sct_ckpt_saved)
+  seu <- ScaleData(seu, assay = "RNA", verbose = FALSE)
+  post_norm_ckpt_saved <- ckpt_write(seu, post_norm_ckpt)
+  log_msg("Saved normalization checkpoint: ", post_norm_ckpt_saved)
 }
-assert_no_spot_level_metadata(seu, context_label = "post-SCT object")
-DefaultAssay(seu) <- "SCT"
-log_msg("SCTransform complete. Default assay set to SCT.")
+assert_no_spot_level_metadata(seu, context_label = "post-normalization object")
+DefaultAssay(seu) <- "RNA"
+log_msg("Normalization complete. Default assay set to RNA.")
 
 # =============================================================================
 # G) PCA + Harmony Integration
 # =============================================================================
 
 log_msg("Running PCA...")
-seu <- RunPCA(seu, assay = "SCT", npcs = max(cfg$dims_use), verbose = FALSE)
+seu <- RunPCA(seu, assay = "RNA", npcs = max(cfg$dims_use), verbose = FALSE)
 
 log_msg("Running Harmony integration by: ", cfg$harmony$group_by)
 seu <- harmony::RunHarmony(
   object = seu,
   group.by.vars = cfg$harmony$group_by,
   reduction.use = cfg$harmony$reduction,
-  assay.use = cfg$harmony$assay_use,
+  assay.use = "RNA",
   max.iter.harmony = cfg$harmony$max_iter_harmony,
   theta = cfg$harmony$theta,
   lambda = cfg$harmony$lambda,
@@ -1124,7 +1121,7 @@ record_artifact_manifest(
   n_cells_final = ncol(seu),
   n_genes_final = nrow(seu),
   qc = cfg$qc,
-  sct = cfg$sct,
+  normalization = cfg$normalization,
   harmony = cfg$harmony,
   umap = cfg$umap,
   tsne = cfg$tsne,
