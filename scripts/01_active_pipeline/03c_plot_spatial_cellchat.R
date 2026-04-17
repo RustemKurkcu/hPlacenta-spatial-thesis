@@ -2,22 +2,19 @@
 
 # =============================================================================
 # Script: 03c_plot_spatial_cellchat.R
-# Purpose: Visualization-only script for spatial CellChat outputs.
+# Purpose: Decoupled plotting for dual-architecture Spatial CellChat outputs.
 # =============================================================================
 
 suppressPackageStartupMessages({
-  library(Seurat)
   library(ggplot2)
   library(dplyr)
-  library(patchwork)
   library(jsonlite)
 })
 
 source("R/spatial_color_themes.R")
-source("R/celltype_dictionary.R")
 
 PIPELINE_NAME <- "03c_plot_spatial_cellchat"
-PIPELINE_VERSION <- "1.0.0"
+PIPELINE_VERSION <- "2.0.0"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 RUN_SEED <- 42L
 set.seed(RUN_SEED)
@@ -75,154 +72,119 @@ record_artifact_manifest <- function(
   jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
 }
 
-pathway_activity_from_cellchat <- function(cellchat, pathways) {
-  arr <- cellchat@netP$prob
-  if (is.null(arr) || length(dim(arr)) != 3) return(list())
-
-  pathway_names <- dimnames(arr)[[3]]
-  group_names <- dimnames(arr)[[1]]
-  out <- vector("list", length(pathways))
-  names(out) <- pathways
-
-  for (p in pathways) {
-    idx <- which(tolower(pathway_names) == tolower(p))
-    if (length(idx) == 0) {
-      out[[p]] <- NULL
-      next
-    }
-    mat <- arr[, , idx[1], drop = FALSE][, , 1]
-    sender <- rowSums(mat, na.rm = TRUE)
-    receiver <- colSums(mat, na.rm = TRUE)
-    total <- sender + receiver
-    names(total) <- group_names
-    out[[p]] <- total
-  }
-  out
-}
-
-input_obj <- resolve_object_path(file.path(DIR_OBJECTS, "03_spatial_cellchat.rds"))
-manifest_path <- file.path(DIR_REPORTS, "03c_plot_spatial_cellchat_manifest.json")
-
-log_msg("Loading spatial CellChat bundle: ", input_obj)
-bundle <- readRDS(input_obj)
-cellchat <- bundle$cellchat
-spatial_df <- bundle$spatial_meta
-spatial_df$week <- factor(as.character(spatial_df$week), levels = c("W7", "W8-2", "W9", "W11"))
-
 if (requireNamespace("SpatialCellChat", quietly = TRUE)) {
-  net_visual_circle_fn <- SpatialCellChat::netVisual_circle
-  log_msg("Using SpatialCellChat visualization backend.")
+  net_circle_fn <- SpatialCellChat::netVisual_circle
+  net_bubble_fn <- SpatialCellChat::netVisual_bubble
+  log_msg("Using SpatialCellChat plotting backend.")
 } else if (requireNamespace("CellChat", quietly = TRUE)) {
-  net_visual_circle_fn <- CellChat::netVisual_circle
-  log_msg("Using CellChat visualization backend.", .level = "WARN")
+  net_circle_fn <- CellChat::netVisual_circle
+  net_bubble_fn <- CellChat::netVisual_bubble
+  log_msg("Using CellChat plotting backend.", .level = "WARN")
 } else {
-  stop("Neither 'SpatialCellChat' nor 'CellChat' is installed for visualization.")
+  stop("Neither SpatialCellChat nor CellChat is installed.")
 }
 
-# -----------------------------------------------------------------------------
-# Cell-type reference spatial map
-# -----------------------------------------------------------------------------
-cell_levels <- sort(unique(as.character(spatial_df$celltype_plot)))
-cell_cols <- get_universal_colors(cell_levels)
+bundle_paths <- c(
+  file.path(DIR_OBJECTS, "03_spatial_juxtacrine_fast.rds"),
+  file.path(DIR_OBJECTS, "03_spatial_paracrine_fast.rds"),
+  file.path(DIR_OBJECTS, "03_spatial_juxtacrine_full.rds"),
+  file.path(DIR_OBJECTS, "03_spatial_paracrine_full.rds")
+)
+resolved_paths <- vapply(bundle_paths, resolve_object_path, character(1))
 
-p_ref <- ggplot(spatial_df, aes(x = x_um, y = y_um, color = celltype_plot)) +
-  geom_point(size = 0.18, alpha = 0.85) +
-  facet_wrap(~week, ncol = 4) +
-  scale_color_manual(values = cell_cols, drop = FALSE) +
-  coord_fixed() +
-  labs(title = "Cell Type Reference (Physical Tissue Space)", x = "x_um", y = "y_um", color = "Cell Type") +
-  theme_thesis_spatial() +
-  theme(legend.position = "bottom")
-
-# -----------------------------------------------------------------------------
-# Global communication circle plot (export only; base graphics)
-# -----------------------------------------------------------------------------
 fig_paths <- character(0)
-group_size <- as.numeric(table(cellchat@idents))
-names(group_size) <- names(table(cellchat@idents))
 
-circle_pdf <- file.path(DIR_FIGURES, "03c_global_communication_circle.pdf")
-circle_png <- file.path(DIR_FIGURES, "03c_global_communication_circle.png")
+for (obj_path in resolved_paths) {
+  run_tag <- sub("\\.rds$", "", basename(obj_path))
+  log_msg("Plotting bundle: ", run_tag)
 
-pdf(circle_pdf, width = 10, height = 10)
-net_visual_circle_fn(
-  cellchat@net$weight,
-  vertex.weight = group_size,
-  weight.scale = TRUE,
-  label.edge = FALSE,
-  title.name = "Global Spatial Communication Network"
-)
-dev.off()
+  bundle <- readRDS(obj_path)
+  cellchat <- bundle$cellchat
 
-png(circle_png, width = 3000, height = 3000, res = 300)
-net_visual_circle_fn(
-  cellchat@net$weight,
-  vertex.weight = group_size,
-  weight.scale = TRUE,
-  label.edge = FALSE,
-  title.name = "Global Spatial Communication Network"
-)
-dev.off()
-fig_paths <- c(fig_paths, circle_pdf, circle_png)
+  idents <- levels(cellchat@idents)
+  idents_lower <- tolower(idents)
 
-# -----------------------------------------------------------------------------
-# Side-by-side pathway overlays (reference + pathway activity proxy)
-# -----------------------------------------------------------------------------
-target_pathways <- c("HLA", "SPP1", "VEGF", "TGFb")
-pathway_scores_by_group <- pathway_activity_from_cellchat(
-  cellchat = cellchat,
-  pathways = target_pathways
-)
+  source_idx <- which(grepl("evt|extravillous", idents_lower))
+  if (length(source_idx) == 0) source_idx <- 1
 
-for (pw in target_pathways) {
-  group_score_map <- pathway_scores_by_group[[pw]]
-  if (is.null(group_score_map)) {
-    log_msg("Pathway not found in CellChat netP: ", pw, .level = "WARN")
-    next
+  target_idx <- which(grepl("macroph|immune|lymph|t cell|b cell|nk|monocyte|maternal", idents_lower))
+  if (length(target_idx) == 0) {
+    target_idx <- setdiff(seq_along(idents), source_idx)
+    target_idx <- head(target_idx, 3)
   }
 
-  overlay_df <- spatial_df %>%
-    dplyr::mutate(pathway_score = unname(group_score_map[as.character(celltype_plot)])) %>%
-    dplyr::mutate(pathway_score = ifelse(is.na(pathway_score), 0, pathway_score))
+  group_size <- as.numeric(table(cellchat@idents))
+  names(group_size) <- names(table(cellchat@idents))
 
-  p_overlay <- ggplot(overlay_df, aes(x = x_um, y = y_um, color = pathway_score)) +
-    geom_point(size = 0.20, alpha = 0.9) +
-    facet_wrap(~week, ncol = 4) +
-    coord_fixed() +
-    scale_color_gradient(low = "grey93", high = "#CB181D") +
-    labs(
-      title = paste0("Spatial Pathway Overlay: ", pw),
-      subtitle = "Higher color intensity indicates stronger pathway communication context",
-      x = "x_um", y = "y_um", color = "Pathway\nScore"
-    ) +
-    theme_thesis_spatial()
+  # Circle plot
+  circle_pdf <- file.path(DIR_FIGURES, paste0(run_tag, "_circle.pdf"))
+  circle_png <- file.path(DIR_FIGURES, paste0(run_tag, "_circle.png"))
 
-  p_pair <- p_ref + p_overlay + patchwork::plot_layout(widths = c(1.15, 1))
+  pdf(circle_pdf, width = 10, height = 10)
+  net_circle_fn(
+    cellchat@net$weight,
+    vertex.weight = group_size,
+    weight.scale = TRUE,
+    label.edge = FALSE,
+    title.name = paste0("Global Network: ", run_tag)
+  )
+  dev.off()
 
-  out_pdf <- file.path(DIR_FIGURES, paste0("03c_", pw, "_reference_plus_overlay.pdf"))
-  out_png <- file.path(DIR_FIGURES, paste0("03c_", pw, "_reference_plus_overlay.png"))
-  ggsave(out_pdf, p_pair, width = 20, height = 7)
-  ggsave(out_png, p_pair, width = 20, height = 7, dpi = 300)
-  fig_paths <- c(fig_paths, out_pdf, out_png)
+  png(circle_png, width = 3000, height = 3000, res = 300)
+  net_circle_fn(
+    cellchat@net$weight,
+    vertex.weight = group_size,
+    weight.scale = TRUE,
+    label.edge = FALSE,
+    title.name = paste0("Global Network: ", run_tag)
+  )
+  dev.off()
+
+  # Bubble plot (EVT -> immune targets)
+  bubble_pdf <- file.path(DIR_FIGURES, paste0(run_tag, "_evt_to_immune_bubble.pdf"))
+  bubble_png <- file.path(DIR_FIGURES, paste0(run_tag, "_evt_to_immune_bubble.png"))
+
+  pdf(bubble_pdf, width = 14, height = 8)
+  net_bubble_fn(
+    object = cellchat,
+    sources.use = source_idx,
+    targets.use = target_idx,
+    remove.isolate = FALSE,
+    title.name = paste0("EVT to Immune Signaling: ", run_tag)
+  )
+  dev.off()
+
+  png(bubble_png, width = 4200, height = 2400, res = 300)
+  net_bubble_fn(
+    object = cellchat,
+    sources.use = source_idx,
+    targets.use = target_idx,
+    remove.isolate = FALSE,
+    title.name = paste0("EVT to Immune Signaling: ", run_tag)
+  )
+  dev.off()
+
+  fig_paths <- c(fig_paths, circle_pdf, circle_png, bubble_pdf, bubble_png)
 }
 
+manifest_path <- file.path(DIR_REPORTS, "03c_plot_spatial_cellchat_manifest.json")
 record_artifact_manifest(
   manifest_path = manifest_path,
   pipeline = PIPELINE_NAME,
   version = PIPELINE_VERSION,
   run_timestamp = RUN_TIMESTAMP,
   seed = RUN_SEED,
-  source_data = input_obj,
+  source_data = resolved_paths,
   plotting_script = "scripts/01_active_pipeline/03c_plot_spatial_cellchat.R",
   figures_output = fig_paths,
   notes = c(
-    "Decoupled visualization-only script for precomputed spatial CellChat object",
-    "Global communication circle plot exported as PDF + PNG",
-    "Patchwork side-by-side panels: cell-type reference + pathway spatial overlays"
+    "Decoupled visualization for 4 dual-architecture CellChat bundles",
+    "Each bundle exports global network circle plot + EVT-to-immune bubble plot",
+    "All figures saved as both PDF and PNG"
   ),
-  hypothesis = "Vulnerable spatial niches exhibit enhanced tolerogenic/exhaustion signaling to break down the IDO1 shield.",
-  methods_blurb = "Spatial CellChat utilizing physical distance matrices to penalize long-range interactions.",
-  thesis_aim = "Visualize niche-aware communication programs and localize pathogenic pathway activity in high-vulnerability tissue microdomains."
+  hypothesis = "Vulnerable niches show architecture-specific communication programs with distinct contact and diffusion signatures.",
+  methods_blurb = "Sequential plotting of juxtacrine/paracrine fast/full SpatialCellChat bundles with focused EVT-to-immune visualization.",
+  thesis_aim = "Compare synaptic-local vs paracrine-long-range signaling around vulnerable maternal-fetal interface niches."
 )
 
-log_msg("Saved CellChat figures and manifest: ", manifest_path)
+log_msg("Saved dual-architecture CellChat figures + manifest: ", manifest_path)

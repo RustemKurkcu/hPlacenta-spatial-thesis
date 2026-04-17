@@ -320,55 +320,36 @@ cluster_tbl <- seu@meta.data %>%
   dplyr::summarise(mean_misi = mean(MISI_Vulnerability, na.rm = TRUE), n = dplyr::n(), .groups = "drop") %>%
   dplyr::filter(n >= 20) %>%
   dplyr::arrange(dplyr::desc(mean_misi), dplyr::desc(n))
-top2_vulnerable_clusters <- head(cluster_tbl$seurat_clusters, 2)
-top2_celltypes <- unique(as.character(seu$celltype_plot[seu$seurat_clusters %in% top2_vulnerable_clusters]))
+top3_vulnerable_clusters <- head(cluster_tbl$seurat_clusters, 3)
+top3_celltypes <- unique(as.character(seu$celltype_plot[seu$seurat_clusters %in% top3_vulnerable_clusters]))
 
-run_cellchat_architecture <- function(
-  architecture_name,
-  db_search,
-  interaction_range,
-  output_object,
-  manifest_out
-) {
+run_cellchat_architecture <- function(architecture_name, db_search, interaction_range, output_object, manifest_out, is_juxtacrine = FALSE, pathway_focus = NULL) {
   log_msg("Running architecture: ", architecture_name, " (interaction.range=", interaction_range, ")")
   cellchat <- cellchat_base
   cellchat@DB <- subset_db_fn(db_human, search = db_search)
-  if (is.null(cellchat@DB) || is.null(cellchat@DB$interaction)) {
-    stop("Filtered DB is missing interaction table for architecture: ", architecture_name)
+
+  if (!is.null(pathway_focus)) {
+    log_msg("  FAST-TRACK ENABLED: Filtering to target pathways.")
+    cellchat@DB$interaction <- cellchat@DB$interaction[cellchat@DB$interaction$pathway_name %in% pathway_focus, ]
   }
-  if (!"annotation" %in% colnames(cellchat@DB$interaction)) {
-    cellchat@DB$interaction$annotation <- "Secreted Signaling"
-  }
+  if (nrow(cellchat@DB$interaction) == 0) stop("Filtered DB is empty.")
+  if (!"annotation" %in% colnames(cellchat@DB$interaction)) cellchat@DB$interaction$annotation <- "Secreted Signaling"
 
   cellchat <- subset_fn(cellchat)
   cellchat <- over_gene_fn(cellchat)
   cellchat <- over_inter_fn(cellchat)
 
-  comm_args <- list(
-    object = cellchat,
-    distance.use = TRUE,
-    interaction.range = interaction_range,
-    contact.dependent = FALSE
-  )
+  comm_args <- list(object = cellchat, distance.use = TRUE, interaction.range = interaction_range, contact.dependent = is_juxtacrine)
   if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance
-  if ("type" %in% comm_formals) comm_args$type <- "truncatedMean"
-  if ("trim" %in% comm_formals) comm_args$trim <- 0.1
-  if ("raw.use" %in% comm_formals) comm_args$raw.use <- TRUE
-  if ("contact.dependent.forced" %in% comm_formals) comm_args$contact.dependent.forced <- FALSE
 
-  log_msg("Computing communication probabilities for ", architecture_name, ".")
+  log_msg("Computing probabilities...")
   cellchat <- do.call(commprob_fn, comm_args)
-  cellchat <- filter_fn(cellchat, min.cells = 10)
-  cellchat <- pathway_fn(cellchat)
-  cellchat <- aggregate_fn(cellchat)
 
-  comm_df <- subset_comm_fn(cellchat)
-  comm_vulnerable <- comm_df %>%
-    dplyr::filter(source %in% top2_celltypes | target %in% top2_celltypes)
-  pathway_rank <- comm_vulnerable %>%
-    dplyr::group_by(pathway_name) %>%
-    dplyr::summarise(vulnerable_prob = sum(prob, na.rm = TRUE), n_edges = dplyr::n(), .groups = "drop") %>%
-    dplyr::arrange(dplyr::desc(vulnerable_prob), dplyr::desc(n_edges))
+  tryCatch({
+    cellchat <- filter_fn(cellchat, min.cells = 10)
+    cellchat <- pathway_fn(cellchat)
+    cellchat <- aggregate_fn(cellchat)
+  }, error = function(e) log_msg("  WARN during aggregation: ", conditionMessage(e)))
 
   bundle <- list(
     architecture = architecture_name,
@@ -376,20 +357,12 @@ run_cellchat_architecture <- function(
     source_scored_object = input_obj,
     db_search = db_search,
     interaction_range = interaction_range,
-    vulnerable_clusters = top2_vulnerable_clusters,
-    vulnerable_celltypes = top2_celltypes,
-    vulnerable_pathway_rank = pathway_rank,
-    spatial_meta = seu@meta.data %>%
-      dplyr::select(x_um, y_um, week, seurat_clusters, celltype_plot, MISI_Vulnerability, IDO1_Tolerogenic_Shield),
-    run_metadata = list(
-      pipeline = PIPELINE_NAME,
-      version = PIPELINE_VERSION,
-      run_timestamp = RUN_TIMESTAMP,
-      seed = RUN_SEED
-    )
+    vulnerable_clusters = top3_vulnerable_clusters,
+    vulnerable_celltypes = top3_celltypes,
+    pathway_focus = pathway_focus
   )
   saveRDS(bundle, output_object)
-  log_msg("Saved ", architecture_name, " bundle: ", output_object)
+  log_msg("Saved bundle: ", output_object)
 
   record_artifact_manifest(
     manifest_path = manifest_out,
@@ -401,33 +374,23 @@ run_cellchat_architecture <- function(
     output_object = output_object,
     script_path = "scripts/01_active_pipeline/03_spatial_cellchat.R",
     notes = c(
-      paste0("Dual-architecture run: ", architecture_name),
+      paste0("Architecture = ", architecture_name),
       paste0("DB search = ", paste(db_search, collapse = ", ")),
-      paste0("interaction.range = ", interaction_range, " um")
+      paste0("interaction.range = ", interaction_range, " um"),
+      paste0("pathway_focus = ", ifelse(is.null(pathway_focus), "FULL", paste(pathway_focus, collapse = ",")))
     ),
     hypothesis = "Vulnerable spatial niches exhibit enhanced tolerogenic/exhaustion signaling to break down the IDO1 shield.",
-    methods_blurb = "Spatial CellChat with dual-architecture modeling to separate contact-mediated vs secreted diffusion signaling.",
-    thesis_aim = "Quantify and compare juxtacrine and paracrine communication programs in high-vulnerability tissue microdomains."
+    methods_blurb = "Dual-architecture SpatialCellChat run with fast-track targeted pathways and full-track comprehensive signaling.",
+    thesis_aim = "Disentangle local synaptic signaling from longer-range cytokine diffusion across vulnerability niches."
   )
-  log_msg("Saved manifest: ", manifest_out)
 }
 
-juxtacrine_obj <- file.path(DIR_OBJECTS, "03_spatial_cellchat_juxtacrine.rds")
-juxtacrine_manifest <- file.path(DIR_REPORTS, "03_spatial_cellchat_juxtacrine_manifest.json")
-run_cellchat_architecture(
-  architecture_name = "juxtacrine",
-  db_search = c("Cell-Cell Contact", "ECM-Receptor"),
-  interaction_range = 10,
-  output_object = juxtacrine_obj,
-  manifest_out = juxtacrine_manifest
-)
+thesis_pathways <- c("MMP", "WNT", "TGFb", "CXCL", "CCL", "SPP1", "NOTCH", "FN1", "MHC-I", "MHC-II", "CD45", "TIGIT", "PD-L1")
 
-paracrine_obj <- file.path(DIR_OBJECTS, "03_spatial_cellchat_paracrine.rds")
-paracrine_manifest <- file.path(DIR_REPORTS, "03_spatial_cellchat_paracrine_manifest.json")
-run_cellchat_architecture(
-  architecture_name = "paracrine",
-  db_search = "Secreted Signaling",
-  interaction_range = 100,
-  output_object = paracrine_obj,
-  manifest_out = paracrine_manifest
-)
+# 1. FAST-TRACK
+run_cellchat_architecture("juxtacrine_fast", c("Cell-Cell Contact", "ECM-Receptor"), 10, file.path(DIR_OBJECTS, "03_spatial_juxtacrine_fast.rds"), file.path(DIR_REPORTS, "03_manifest_juxt_fast.json"), TRUE, thesis_pathways)
+run_cellchat_architecture("paracrine_fast", "Secreted Signaling", 100, file.path(DIR_OBJECTS, "03_spatial_paracrine_fast.rds"), file.path(DIR_REPORTS, "03_manifest_para_fast.json"), FALSE, thesis_pathways)
+
+# 2. FULL-TRACK
+run_cellchat_architecture("juxtacrine_full", c("Cell-Cell Contact", "ECM-Receptor"), 10, file.path(DIR_OBJECTS, "03_spatial_juxtacrine_full.rds"), file.path(DIR_REPORTS, "03_manifest_juxt_full.json"), TRUE, NULL)
+run_cellchat_architecture("paracrine_full", "Secreted Signaling", 100, file.path(DIR_OBJECTS, "03_spatial_paracrine_full.rds"), file.path(DIR_REPORTS, "03_manifest_para_full.json"), FALSE, NULL)
