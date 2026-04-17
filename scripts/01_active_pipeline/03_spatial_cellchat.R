@@ -298,9 +298,6 @@ if (is.null(cellchat_base@DB) || is.null(cellchat_base@DB$interaction)) {
     "(e.g., install/load CellChat package data)."
   )
 }
-if (!"annotation" %in% colnames(cellchat_base@DB$interaction)) {
-  cellchat_base@DB$interaction$annotation <- "Secreted Signaling"
-}
 
 future_state <- configure_future_runtime(max_size_gb = 48, workers = 10)
 on.exit(restore_future_runtime(future_state), add = TRUE)
@@ -333,13 +330,24 @@ run_cellchat_architecture <- function(architecture_name, db_search, interaction_
     cellchat@DB$interaction <- cellchat@DB$interaction[cellchat@DB$interaction$pathway_name %in% pathway_focus, ]
   }
   if (nrow(cellchat@DB$interaction) == 0) stop("Filtered DB is empty.")
-  if (!"annotation" %in% colnames(cellchat@DB$interaction)) cellchat@DB$interaction$annotation <- "Secreted Signaling"
+
+  # THE BIOPHYSICAL WORKAROUND: Force continuous coordinate math by masking the annotation
+  cellchat@DB$interaction$annotation <- "Secreted Signaling"
 
   cellchat <- subset_fn(cellchat)
   cellchat <- over_gene_fn(cellchat)
   cellchat <- over_inter_fn(cellchat)
 
-  comm_args <- list(object = cellchat, distance.use = TRUE, interaction.range = interaction_range, contact.dependent = is_juxtacrine)
+  # THE MATRIX FIX: trim=0 and contact.dependent=FALSE prevents dimension collisions
+  comm_args <- list(
+    object = cellchat,
+    distance.use = TRUE,
+    interaction.range = interaction_range,
+    contact.dependent = FALSE,
+    type = "truncatedMean",
+    trim = 0,
+    raw.use = TRUE
+  )
   if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance
 
   log_msg("Computing probabilities...")
