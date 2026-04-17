@@ -2,8 +2,9 @@
 
 # =============================================================================
 # Script: 03_spatial_cellchat.R
-# Purpose: Compute niche-aware spatial CellChat communication from scored object.
-# Notes:   Compute-only script (no figures); stores CellChat object + metadata.
+# Purpose: Comparative spatial CellChat between high- and low-vulnerability niches
+#          using FAST-TRACK pathways only.
+# Notes:   Compute-only script (no figures); stores CellChat bundle + manifest.
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -14,8 +15,8 @@ suppressPackageStartupMessages({
 
 source("R/celltype_dictionary.R")
 
-PIPELINE_NAME <- "03_spatial_cellchat"
-PIPELINE_VERSION <- "1.0.0"
+PIPELINE_NAME <- "03_spatial_cellchat_niche_split"
+PIPELINE_VERSION <- "2.0.0"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 RUN_SEED <- 42L
 set.seed(RUN_SEED)
@@ -35,17 +36,10 @@ log_msg <- function(..., .level = "INFO") {
   cat(line, "\n", file = LOG_FILE, append = TRUE)
 }
 
-configure_future_runtime <- function(max_size_gb = 8, workers = 10) {
+configure_future_runtime <- function(max_size_gb = 8, workers = 2) {
   old_plan <- NULL
   old_max <- getOption("future.globals.maxSize")
   safe_workers <- as.integer(workers)
-  if (as.numeric(max_size_gb) > 10 && safe_workers > 6) {
-    safe_workers <- 6L
-    log_msg(
-      "Safe worker cap applied: max_size_gb=", max_size_gb,
-      " => workers capped to ", safe_workers, " to avoid swap pressure."
-    )
-  }
 
   if (requireNamespace("future", quietly = TRUE)) {
     old_plan <- future::plan()
@@ -86,7 +80,6 @@ compute_min_nonzero_distance <- function(coords_mat) {
     if (length(d) > 0) return(min(d))
   }
 
-  # Fallback: brute force on a capped subset to avoid O(N^2) memory blowups.
   set.seed(42L)
   idx <- sample(seq_len(nrow(xy)), size = min(5000, nrow(xy)))
   dmat <- as.matrix(stats::dist(xy[idx, , drop = FALSE]))
@@ -115,28 +108,51 @@ get_normalized_assay_data <- function(seu, assay = "RNA", preferred_layers = c("
   is_valid_matrix <- function(x) !is.null(x) && (is.matrix(x) || inherits(x, "Matrix"))
   has_shape <- function(x) is_valid_matrix(x) && nrow(x) > 0 && ncol(x) > 0
 
-  # SeuratObject v5 uses `layer`; older objects/scripts may still rely on slot.
   for (ly in preferred_layers) {
     mat <- tryCatch(
       SeuratObject::GetAssayData(seu, assay = assay, layer = ly),
       error = function(e) NULL
     )
-    if (has_shape(mat)) return(list(mat = mat, source = paste0("layer:", ly)))
+    if (has_shape(mat)) return(list(mat = mat, source = paste0("layer:", ly), assay = assay))
   }
-  # Legacy Seurat (v4 and older) fallback.
+
   legacy_slots <- unique(c(preferred_layers, "data", "counts"))
   for (sl in legacy_slots) {
     mat <- tryCatch(
       SeuratObject::GetAssayData(seu, assay = assay, slot = sl),
       error = function(e) NULL
     )
-    if (has_shape(mat)) return(list(mat = mat, source = paste0("slot:", sl)))
+    if (has_shape(mat)) return(list(mat = mat, source = paste0("slot:", sl), assay = assay))
   }
+
   stop(
-    "Unable to extract assay data from assay '", assay, "'. ",
-    "Tried layers/slots: ", paste(unique(c(preferred_layers, legacy_slots)), collapse = ", "),
-    ". Please confirm assay/layer names in this Seurat object."
+    "Unable to extract assay data from assay '", assay, "'. Tried layers/slots: ",
+    paste(unique(c(preferred_layers, legacy_slots)), collapse = ", "), "."
   )
+}
+
+extract_cellchat_input_matrix <- function(seu) {
+  if ("SCT" %in% Assays(seu)) {
+    log_msg("Detected SCT assay. Using SCT normalized data for CellChat.")
+    DefaultAssay(seu) <- "SCT"
+    payload <- get_normalized_assay_data(seu, assay = "SCT", preferred_layers = c("data"))
+    data_input <- payload$mat
+  } else {
+    DefaultAssay(seu) <- "RNA"
+    payload <- get_normalized_assay_data(seu, assay = "RNA")
+    data_input <- payload$mat
+
+    if (!grepl("data|lognorm", payload$source)) {
+      log_msg("RNA layer:data is empty. Applying manual CPM + log1p normalization directly.", .level = "WARN")
+      if (!requireNamespace("Matrix", quietly = TRUE)) stop("Matrix package required.")
+      lib_size <- Matrix::colSums(data_input)
+      lib_size[lib_size == 0] <- 1
+      data_input <- Matrix::t(Matrix::t(data_input) / lib_size) * 1e4
+      data_input <- log1p(data_input)
+    }
+  }
+
+  list(seu = seu, data_input = data_input, payload = payload)
 }
 
 record_artifact_manifest <- function(
@@ -169,13 +185,57 @@ record_artifact_manifest <- function(
   jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
 }
 
-input_obj <- resolve_object_path(file.path(DIR_OBJECTS, "02_scored_misi_ido1.rds"))
-output_obj <- file.path(DIR_OBJECTS, "03_spatial_cellchat.rds")
-manifest_path <- file.path(DIR_REPORTS, "03_spatial_cellchat_manifest.json")
+build_cellchat_context <- function(seu_subset, label, create_fn, create_formals, spatial_factors, scale_factors, db_human) {
+  ext <- extract_cellchat_input_matrix(seu_subset)
+  seu_subset <- ext$seu
+  data_input <- ext$data_input
 
+  coords <- as.matrix(seu_subset@meta.data[, c("x_um", "y_um"), drop = FALSE])
+  colnames(coords) <- c("x_cent", "y_cent")
+  rownames(coords) <- colnames(seu_subset)
+
+  meta <- seu_subset@meta.data %>% dplyr::mutate(group = as.character(celltype_plot))
+  rownames(meta) <- colnames(seu_subset)
+
+  create_args <- list(
+    object = data_input,
+    meta = meta,
+    group.by = "group",
+    datatype = "spatial",
+    coordinates = coords
+  )
+  if ("spatial.factors" %in% create_formals) {
+    create_args$spatial.factors <- spatial_factors
+  } else if ("scale.factors" %in% create_formals) {
+    create_args$scale.factors <- scale_factors
+  }
+
+  log_msg("Creating spatial CellChat object for niche: ", label)
+  cellchat_base <- do.call(create_fn, create_args)
+  cellchat_base@DB <- db_human
+  if (is.null(cellchat_base@DB) || is.null(cellchat_base@DB$interaction)) {
+    stop("CellChat DB missing for niche: ", label)
+  }
+
+  min_dist <- compute_min_nonzero_distance(coords)
+  dynamic_scale_distance <- 1 / min_dist
+
+  list(
+    label = label,
+    seu = seu_subset,
+    cellchat_base = cellchat_base,
+    min_dist = min_dist,
+    dynamic_scale_distance = dynamic_scale_distance
+  )
+}
+
+input_obj <- resolve_object_path(file.path(DIR_OBJECTS, "02_scored_misi_ido1.rds"))
 log_msg("Loading scored object: ", input_obj)
 seu <- read_object(input_obj)
-DefaultAssay(seu) <- "RNA"
+
+if (!all(c("MISI_Vulnerability", "x_um", "y_um") %in% colnames(seu@meta.data))) {
+  stop("Seurat object must include MISI_Vulnerability and x_um/y_um columns.")
+}
 
 seu$week <- factor(as.character(seu$week), levels = c("W7", "W8-2", "W9", "W11"))
 celltype_col <- if ("predicted.celltype" %in% colnames(seu@meta.data)) "predicted.celltype" else pick_celltype_source_column(seu@meta.data)
@@ -183,55 +243,28 @@ if (is.na(celltype_col)) celltype_col <- "seurat_clusters"
 seu$celltype_plot <- rename_with_true_names(as.character(seu@meta.data[[celltype_col]]))
 Idents(seu) <- "celltype_plot"
 
-if (!all(c("x_um", "y_um") %in% colnames(seu@meta.data))) {
-  stop("Spatial columns x_um/y_um are required for spatial CellChat.")
+q33 <- as.numeric(stats::quantile(seu$MISI_Vulnerability, probs = 0.33, na.rm = TRUE))
+q67 <- as.numeric(stats::quantile(seu$MISI_Vulnerability, probs = 0.67, na.rm = TRUE))
+
+seu_high <- subset(seu, cells = colnames(seu)[seu$MISI_Vulnerability >= q67])
+seu_low <- subset(seu, cells = colnames(seu)[seu$MISI_Vulnerability <= q33])
+
+log_msg("Niche split complete: q33=", signif(q33, 5), ", q67=", signif(q67, 5),
+        " | high cells=", ncol(seu_high), " | low cells=", ncol(seu_low))
+
+if (ncol(seu_high) < 50 || ncol(seu_low) < 50) {
+  stop("Niche split produced too few cells (<50) in at least one group. Check MISI_Vulnerability distribution.")
 }
-
-coords <- as.matrix(seu@meta.data[, c("x_um", "y_um"), drop = FALSE])
-colnames(coords) <- c("x_cent", "y_cent")
-rownames(coords) <- colnames(seu)
-
-meta <- seu@meta.data %>%
-  dplyr::mutate(group = as.character(celltype_plot))
-rownames(meta) <- colnames(seu)
-
-# --- Bypass Seurat v5 NormalizeData bug and prefer SCT ---
-if ("SCT" %in% Assays(seu)) {
-  log_msg("Detected SCT assay. Using SCT normalized data for CellChat.")
-  DefaultAssay(seu) <- "SCT"
-  assay_payload <- get_normalized_assay_data(seu, assay = "SCT", preferred_layers = c("data"))
-  data.input <- assay_payload$mat
-} else {
-  DefaultAssay(seu) <- "RNA"
-  assay_payload <- get_normalized_assay_data(seu, assay = "RNA")
-  data.input <- assay_payload$mat
-
-  if (!grepl("data|lognorm", assay_payload$source)) {
-    log_msg("RNA layer:data is empty. Applying manual CPM + log1p normalization directly.", .level = "WARN")
-    # Bypass the buggy Seurat::NormalizeData call entirely
-    if (!requireNamespace("Matrix", quietly = TRUE)) stop("Matrix package required.")
-    lib_size <- Matrix::colSums(data.input)
-    lib_size[lib_size == 0] <- 1
-    data.input <- Matrix::t(Matrix::t(data.input) / lib_size) * 1e4
-    data.input <- log1p(data.input)
-  }
-}
-log_msg("Final CellChat input matrix: ", nrow(data.input), " genes x ", ncol(data.input), " cells.")
-scale.factors <- list(spot = 1, spot.diameter = 1)
-spatial.factors <- list(ratio = 1, tol = 0)
 
 using_spatial_cellchat <- requireNamespace("SpatialCellChat", quietly = TRUE)
-db_human <- tryCatch(
-  SpatialCellChat::CellChatDB.human,
-  error = function(e) CellChat::CellChatDB.human
-)
+db_human <- tryCatch(SpatialCellChat::CellChatDB.human, error = function(e) CellChat::CellChatDB.human)
 
 if (using_spatial_cellchat) {
   log_msg("Detected SpatialCellChat package; using SpatialCellChat API (CellChat v3).")
   create_fn <- if ("createSpatialCellChat" %in% getNamespaceExports("SpatialCellChat")) {
     SpatialCellChat::createSpatialCellChat
   } else {
-    stop("SpatialCellChat is installed but `createSpatialCellChat` is not exported.")
+    stop("SpatialCellChat installed but createSpatialCellChat not exported.")
   }
   subset_fn <- SpatialCellChat::subsetData
   over_gene_fn <- SpatialCellChat::identifyOverExpressedGenes
@@ -240,12 +273,9 @@ if (using_spatial_cellchat) {
   filter_fn <- SpatialCellChat::filterCommunication
   pathway_fn <- SpatialCellChat::computeCommunProbPathway
   aggregate_fn <- SpatialCellChat::aggregateNet
-  subset_comm_fn <- SpatialCellChat::subsetCommunication
 } else {
-  if (!requireNamespace("CellChat", quietly = TRUE)) {
-    stop("Neither 'SpatialCellChat' nor 'CellChat' is installed.")
-  }
-  log_msg("Using CellChat package (v1/v2 API). Install SpatialCellChat for CellChat v3 features.", .level = "WARN")
+  if (!requireNamespace("CellChat", quietly = TRUE)) stop("Neither SpatialCellChat nor CellChat is installed.")
+  log_msg("Using CellChat package fallback API.", .level = "WARN")
   create_fn <- CellChat::createCellChat
   subset_fn <- CellChat::subsetData
   over_gene_fn <- CellChat::identifyOverExpressedGenes
@@ -254,57 +284,23 @@ if (using_spatial_cellchat) {
   filter_fn <- CellChat::filterCommunication
   pathway_fn <- CellChat::computeCommunProbPathway
   aggregate_fn <- CellChat::aggregateNet
-  subset_comm_fn <- CellChat::subsetCommunication
 }
 
-create_args <- list(
-  object = data.input,
-  meta = meta,
-  group.by = "group",
-  datatype = "spatial",
-  coordinates = coords
-)
+scale_factors <- list(spot = 1, spot.diameter = 1)
+spatial_factors <- list(ratio = 1, tol = 0)
 create_formals <- names(formals(create_fn))
-if ("spatial.factors" %in% create_formals) {
-  create_args$spatial.factors <- spatial.factors
-} else if ("scale.factors" %in% create_formals) {
-  create_args$scale.factors <- scale.factors
-}
-
-log_msg("Creating spatial CellChat object using physical coordinates.")
-cellchat_base <- do.call(create_fn, create_args)
-cellchat_base@DB <- db_human
-if (is.null(cellchat_base@DB) || is.null(cellchat_base@DB$interaction)) {
-  stop(
-    "CellChat DB is missing. Please ensure CellChat ligand-receptor DB is available ",
-    "(e.g., install/load CellChat package data)."
-  )
-}
-
-future_state <- configure_future_runtime(max_size_gb = 80, workers = 10)
-on.exit(restore_future_runtime(future_state), add = TRUE)
-
 subset_db_fn <- if (using_spatial_cellchat) SpatialCellChat::subsetDB else CellChat::subsetDB
 comm_formals <- names(formals(commprob_fn))
-min_dist <- compute_min_nonzero_distance(coords)
-dynamic_scale_distance <- 1 / min_dist
-log_msg(
-  "Dynamic scale.distance computed from min non-zero physical distance: ",
-  signif(min_dist, 6), " um -> scale.distance=", signif(dynamic_scale_distance, 6), "."
-)
 
-cluster_tbl <- seu@meta.data %>%
-  dplyr::mutate(seurat_clusters = as.character(seurat_clusters)) %>%
-  dplyr::group_by(seurat_clusters) %>%
-  dplyr::summarise(mean_misi = mean(MISI_Vulnerability, na.rm = TRUE), n = dplyr::n(), .groups = "drop") %>%
-  dplyr::filter(n >= 20) %>%
-  dplyr::arrange(dplyr::desc(mean_misi), dplyr::desc(n))
-top3_vulnerable_clusters <- head(cluster_tbl$seurat_clusters, 3)
-top3_celltypes <- unique(as.character(seu$celltype_plot[seu$seurat_clusters %in% top3_vulnerable_clusters]))
+ctx_high <- build_cellchat_context(seu_high, "high", create_fn, create_formals, spatial_factors, scale_factors, db_human)
+ctx_low <- build_cellchat_context(seu_low, "low", create_fn, create_formals, spatial_factors, scale_factors, db_human)
 
-run_cellchat_architecture <- function(architecture_name, db_search, interaction_range, output_object, manifest_out, is_juxtacrine = FALSE, pathway_focus = NULL) {
-  log_msg("Running architecture: ", architecture_name, " (interaction.range=", interaction_range, ")")
-  cellchat <- cellchat_base
+future_state <- configure_future_runtime(max_size_gb = 80, workers = 2)
+on.exit(restore_future_runtime(future_state), add = TRUE)
+
+run_cellchat_architecture <- function(ctx, architecture_name, db_search, interaction_range, output_object, manifest_out, pathway_focus = NULL) {
+  log_msg("Running architecture: ", architecture_name, " [", ctx$label, "] (interaction.range=", interaction_range, ")")
+  cellchat <- ctx$cellchat_base
   cellchat@DB <- subset_db_fn(db_human, search = db_search)
 
   if (!is.null(pathway_focus)) {
@@ -313,7 +309,7 @@ run_cellchat_architecture <- function(architecture_name, db_search, interaction_
   }
   if (nrow(cellchat@DB$interaction) == 0) stop("Filtered DB is empty.")
 
-  # THE BIOPHYSICAL WORKAROUND: Force continuous coordinate math by masking the annotation
+  # Force continuous-coordinate kernel path
   cellchat@DB$interaction$annotation <- "Secreted Signaling"
 
   cellchat <- subset_fn(cellchat)
@@ -330,7 +326,7 @@ run_cellchat_architecture <- function(architecture_name, db_search, interaction_
   )
 
   # API Patch: Only add legacy arguments if the specific API version accepts them
-  if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance
+  if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- ctx$dynamic_scale_distance
   if ("type" %in% comm_formals) comm_args$type <- "truncatedMean"
   if ("trim" %in% comm_formals) comm_args$trim <- 0
 
@@ -338,20 +334,22 @@ run_cellchat_architecture <- function(architecture_name, db_search, interaction_
   cellchat <- do.call(commprob_fn, comm_args)
 
   tryCatch({
-    cellchat <- filter_fn(cellchat, min.cells = 4)
+    cellchat <- filter_fn(cellchat, min.cells = 8)
     cellchat <- pathway_fn(cellchat)
     cellchat <- aggregate_fn(cellchat)
   }, error = function(e) log_msg("  WARN during aggregation: ", conditionMessage(e)))
 
   bundle <- list(
+    niche = ctx$label,
     architecture = architecture_name,
     cellchat = cellchat,
     source_scored_object = input_obj,
     db_search = db_search,
     interaction_range = interaction_range,
-    vulnerable_clusters = top3_vulnerable_clusters,
-    vulnerable_celltypes = top3_celltypes,
-    pathway_focus = pathway_focus
+    pathway_focus = pathway_focus,
+    q33 = q33,
+    q67 = q67,
+    n_cells = ncol(ctx$seu)
   )
   saveRDS(bundle, output_object)
   log_msg("Saved bundle: ", output_object)
@@ -366,23 +364,60 @@ run_cellchat_architecture <- function(architecture_name, db_search, interaction_
     output_object = output_object,
     script_path = "scripts/01_active_pipeline/03_spatial_cellchat.R",
     notes = c(
+      paste0("Niche = ", ctx$label),
       paste0("Architecture = ", architecture_name),
       paste0("DB search = ", paste(db_search, collapse = ", ")),
       paste0("interaction.range = ", interaction_range, " um"),
-      paste0("pathway_focus = ", ifelse(is.null(pathway_focus), "FULL", paste(pathway_focus, collapse = ",")))
+      paste0("pathway_focus = ", ifelse(is.null(pathway_focus), "FULL", paste(pathway_focus, collapse = ","))),
+      paste0("q33 = ", signif(q33, 5), "; q67 = ", signif(q67, 5))
     ),
     hypothesis = "Vulnerable spatial niches exhibit enhanced tolerogenic/exhaustion signaling to break down the IDO1 shield.",
-    methods_blurb = "Dual-architecture SpatialCellChat run with fast-track targeted pathways and full-track comprehensive signaling.",
+    methods_blurb = "Comparative niche split SpatialCellChat run (high vs low MISI) with pathway-focused fast-track signaling.",
     thesis_aim = "Disentangle local synaptic signaling from longer-range cytokine diffusion across vulnerability niches."
   )
 }
 
 thesis_pathways <- c("MMP", "WNT", "TGFb", "CXCL", "CCL", "SPP1", "NOTCH", "FN1", "MHC-I", "MHC-II", "CD45", "TIGIT", "PD-L1")
 
-# 1. FAST-TRACK
-run_cellchat_architecture("juxtacrine_fast", c("Cell-Cell Contact", "ECM-Receptor"), 10, file.path(DIR_OBJECTS, "03_spatial_juxtacrine_fast.rds"), file.path(DIR_REPORTS, "03_manifest_juxt_fast.json"), TRUE, thesis_pathways)
-run_cellchat_architecture("paracrine_fast", "Secreted Signaling", 100, file.path(DIR_OBJECTS, "03_spatial_paracrine_fast.rds"), file.path(DIR_REPORTS, "03_manifest_para_fast.json"), FALSE, thesis_pathways)
+# FAST-TRACK comparative runs
+run_cellchat_architecture(
+  ctx_high,
+  architecture_name = "high_misi_juxtacrine_fast",
+  db_search = c("Cell-Cell Contact", "ECM-Receptor"),
+  interaction_range = 10,
+  output_object = file.path(DIR_OBJECTS, "03_spatial_high_misi_juxtacrine_fast.rds"),
+  manifest_out = file.path(DIR_REPORTS, "03_manifest_high_misi_juxt_fast.json"),
+  pathway_focus = thesis_pathways
+)
 
-# 2. FULL-TRACK
-run_cellchat_architecture("juxtacrine_full", c("Cell-Cell Contact", "ECM-Receptor"), 10, file.path(DIR_OBJECTS, "03_spatial_juxtacrine_full.rds"), file.path(DIR_REPORTS, "03_manifest_juxt_full.json"), TRUE, NULL)
-run_cellchat_architecture("paracrine_full", "Secreted Signaling", 100, file.path(DIR_OBJECTS, "03_spatial_paracrine_full.rds"), file.path(DIR_REPORTS, "03_manifest_para_full.json"), FALSE, NULL)
+run_cellchat_architecture(
+  ctx_high,
+  architecture_name = "high_misi_paracrine_fast",
+  db_search = "Secreted Signaling",
+  interaction_range = 100,
+  output_object = file.path(DIR_OBJECTS, "03_spatial_high_misi_paracrine_fast.rds"),
+  manifest_out = file.path(DIR_REPORTS, "03_manifest_high_misi_para_fast.json"),
+  pathway_focus = thesis_pathways
+)
+
+run_cellchat_architecture(
+  ctx_low,
+  architecture_name = "low_misi_juxtacrine_fast",
+  db_search = c("Cell-Cell Contact", "ECM-Receptor"),
+  interaction_range = 10,
+  output_object = file.path(DIR_OBJECTS, "03_spatial_low_misi_juxtacrine_fast.rds"),
+  manifest_out = file.path(DIR_REPORTS, "03_manifest_low_misi_juxt_fast.json"),
+  pathway_focus = thesis_pathways
+)
+
+run_cellchat_architecture(
+  ctx_low,
+  architecture_name = "low_misi_paracrine_fast",
+  db_search = "Secreted Signaling",
+  interaction_range = 100,
+  output_object = file.path(DIR_OBJECTS, "03_spatial_low_misi_paracrine_fast.rds"),
+  manifest_out = file.path(DIR_REPORTS, "03_manifest_low_misi_para_fast.json"),
+  pathway_focus = thesis_pathways
+)
+
+log_msg("Comparative niche split CellChat runs complete.")
