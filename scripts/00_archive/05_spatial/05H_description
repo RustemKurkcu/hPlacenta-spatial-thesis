@@ -1,0 +1,90 @@
+<<<<<<< HEAD
+05H — Global-calibrated spatial permissiveness panels (README)
+---------------------------------------------------------------
+
+What 05H does
+-------------
+1. Reads harmonized Seurat objects (preferably *_with_permissiveness.rds).
+2. Pools per-cell module scores across datasets and computes global z-scores:
+   z_mmp_global, z_tol_global, z_nk_global, z_ea_global.
+3. Calculates permissiveness_global = z_mmp_global + z_tol_global - z_nk_global + z_ea_global.
+4. Exports a pooled table (permissiveness_global_allcells.csv) and stats file with
+   perm_maxabs (permissiveness_global_stats.json).
+5. For each dataset and sample:
+   - Maps coordinates to image pixels using heuristics,
+   - Draws three-panel figures:
+       A) Vanilla: per-cell permissiveness_global (viridis)
+       B) Density: top-permissive kernel density (top N%)
+       C) Highlights: permissiveness + highlighted cell types
+     and a white->red variant with symmetric color limits.
+   - Creates protected (bottom N%) density maps and a Hotspot-Protected difference map.
+6. Writes per-sample files: mapped_coords_global.csv, hotspot/protected lists,
+   meta.json, README_sample.txt, and figure PNG/PDFs.
+
+Why symmetric color limits?
+---------------------------
+We compute a pooled `perm_maxabs = max(abs(permissiveness_global))`. Using
+symmetric limits (`[-perm_maxabs, +perm_maxabs]`) centered at 0 allows direct
+visual comparison between samples: a red pixel of the same intensity means
+the same relative permissiveness across samples.
+
+How to interpret each panel
+---------------------------
+- Panel A (vanilla): per-cell score (viridis). Use for local cell-level patterns.
+- Panel B (density): spatial concentration of top permissive cells (hotspots).
+  Useful for locating regions to analyze (DE genes, neighborhood composition).
+- Panel C (highlights): overlay of highlighted biologically-important cell types
+  (e.g. EVT, NK, Endothelial) on permissiveness — helps connect biology to score.
+- White->Red: same cell-level data but with symmetric red ramp — good for cross-sample comparisons.
+- Protected and Diff: regions enriched for bottom-permissiveness (protected) and Hotspot - Protected difference.
+
+Suggested next analyses
+-----------------------
+- Differential expression between hotspot cells and background cells (Seurat FindMarkers).
+- CellChat / ligand-receptor analysis on hotspot vs background subsets.
+=======
+05H — Global-calibrated spatial permissiveness panels (README)
+---------------------------------------------------------------
+
+What 05H does
+-------------
+1. Reads harmonized Seurat objects (preferably *_with_permissiveness.rds).
+2. Pools per-cell module scores across datasets and computes global z-scores:
+   z_mmp_global, z_tol_global, z_nk_global, z_ea_global.
+3. Calculates permissiveness_global = z_mmp_global + z_tol_global - z_nk_global + z_ea_global.
+4. Exports a pooled table (permissiveness_global_allcells.csv) and stats file with
+   perm_maxabs (permissiveness_global_stats.json).
+5. For each dataset and sample:
+   - Maps coordinates to image pixels using heuristics,
+   - Draws three-panel figures:
+       A) Vanilla: per-cell permissiveness_global (viridis)
+       B) Density: top-permissive kernel density (top N%)
+       C) Highlights: permissiveness + highlighted cell types
+     and a white->red variant with symmetric color limits.
+   - Creates protected (bottom N%) density maps and a Hotspot-Protected difference map.
+6. Writes per-sample files: mapped_coords_global.csv, hotspot/protected lists,
+   meta.json, README_sample.txt, and figure PNG/PDFs.
+
+Why symmetric color limits?
+---------------------------
+We compute a pooled `perm_maxabs = max(abs(permissiveness_global))`. Using
+symmetric limits (`[-perm_maxabs, +perm_maxabs]`) centered at 0 allows direct
+visual comparison between samples: a red pixel of the same intensity means
+the same relative permissiveness across samples.
+
+How to interpret each panel
+---------------------------
+- Panel A (vanilla): per-cell score (viridis). Use for local cell-level patterns.
+- Panel B (density): spatial concentration of top permissive cells (hotspots).
+  Useful for locating regions to analyze (DE genes, neighborhood composition).
+- Panel C (highlights): overlay of highlighted biologically-important cell types
+  (e.g. EVT, NK, Endothelial) on permissiveness — helps connect biology to score.
+- White->Red: same cell-level data but with symmetric red ramp — good for cross-sample comparisons.
+- Protected and Diff: regions enriched for bottom-permissiveness (protected) and Hotspot - Protected difference.
+
+Suggested next analyses
+-----------------------
+- Differential expression between hotspot cells and background cells (Seurat FindMarkers).
+- CellChat / ligand-receptor analysis on hotspot vs background subsets.
+>>>>>>> 54c1a5c675ca223d183141f8a75de090237ce902
+- Spatially-aware tests (SPARK, spatialDE) focusing on hotspot regions.
