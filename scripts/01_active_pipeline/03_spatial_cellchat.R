@@ -282,26 +282,22 @@ if ("spatial.factors" %in% create_formals) {
 }
 
 log_msg("Creating spatial CellChat object using physical coordinates.")
-cellchat <- do.call(create_fn, create_args)
-
-cellchat@DB <- db_human
-if (is.null(cellchat@DB) || is.null(cellchat@DB$interaction)) {
+cellchat_base <- do.call(create_fn, create_args)
+cellchat_base@DB <- db_human
+if (is.null(cellchat_base@DB) || is.null(cellchat_base@DB$interaction)) {
   stop(
     "CellChat DB is missing. Please ensure CellChat ligand-receptor DB is available ",
     "(e.g., install/load CellChat package data)."
   )
 }
-if (!"annotation" %in% colnames(cellchat@DB$interaction)) {
-  cellchat@DB$interaction$annotation <- "Secreted Signaling"
+if (!"annotation" %in% colnames(cellchat_base@DB$interaction)) {
+  cellchat_base@DB$interaction$annotation <- "Secreted Signaling"
 }
-future_state <- configure_future_runtime(max_size_gb = 8, workers = 10)
+
+future_state <- configure_future_runtime(max_size_gb = 32, workers = 10)
 on.exit(restore_future_runtime(future_state), add = TRUE)
 
-cellchat <- subset_fn(cellchat)
-cellchat <- over_gene_fn(cellchat)
-cellchat <- over_inter_fn(cellchat)
-
-log_msg("Computing communication probabilities with spatial distance penalty.")
+subset_db_fn <- if (using_spatial_cellchat) SpatialCellChat::subsetDB else CellChat::subsetDB
 comm_formals <- names(formals(commprob_fn))
 min_dist <- compute_min_nonzero_distance(coords)
 dynamic_scale_distance <- 1 / min_dist
@@ -310,78 +306,120 @@ log_msg(
   signif(min_dist, 6), " um -> scale.distance=", signif(dynamic_scale_distance, 6), "."
 )
 
-comm_args <- list(
-  object = cellchat,
-  distance.use = TRUE,
-  interaction.range = 10,
-  contact.dependent = FALSE
-)
-if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance
-if ("type" %in% comm_formals) comm_args$type <- "truncatedMean"
-if ("trim" %in% comm_formals) comm_args$trim <- 0.1
-if ("raw.use" %in% comm_formals) comm_args$raw.use <- TRUE
-if ("contact.dependent.forced" %in% comm_formals) comm_args$contact.dependent.forced <- FALSE
-
-cellchat <- do.call(commprob_fn, comm_args)
-cellchat <- filter_fn(cellchat, min.cells = 10)
-cellchat <- pathway_fn(cellchat)
-cellchat <- aggregate_fn(cellchat)
-
 cluster_tbl <- seu@meta.data %>%
   dplyr::mutate(seurat_clusters = as.character(seurat_clusters)) %>%
   dplyr::group_by(seurat_clusters) %>%
   dplyr::summarise(mean_misi = mean(MISI_Vulnerability, na.rm = TRUE), n = dplyr::n(), .groups = "drop") %>%
   dplyr::filter(n >= 20) %>%
   dplyr::arrange(dplyr::desc(mean_misi), dplyr::desc(n))
-
 top2_vulnerable_clusters <- head(cluster_tbl$seurat_clusters, 2)
 top2_celltypes <- unique(as.character(seu$celltype_plot[seu$seurat_clusters %in% top2_vulnerable_clusters]))
 
-comm_df <- subset_comm_fn(cellchat)
-comm_vulnerable <- comm_df %>%
-  dplyr::filter(source %in% top2_celltypes | target %in% top2_celltypes)
+run_cellchat_architecture <- function(
+  architecture_name,
+  db_search,
+  interaction_range,
+  output_object,
+  manifest_out
+) {
+  log_msg("Running architecture: ", architecture_name, " (interaction.range=", interaction_range, ")")
+  cellchat <- cellchat_base
+  cellchat@DB <- subset_db_fn(db_human, search = db_search)
+  if (is.null(cellchat@DB) || is.null(cellchat@DB$interaction)) {
+    stop("Filtered DB is missing interaction table for architecture: ", architecture_name)
+  }
+  if (!"annotation" %in% colnames(cellchat@DB$interaction)) {
+    cellchat@DB$interaction$annotation <- "Secreted Signaling"
+  }
 
-pathway_rank <- comm_vulnerable %>%
-  dplyr::group_by(pathway_name) %>%
-  dplyr::summarise(vulnerable_prob = sum(prob, na.rm = TRUE), n_edges = dplyr::n(), .groups = "drop") %>%
-  dplyr::arrange(dplyr::desc(vulnerable_prob), dplyr::desc(n_edges))
+  cellchat <- subset_fn(cellchat)
+  cellchat <- over_gene_fn(cellchat)
+  cellchat <- over_inter_fn(cellchat)
 
-bundle <- list(
-  cellchat = cellchat,
-  source_scored_object = input_obj,
-  vulnerable_clusters = top2_vulnerable_clusters,
-  vulnerable_celltypes = top2_celltypes,
-  vulnerable_pathway_rank = pathway_rank,
-  spatial_meta = seu@meta.data %>%
-    dplyr::select(x_um, y_um, week, seurat_clusters, celltype_plot, MISI_Vulnerability, IDO1_Tolerogenic_Shield),
-  run_metadata = list(
+  comm_args <- list(
+    object = cellchat,
+    distance.use = TRUE,
+    interaction.range = interaction_range,
+    contact.dependent = FALSE
+  )
+  if ("scale.distance" %in% comm_formals) comm_args$scale.distance <- dynamic_scale_distance
+  if ("type" %in% comm_formals) comm_args$type <- "truncatedMean"
+  if ("trim" %in% comm_formals) comm_args$trim <- 0.1
+  if ("raw.use" %in% comm_formals) comm_args$raw.use <- TRUE
+  if ("contact.dependent.forced" %in% comm_formals) comm_args$contact.dependent.forced <- FALSE
+
+  log_msg("Computing communication probabilities for ", architecture_name, ".")
+  cellchat <- do.call(commprob_fn, comm_args)
+  cellchat <- filter_fn(cellchat, min.cells = 10)
+  cellchat <- pathway_fn(cellchat)
+  cellchat <- aggregate_fn(cellchat)
+
+  comm_df <- subset_comm_fn(cellchat)
+  comm_vulnerable <- comm_df %>%
+    dplyr::filter(source %in% top2_celltypes | target %in% top2_celltypes)
+  pathway_rank <- comm_vulnerable %>%
+    dplyr::group_by(pathway_name) %>%
+    dplyr::summarise(vulnerable_prob = sum(prob, na.rm = TRUE), n_edges = dplyr::n(), .groups = "drop") %>%
+    dplyr::arrange(dplyr::desc(vulnerable_prob), dplyr::desc(n_edges))
+
+  bundle <- list(
+    architecture = architecture_name,
+    cellchat = cellchat,
+    source_scored_object = input_obj,
+    db_search = db_search,
+    interaction_range = interaction_range,
+    vulnerable_clusters = top2_vulnerable_clusters,
+    vulnerable_celltypes = top2_celltypes,
+    vulnerable_pathway_rank = pathway_rank,
+    spatial_meta = seu@meta.data %>%
+      dplyr::select(x_um, y_um, week, seurat_clusters, celltype_plot, MISI_Vulnerability, IDO1_Tolerogenic_Shield),
+    run_metadata = list(
+      pipeline = PIPELINE_NAME,
+      version = PIPELINE_VERSION,
+      run_timestamp = RUN_TIMESTAMP,
+      seed = RUN_SEED
+    )
+  )
+  saveRDS(bundle, output_object)
+  log_msg("Saved ", architecture_name, " bundle: ", output_object)
+
+  record_artifact_manifest(
+    manifest_path = manifest_out,
     pipeline = PIPELINE_NAME,
     version = PIPELINE_VERSION,
     run_timestamp = RUN_TIMESTAMP,
-    seed = RUN_SEED
+    seed = RUN_SEED,
+    source_data = input_obj,
+    output_object = output_object,
+    script_path = "scripts/01_active_pipeline/03_spatial_cellchat.R",
+    notes = c(
+      paste0("Dual-architecture run: ", architecture_name),
+      paste0("DB search = ", paste(db_search, collapse = ", ")),
+      paste0("interaction.range = ", interaction_range, " um")
+    ),
+    hypothesis = "Vulnerable spatial niches exhibit enhanced tolerogenic/exhaustion signaling to break down the IDO1 shield.",
+    methods_blurb = "Spatial CellChat with dual-architecture modeling to separate contact-mediated vs secreted diffusion signaling.",
+    thesis_aim = "Quantify and compare juxtacrine and paracrine communication programs in high-vulnerability tissue microdomains."
   )
+  log_msg("Saved manifest: ", manifest_out)
+}
+
+juxtacrine_obj <- file.path(DIR_OBJECTS, "03_spatial_cellchat_juxtacrine.rds")
+juxtacrine_manifest <- file.path(DIR_REPORTS, "03_spatial_cellchat_juxtacrine_manifest.json")
+run_cellchat_architecture(
+  architecture_name = "juxtacrine",
+  db_search = c("Cell-Cell Contact", "ECM-Receptor"),
+  interaction_range = 10,
+  output_object = juxtacrine_obj,
+  manifest_out = juxtacrine_manifest
 )
 
-saveRDS(bundle, output_obj)
-log_msg("Saved spatial CellChat bundle: ", output_obj)
-
-record_artifact_manifest(
-  manifest_path = manifest_path,
-  pipeline = PIPELINE_NAME,
-  version = PIPELINE_VERSION,
-  run_timestamp = RUN_TIMESTAMP,
-  seed = RUN_SEED,
-  source_data = input_obj,
-  output_object = output_obj,
-  script_path = "scripts/01_active_pipeline/03_spatial_cellchat.R",
-  notes = c(
-    "Spatial-only CellChat (datatype = spatial) using x_um/y_um coordinates",
-    "Distance-penalized communication probabilities",
-    "Pathway ranking focused on top-2 MISI-vulnerable clusters/cell types"
-  ),
-  hypothesis = "Vulnerable spatial niches exhibit enhanced tolerogenic/exhaustion signaling to break down the IDO1 shield.",
-  methods_blurb = "Spatial CellChat utilizing physical distance matrices to penalize long-range interactions.",
-  thesis_aim = "Quantify niche-aware cell-cell communication programs that align with localized high-vulnerability microdomains."
+paracrine_obj <- file.path(DIR_OBJECTS, "03_spatial_cellchat_paracrine.rds")
+paracrine_manifest <- file.path(DIR_REPORTS, "03_spatial_cellchat_paracrine_manifest.json")
+run_cellchat_architecture(
+  architecture_name = "paracrine",
+  db_search = "Secreted Signaling",
+  interaction_range = 100,
+  output_object = paracrine_obj,
+  manifest_out = paracrine_manifest
 )
-
-log_msg("Saved manifest: ", manifest_path)
