@@ -2,17 +2,27 @@
 
 # =============================================================================
 # Script: 03f_force_pathway_aggregation_and_merge.R
-# Purpose: Repair weekly SpatialCellChat objects that are missing pathway-level
-#          aggregates by chunking over LR pathways (RAM-safe), then merge.
-# Notes:   Designed for local machines where aggregateNet() can fail.
+# Purpose: RAM-safe, cell-level pathway aggregation for full-pathway weekly
+#          SpatialCellChat objects, then 4-week merge.
+# Notes:   Preserves n_cells x n_cells spatial geometry (does NOT collapse to
+#          group-level arrays).
 # =============================================================================
 
 suppressPackageStartupMessages({
+  library(Matrix)
   library(jsonlite)
 })
 
+if (requireNamespace("SpatialCellChat", quietly = TRUE)) {
+  merge_fn <- CellChat::mergeCellChat
+} else if (requireNamespace("CellChat", quietly = TRUE)) {
+  merge_fn <- CellChat::mergeCellChat
+} else {
+  stop("Neither SpatialCellChat nor CellChat is installed.")
+}
+
 PIPELINE_NAME <- "03f_force_pathway_aggregation_and_merge"
-PIPELINE_VERSION <- "1.0.0"
+PIPELINE_VERSION <- "2.0.0"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 
 OUT_ROOT <- "output"
@@ -71,153 +81,184 @@ record_manifest <- function(manifest_path, inputs, outputs, notes = NULL) {
 
 get_sparse3d_values <- function(s3d) {
   for (nm in c("x", "v", "value", "values")) {
-    if (!is.null(s3d[[nm]])) return(s3d[[nm]])
+    if (!is.null(s3d[[nm]])) return(list(name = nm, values = s3d[[nm]]))
   }
-  stop("Could not find sparse3D values field (expected one of: x, v, value, values).")
+  stop("Could not find sparse3D values field in sparse3Darray.")
 }
 
-set_sparse3d_values <- function(s3d, vals) {
-  for (nm in c("x", "v", "value", "values")) {
-    if (!is.null(s3d[[nm]])) {
-      s3d[[nm]] <- vals
-      return(s3d)
-    }
-  }
-  stop("Could not set sparse3D values field.")
+get_sparse3d_dim <- function(s3d) {
+  if (!is.null(s3d$dim)) return(as.integer(s3d$dim))
+  d <- attr(s3d, "dim")
+  if (!is.null(d)) return(as.integer(d))
+  stop("Could not determine sparse3Darray dimensions.")
 }
 
-force_group_level_aggregates <- function(cellchat) {
-  if (is.null(cellchat@LR$LRsig) || nrow(cellchat@LR$LRsig) == 0) {
-    stop("Missing cellchat@LR$LRsig; cannot build pathway aggregates.")
-  }
+get_sparse3d_dimnames <- function(s3d) {
+  if (!is.null(s3d$dimnames)) return(s3d$dimnames)
+  dn <- attr(s3d, "dimnames")
+  if (!is.null(dn)) return(dn)
+  NULL
+}
+
+build_pathway_tensor_cell_level <- function(cellchat, week_label = "unknown") {
   if (is.null(cellchat@net$prob.cell)) {
-    stop("Missing cellchat@net$prob.cell; cannot build pathway aggregates.")
+    stop("Week ", week_label, ": missing net$prob.cell.")
+  }
+  if (is.null(cellchat@LR$LRsig) || nrow(cellchat@LR$LRsig) == 0) {
+    stop("Week ", week_label, ": missing LRsig.")
   }
 
   prob_cell <- cellchat@net$prob.cell
+  dim_pc <- get_sparse3d_dim(prob_cell)
+  dn_pc <- get_sparse3d_dimnames(prob_cell)
+  val_info <- get_sparse3d_values(prob_cell)
+
   edge_i <- as.integer(prob_cell$i)
   edge_j <- as.integer(prob_cell$j)
   edge_k <- as.integer(prob_cell$k)
-  edge_x <- as.numeric(get_sparse3d_values(prob_cell))
+  edge_v <- as.numeric(val_info$values)
 
-  if (length(edge_i) == 0 || length(edge_j) == 0 || length(edge_k) == 0 || length(edge_x) == 0) {
-    stop("prob.cell is empty; cannot aggregate.")
-  }
-
-  idents <- as.factor(cellchat@idents)
-  group_levels <- levels(idents)
-  n_groups <- length(group_levels)
-  if (n_groups == 0) stop("No group levels found in cellchat@idents.")
-
-  sender_group_idx <- as.integer(idents)[edge_i]
-  receiver_group_idx <- as.integer(idents)[edge_j]
+  if (length(edge_i) == 0) stop("Week ", week_label, ": prob.cell has zero edges.")
 
   lr_df <- cellchat@LR$LRsig
-  if (!"pathway_name" %in% colnames(lr_df)) stop("LRsig is missing pathway_name column.")
-  pathway_names <- unique(as.character(lr_df$pathway_name))
-  pathway_names <- pathway_names[!is.na(pathway_names) & nzchar(pathway_names)]
-  if (length(pathway_names) == 0) stop("No valid pathway_name values in LRsig.")
+  pathways <- unique(as.character(lr_df$pathway_name))
+  pathways <- pathways[!is.na(pathways) & nzchar(pathways)]
+  if (length(pathways) == 0) stop("Week ", week_label, ": no valid pathway_name values in LRsig.")
 
-  lr_pathway <- as.character(lr_df$pathway_name)
+  lr_path <- as.character(lr_df$pathway_name)
+  pathway_chunks <- vector("list", length(pathways))
 
-  prob_arr <- array(0, dim = c(n_groups, n_groups, length(pathway_names)),
-                    dimnames = list(group_levels, group_levels, pathway_names))
-  pval_arr <- array(1, dim = c(n_groups, n_groups, length(pathway_names)),
-                    dimnames = list(group_levels, group_levels, pathway_names))
+  log_msg("Week ", week_label, ": chunking ", length(pathways), " pathways across ", length(edge_v), " sparse edges.")
 
-  log_msg("Chunk aggregation: groups=", n_groups, ", pathways=", length(pathway_names), ", edges=", length(edge_x))
-
-  for (p_idx in seq_along(pathway_names)) {
-    p <- pathway_names[p_idx]
-    lr_ids <- which(lr_pathway == p)
-    if (length(lr_ids) == 0) next
-
+  for (p_idx in seq_along(pathways)) {
+    p <- pathways[p_idx]
+    lr_ids <- which(lr_path == p)
     sel <- which(edge_k %in% lr_ids)
+
     if (length(sel) == 0) {
-      gc(verbose = FALSE)
+      pathway_chunks[[p_idx]] <- NULL
+      if (p_idx %% 10 == 0) gc(verbose = FALSE)
       next
     }
 
-    pair_idx <- (sender_group_idx[sel] - 1L) * n_groups + receiver_group_idx[sel]
+    mat <- Matrix::sparseMatrix(
+      i = edge_i[sel],
+      j = edge_j[sel],
+      x = edge_v[sel],
+      dims = c(dim_pc[1], dim_pc[2])
+    )
+    sm <- Matrix::summary(mat)
+    pathway_chunks[[p_idx]] <- list(
+      i = as.integer(sm$i),
+      j = as.integer(sm$j),
+      k = rep.int(as.integer(p_idx), nrow(sm)),
+      v = as.numeric(sm$x)
+    )
 
-    pair_sum <- rowsum(edge_x[sel], group = pair_idx, reorder = FALSE)
-    pair_ids <- as.integer(rownames(pair_sum))
-    vals <- as.numeric(pair_sum[, 1])
-
-    row_idx <- ((pair_ids - 1L) %/% n_groups) + 1L
-    col_idx <- ((pair_ids - 1L) %% n_groups) + 1L
-
-    prob_arr[cbind(row_idx, col_idx, rep.int(p_idx, length(vals)))] <- vals
-    pval_arr[cbind(row_idx, col_idx, rep.int(p_idx, length(vals)))] <- 0
-
-    gc(verbose = FALSE)
+    rm(mat, sm)
+    if (p_idx %% 10 == 0) gc(verbose = FALSE)
   }
 
-  # Provide netP for pathway-level downstream functions.
-  cellchat@netP$pathways <- pathway_names
-  cellchat@netP$prob <- prob_arr
-  cellchat@netP$pval <- pval_arr
+  keep <- vapply(pathway_chunks, Negate(is.null), logical(1))
+  pathway_chunks <- pathway_chunks[keep]
 
-  # Provide lightweight group-level net summaries compatible with most plotting.
-  weight_mat <- apply(prob_arr, c(1, 2), sum)
-  count_mat <- apply(prob_arr > 0, c(1, 2), sum)
-  cellchat@net$weight <- weight_mat
-  cellchat@net$count <- count_mat
+  if (length(pathway_chunks) == 0) {
+    stop("Week ", week_label, ": no non-zero pathway chunks could be constructed.")
+  }
 
-  cellchat
+  i_all <- unlist(lapply(pathway_chunks, `[[`, "i"), use.names = FALSE)
+  j_all <- unlist(lapply(pathway_chunks, `[[`, "j"), use.names = FALSE)
+  k_all <- unlist(lapply(pathway_chunks, `[[`, "k"), use.names = FALSE)
+  v_all <- unlist(lapply(pathway_chunks, `[[`, "v"), use.names = FALSE)
+
+  dimnames_path <- NULL
+  if (!is.null(dn_pc) && length(dn_pc) >= 2) {
+    dimnames_path <- list(dn_pc[[1]], dn_pc[[2]], pathways)
+  } else {
+    dimnames_path <- list(NULL, NULL, pathways)
+  }
+
+  pathway_tensor <- list(
+    i = as.integer(i_all),
+    j = as.integer(j_all),
+    k = as.integer(k_all),
+    dim = c(as.integer(dim_pc[1]), as.integer(dim_pc[2]), as.integer(length(pathways))),
+    dimnames = dimnames_path
+  )
+  pathway_tensor[[val_info$name]] <- as.numeric(v_all)
+  attr(pathway_tensor, "class") <- "sparse3Darray"
+
+  list(pathway_tensor = pathway_tensor, pathways = pathways)
 }
 
-is_pathway_complete <- function(cellchat) {
-  !is.null(cellchat@netP$prob) && length(cellchat@netP$prob) > 0
+has_complete_pathway_tensor <- function(cellchat) {
+  if (is.null(cellchat@net$prob)) return(FALSE)
+  d <- tryCatch(get_sparse3d_dim(cellchat@net$prob), error = function(e) NULL)
+  if (is.null(d) || length(d) < 3) return(FALSE)
+  d[3] > 0
 }
 
 weeks <- c("W7", "W8-2", "W9", "W11")
-input_paths <- file.path(DIR_OBJECTS, paste0("03_spatial_cellchat_", weeks, ".rds"))
-input_paths <- vapply(input_paths, resolve_object_path, FUN.VALUE = character(1))
+in_week_paths <- file.path(DIR_OBJECTS, paste0("03b_spatial_cellchat_full_", weeks, ".rds"))
+in_week_paths <- vapply(in_week_paths, resolve_object_path, FUN.VALUE = character(1))
 
-log_msg("Repair pass for weekly objects: ", paste(basename(input_paths), collapse = ", "))
+log_msg("Starting cell-level pathway repair for: ", paste(basename(in_week_paths), collapse = ", "))
 
-cellchat_fixed <- setNames(vector("list", length(weeks)), weeks)
+cellchat_list <- setNames(vector("list", length(weeks)), weeks)
 out_paths <- character(0)
 
 for (wk in weeks) {
-  in_path <- resolve_object_path(file.path(DIR_OBJECTS, paste0("03_spatial_cellchat_", wk, ".rds")))
+  in_path <- resolve_object_path(file.path(DIR_OBJECTS, paste0("03b_spatial_cellchat_full_", wk, ".rds")))
+  log_msg("Loading ", in_path)
   obj <- read_object(in_path)
 
-  if (is_pathway_complete(obj)) {
-    log_msg("Week ", wk, ": netP already populated; recomputing lightweight group summaries for consistency.")
+  if (has_complete_pathway_tensor(obj)) {
+    log_msg("Week ", wk, ": net$prob already present; preserving existing tensor.")
   } else {
-    log_msg("Week ", wk, ": netP missing/empty; building via pathway chunk aggregation.", .level = "WARN")
+    log_msg("Week ", wk, ": net$prob missing; constructing cell-level pathway tensor from net$prob.cell.", .level = "WARN")
+    rebuilt <- build_pathway_tensor_cell_level(obj, week_label = wk)
+    obj@net$prob <- rebuilt$pathway_tensor
+    if (is.null(obj@netP)) obj@netP <- list()
+    obj@netP$pathways <- rebuilt$pathways
+    obj@netP$prob <- rebuilt$pathway_tensor
+    if (is.null(obj@netP$pval)) {
+      obj@netP$pval <- rebuilt$pathway_tensor
+      vinfo <- get_sparse3d_values(obj@netP$pval)
+      obj@netP$pval[[vinfo$name]] <- rep(0, length(vinfo$values))
+    }
   }
 
-  obj <- force_group_level_aggregates(obj)
-
-  out_week <- file.path(DIR_OBJECTS, paste0("03_spatial_cellchat_", wk, "_repaired.rds"))
+  out_week <- file.path(DIR_OBJECTS, paste0("03b_spatial_cellchat_full_", wk, "_completed.rds"))
   out_week_paths <- save_dual_object(obj, out_week)
   out_paths <- c(out_paths, out_week_paths)
-  log_msg("Saved repaired weekly object(s): ", paste(out_week_paths, collapse = ", "))
+  log_msg("Saved completed weekly object(s): ", paste(out_week_paths, collapse = ", "))
 
-  cellchat_fixed[[wk]] <- obj
+  cellchat_list[[wk]] <- obj
+  rm(obj)
   gc(verbose = FALSE)
 }
 
-merge_fn <- CellChat::mergeCellChat
-cellchat_merged <- merge_fn(cellchat_fixed, add.names = names(cellchat_fixed))
-merged_out <- file.path(DIR_OBJECTS, "03_spatial_cellchat_merged_repaired.rds")
+log_msg("Merging 4 completed weekly objects...")
+cellchat_merged <- merge_fn(cellchat_list, add.names = names(cellchat_list))
+if (!is.null(cellchat_merged@meta$datasets)) {
+  cellchat_merged@meta$datasets <- factor(cellchat_merged@meta$datasets, levels = weeks)
+}
+
+merged_out <- file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_merged_complete.rds")
 merged_out_paths <- save_dual_object(cellchat_merged, merged_out)
 out_paths <- c(out_paths, merged_out_paths)
-log_msg("Saved repaired merged CellChat object(s): ", paste(merged_out_paths, collapse = ", "))
+log_msg("Saved merged completed object(s): ", paste(merged_out_paths, collapse = ", "))
 
 manifest_path <- file.path(DIR_REPORTS, "03f_force_pathway_aggregation_and_merge_manifest.json")
 record_manifest(
   manifest_path,
-  inputs = unname(input_paths),
+  inputs = unname(in_week_paths),
   outputs = out_paths,
   notes = c(
-    "Chunked pathway aggregation from net$prob.cell by pathway_name",
-    "Builds netP$prob/netP$pval and lightweight net$weight/net$count",
-    "Merges repaired weekly objects into 03_spatial_cellchat_merged_repaired"
+    "Cell-level (n_cells x n_cells x n_pathways) pathway tensor reconstruction from net$prob.cell",
+    "Preserves spatial coordinate resolution for spatial pathway maps",
+    "Writes *_completed weekly objects and merged_complete object"
   )
 )
 
-log_msg("03f repair-and-merge completed successfully.")
+log_msg("03f force-pathway aggregation + merge completed.")
