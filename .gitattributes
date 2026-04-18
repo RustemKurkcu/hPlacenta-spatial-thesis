@@ -12,3 +12,5 @@ data/raw/zenodo_spatial/STARmap-ISS_sample_W8-2_spots_metadata.csv filter=lfs di
 output/objects/multiome_SCP2601_formatted.rds filter=lfs diff=lfs merge=lfs -text
 output/objects/starmap_W8-2_SCP2601.rds filter=lfs diff=lfs merge=lfs -text
 data/raw/zenodo_spatial/STARmap-ISS_sample_W9_spots_metadata.csv filter=lfs diff=lfs merge=lfs -text
+output/objects/01_week_W11_post_qc.rds filter=lfs diff=lfs merge=lfs -text
+output/objects/01_week_W8-2_post_qc.rds filter=lfs diff=lfs merge=lfs -text
