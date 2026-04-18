@@ -1,13 +1,14 @@
 #!/bin/bash
 #SBATCH --job-name=03b_cellchat_full
-#SBATCH --partition=general
+#SBATCH --partition=himem
+#SBATCH --qos=himem
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=10
 #SBATCH --mem=400G
 #SBATCH --time=48:00:00
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=skurkcu@uchc.edu
+#SBATCH --mail-user=shan.kurkcu@uconn.edu
 #SBATCH --output=output/logs/slurm_03b_%j.log
 #SBATCH --error=output/logs/slurm_03b_%j.log
 
@@ -17,7 +18,10 @@ cd "${SLURM_SUBMIT_DIR}"
 mkdir -p output/logs output/objects output/reports
 
 module purge
-module load R/4.4.0
+module load R/4.2.2 cmake/3.20.2 gcc/10.2.0
+
+# CRITICAL: Point R to the personal package library
+export R_LIBS_USER="$HOME/rlibs"
 
 TARGET_SCRIPT="scripts/01_active_pipeline/03b_spatial_cellchat_all_pathways.R"
 if [[ ! -f "${TARGET_SCRIPT}" ]]; then
