@@ -186,12 +186,9 @@ dynamic_scale_distance <- 1 / compute_min_nonzero_distance(coords)
 future_state <- configure_future_runtime(max_size_gb = 80, workers = 1)
 on.exit(restore_future_runtime(future_state), add = TRUE)
 
-run_all_cells <- function(architecture_name, db_search, interaction_range, output_object, manifest_out, pathway_focus = NULL) {
+run_all_cells <- function(architecture_name, db_search, interaction_range, output_object, manifest_out) {
   cellchat <- cellchat_base
   cellchat@DB <- subset_db_fn(db_human, search = db_search)
-  if (!is.null(pathway_focus)) {
-    cellchat@DB$interaction <- cellchat@DB$interaction[cellchat@DB$interaction$pathway_name %in% pathway_focus, ]
-  }
   if (nrow(cellchat@DB$interaction) == 0) stop("Filtered DB is empty.")
   cellchat@DB$interaction$annotation <- "Secreted Signaling"
 
@@ -219,11 +216,10 @@ run_all_cells <- function(architecture_name, db_search, interaction_range, outpu
 
   saveRDS(list(architecture = architecture_name, cellchat = cellchat), output_object)
   record_artifact_manifest(manifest_out, input_obj, output_object,
-                           c(paste0("architecture=", architecture_name), paste0("workers=1"), paste0("interaction.range=", interaction_range)))
+      c(paste0("architecture=", architecture_name), paste0("workers=1"), paste0("interaction.range=", interaction_range), "pathways=ALL"))
 }
 
-thesis_pathways <- c("MMP", "WNT", "TGFb", "CXCL", "CCL", "SPP1", "NOTCH", "FN1", "MHC-I", "MHC-II", "CD45", "TIGIT", "PD-L1")
-run_all_cells("all_cells_juxtacrine_fast", c("Cell-Cell Contact", "ECM-Receptor"), 10, file.path(DIR_OBJECTS, "03b_spatial_allcells_juxtacrine_fast.rds"), file.path(DIR_REPORTS, "03b_manifest_allcells_juxt_fast.json"), thesis_pathways)
-run_all_cells("all_cells_paracrine_fast", "Secreted Signaling", 100, file.path(DIR_OBJECTS, "03b_spatial_allcells_paracrine_fast.rds"), file.path(DIR_REPORTS, "03b_manifest_allcells_para_fast.json"), thesis_pathways)
+run_all_cells("all_cells_juxtacrine_full", c("Cell-Cell Contact", "ECM-Receptor"), 10, file.path(DIR_OBJECTS, "03b_spatial_allcells_juxtacrine_full.rds"), file.path(DIR_REPORTS, "03b_manifest_allcells_juxt_full.json"))
+run_all_cells("all_cells_paracrine_full", "Secreted Signaling", 100, file.path(DIR_OBJECTS, "03b_spatial_allcells_paracrine_full.rds"), file.path(DIR_REPORTS, "03b_manifest_allcells_para_full.json"))
 
 log_msg("All-cells run complete.")

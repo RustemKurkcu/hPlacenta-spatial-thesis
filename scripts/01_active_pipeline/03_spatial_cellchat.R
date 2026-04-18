@@ -179,7 +179,8 @@ if (using_spatial_cellchat) {
   pathway_fn <- SpatialCellChat::computeCommunProbPathway
   aggregate_fn <- SpatialCellChat::aggregateNet
   subset_db_fn <- SpatialCellChat::subsetDB
-  merge_fn <- SpatialCellChat::mergeCellChat
+  # SpatialCellChat does not re-export mergeCellChat; use CellChat namespace.
+  merge_fn <- CellChat::mergeCellChat
 } else {
   if (!requireNamespace("CellChat", quietly = TRUE)) stop("Neither SpatialCellChat nor CellChat is installed.")
   log_msg("Using CellChat fallback API.", .level = "WARN")
@@ -197,6 +198,7 @@ if (using_spatial_cellchat) {
 
 create_formals <- names(formals(create_fn))
 comm_formals <- names(formals(commprob_fn))
+thesis_pathways <- c("MMP", "WNT", "TGFb", "CXCL", "CCL", "SPP1", "NOTCH", "FN1", "MHC-I", "MHC-II", "CD45", "TIGIT", "PD-L1")
 
 future_state <- configure_future_runtime(max_size_gb = 80, workers = 2)
 on.exit(restore_future_runtime(future_state), add = TRUE)
@@ -230,6 +232,7 @@ process_one_week <- function(wk, seu_week) {
 
   cellchat <- do.call(create_fn, create_args)
   cellchat@DB <- subset_db_fn(db_human, search = "Secreted Signaling")
+  cellchat@DB$interaction <- cellchat@DB$interaction[cellchat@DB$interaction$pathway_name %in% thesis_pathways, ]
   if (nrow(cellchat@DB$interaction) == 0) stop("Filtered DB is empty for week ", wk)
 
   # Force diffusion kernel path for continuous coordinates
@@ -290,8 +293,9 @@ record_artifact_manifest(
   source_data = input_obj,
   output_objects = c(weekly_outputs, merged_out),
   notes = c(
-    "Architecture: week-wise split then mergeCellChat",
+    "Architecture: week-wise split then mergeCellChat (thesis pathways only)",
     paste0("weeks_processed=", paste(names(week_results), collapse = ",")),
+    paste0("pathways=", paste(thesis_pathways, collapse = ",")),
     paste0("interaction.range_um=", interaction_range_um),
     "distance.use=TRUE, contact.dependent=FALSE, min.cells=8",
     "workers=2, future.globals.maxSize=80 GiB"
