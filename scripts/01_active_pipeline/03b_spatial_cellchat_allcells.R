@@ -41,8 +41,8 @@ configure_future_runtime <- function(max_size_gb = 80, workers = 1) {
   if (requireNamespace("future", quietly = TRUE)) {
     old_plan <- future::plan()
     options(future.globals.maxSize = as.numeric(max_size_gb) * 1024^3)
-    future::plan(future::multisession, workers = as.integer(workers))
-    log_msg("Configured future: workers=", workers, ", maxSizeGiB=", max_size_gb)
+    future::plan(future::sequential)
+    log_msg("Configured future: plan=sequential, requested_workers=", workers, ", maxSizeGiB=", max_size_gb)
   }
   list(old_plan = old_plan, old_max = old_max)
 }
@@ -207,12 +207,14 @@ run_all_cells <- function(architecture_name, db_search, interaction_range, outpu
   if ("trim" %in% comm_formals) comm_args$trim <- 0
 
   cellchat <- do.call(commprob_fn, comm_args)
+  gc(verbose = FALSE)
 
   tryCatch({
     cellchat <- filter_fn(cellchat, min.cells = 8)
     cellchat <- pathway_fn(cellchat)
     cellchat <- aggregate_fn(cellchat)
   }, error = function(e) log_msg("WARN during aggregation: ", conditionMessage(e)))
+  gc(verbose = FALSE)
 
   saveRDS(list(architecture = architecture_name, cellchat = cellchat), output_object)
   record_artifact_manifest(manifest_out, input_obj, output_object,

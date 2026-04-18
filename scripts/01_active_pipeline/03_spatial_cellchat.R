@@ -272,14 +272,22 @@ process_one_week <- function(wk, seu_week) {
   out_week <- file.path(DIR_OBJECTS, paste0("03_spatial_cellchat_", wk, ".rds"))
   saveRDS(cellchat, out_week)
   log_msg("Saved weekly CellChat object: ", out_week)
+  gc(verbose = FALSE)
 
   list(cellchat = cellchat, output = out_week, min_dist = min_dist)
 }
 
-week_results <- lapply(names(week_list), function(wk) process_one_week(wk, week_list[[wk]]))
-names(week_results) <- names(week_list)
+week_names <- names(week_list)
+week_results <- setNames(vector("list", length(week_names)), week_names)
+cellchat_list <- setNames(vector("list", length(week_names)), week_names)
+for (wk in week_names) {
+  res <- process_one_week(wk, week_list[[wk]])
+  week_results[[wk]] <- list(output = res$output, min_dist = res$min_dist)
+  cellchat_list[[wk]] <- res$cellchat
+  rm(res)
+  gc(verbose = FALSE)
+}
 
-cellchat_list <- lapply(week_results, `[[`, "cellchat")
 cellchat_merged <- merge_fn(cellchat_list, add.names = names(cellchat_list))
 
 merged_out <- file.path(DIR_OBJECTS, "03_spatial_cellchat_merged.rds")
