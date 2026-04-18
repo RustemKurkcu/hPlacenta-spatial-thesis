@@ -55,6 +55,14 @@ restore_future_runtime <- function(state) {
   invisible(NULL)
 }
 
+as_gib <- function(bytes) {
+  as.numeric(bytes) / 1024^3
+}
+
+estimate_prob_cell_tensor_gib <- function(n_cells, n_lr, bytes_per_value = 8) {
+  as_gib(as.numeric(n_cells) * as.numeric(n_cells) * as.numeric(n_lr) * as.numeric(bytes_per_value))
+}
+
 resolve_object_path <- function(path_rds) {
   path_qs <- sub("\\.rds$", ".qs", path_rds)
   if (file.exists(path_qs)) return(path_qs)
@@ -151,6 +159,7 @@ record_artifact_manifest <- function(manifest_path, source_data, output_objects,
 }
 
 interaction_range_um <- 100
+pathway_tensor_soft_limit_gib <- as.numeric(Sys.getenv("CELLCHAT_PATHWAY_TENSOR_SOFT_LIMIT_GIB", "90"))
 
 input_obj <- resolve_object_path(file.path(DIR_OBJECTS, "02_scored_misi_ido1.rds"))
 log_msg("Loading scored object: ", input_obj)
@@ -250,39 +259,89 @@ process_one_week <- function(wk, seu_week) {
   cellchat <- do.call(commprob_fn, comm_args)
   gc(verbose = FALSE)
   cellchat <- filter_fn(cellchat, min.cells = 8)
-  cellchat <- pathway_fn(cellchat)
+  n_lr <- tryCatch(nrow(cellchat@LR$LRsig), error = function(e) NA_integer_)
+  est_tensor_gib <- if (!is.na(n_lr)) estimate_prob_cell_tensor_gib(ncol(seu_week), n_lr) else NA_real_
+  if (!is.na(est_tensor_gib) && est_tensor_gib > pathway_tensor_soft_limit_gib) {
+    log_msg(
+      "Week ", wk, " WARN estimated Prob.cell tensor size is ~",
+      format(round(est_tensor_gib, 1), nsmall = 1), " GiB (cells=", ncol(seu_week),
+      ", LR=", n_lr, "). This is above soft limit ",
+      pathway_tensor_soft_limit_gib, " GiB and may OOM during computeCommunProbPathway.",
+      .level = "WARN"
+    )
+  }
 
+  pathway_ok <- TRUE
+  pathway_error <- NULL
   cellchat <- tryCatch(
-    aggregate_fn(cellchat),
+    pathway_fn(cellchat),
     error = function(e) {
-      log_msg("Week ", wk, " WARN during aggregateNet: ", conditionMessage(e), .level = "WARN")
+      pathway_ok <<- FALSE
+      pathway_error <<- conditionMessage(e)
+      log_msg("Week ", wk, " WARN during computeCommunProbPathway: ", pathway_error, .level = "WARN")
       cellchat
     }
   )
+
+  if (pathway_ok) {
+    cellchat <- tryCatch(
+      aggregate_fn(cellchat),
+      error = function(e) {
+        log_msg("Week ", wk, " WARN during aggregateNet: ", conditionMessage(e), .level = "WARN")
+        cellchat
+      }
+    )
+  } else {
+    log_msg(
+      "Week ", wk, " pathway-level outputs were skipped due to error; saving object with inferred LR-level communication intact.",
+      .level = "WARN"
+    )
+  }
 
   out_week <- file.path(DIR_OBJECTS, paste0("03b_spatial_cellchat_full_", wk, ".rds"))
   out_week_paths <- save_dual_object(cellchat, out_week)
   log_msg("Saved full-pathway weekly object(s): ", paste(out_week_paths, collapse = ", "))
   gc(verbose = FALSE)
 
-  list(cellchat = cellchat, output = out_week_paths, min_dist = min_dist)
+  list(
+    cellchat = cellchat,
+    output = out_week_paths,
+    min_dist = min_dist,
+    pathway_ok = pathway_ok,
+    pathway_error = pathway_error,
+    est_tensor_gib = est_tensor_gib
+  )
 }
 
 week_names <- names(week_list)
 week_results <- setNames(vector("list", length(week_names)), week_names)
 cellchat_list <- setNames(vector("list", length(week_names)), week_names)
+merge_candidates <- character(0)
 for (wk in week_names) {
   res <- process_one_week(wk, week_list[[wk]])
-  week_results[[wk]] <- list(output = res$output, min_dist = res$min_dist)
+  week_results[[wk]] <- list(
+    output = res$output,
+    min_dist = res$min_dist,
+    pathway_ok = res$pathway_ok,
+    pathway_error = res$pathway_error,
+    est_tensor_gib = res$est_tensor_gib
+  )
   cellchat_list[[wk]] <- res$cellchat
+  if (isTRUE(res$pathway_ok)) merge_candidates <- c(merge_candidates, wk)
   rm(res)
   gc(verbose = FALSE)
 }
 
-cellchat_merged <- merge_fn(cellchat_list, add.names = names(cellchat_list))
-merged_out <- file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_merged.rds")
-merged_out_paths <- save_dual_object(cellchat_merged, merged_out)
-log_msg("Saved full-pathway merged object(s): ", paste(merged_out_paths, collapse = ", "))
+merged_out_paths <- character(0)
+if (length(merge_candidates) == 0) {
+  log_msg("No week completed computeCommunProbPathway successfully; skipping merge.", .level = "WARN")
+} else {
+  merge_list <- cellchat_list[merge_candidates]
+  cellchat_merged <- merge_fn(merge_list, add.names = names(merge_list))
+  merged_out <- file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_merged.rds")
+  merged_out_paths <- save_dual_object(cellchat_merged, merged_out)
+  log_msg("Saved full-pathway merged object(s): ", paste(merged_out_paths, collapse = ", "))
+}
 
 weekly_outputs <- unlist(lapply(week_results, `[[`, "output"), use.names = FALSE)
 manifest_path <- file.path(DIR_REPORTS, "03b_spatial_cellchat_allcells_manifest.json")
@@ -293,8 +352,10 @@ record_artifact_manifest(
   notes = c(
     "Architecture: week-wise split then mergeCellChat (FULL pathways)",
     paste0("weeks_processed=", paste(names(week_results), collapse = ",")),
+    paste0("weeks_pathway_ok=", paste(merge_candidates, collapse = ",")),
     paste0("interaction.range_um=", interaction_range_um),
     "distance.use=TRUE, contact.dependent=FALSE, min.cells=8",
+    paste0("pathway_tensor_soft_limit_gib=", pathway_tensor_soft_limit_gib),
     "workers=1 (sequential), future.globals.maxSize=80 GiB"
   )
 )
