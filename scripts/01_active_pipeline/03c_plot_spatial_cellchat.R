@@ -11,6 +11,8 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
+source("R/celltype_dictionary.R")
+
 PIPELINE_NAME <- "03c_plot_spatial_cellchat"
 PIPELINE_VERSION <- "3.0.0"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
@@ -126,16 +128,32 @@ for (obj_path in resolved) {
     target_idx <- head(target_idx, 3)
   }
 
-  group_size <- as.numeric(table(cellchat@idents))
-  names(group_size) <- names(table(cellchat@idents))
+  net_weight <- cellchat@net$weight
+  if (is.null(net_weight) || nrow(net_weight) == 0 || ncol(net_weight) == 0) {
+    log_msg("Skipping ", run_tag, ": empty net$weight matrix.", .level = "WARN")
+    next
+  }
+
+  group_size_full <- table(cellchat@idents)
+  active_nodes <- rownames(net_weight)
+  if (is.null(active_nodes) || length(active_nodes) == 0) {
+    log_msg("Skipping ", run_tag, ": net$weight has no rownames.", .level = "WARN")
+    next
+  }
+  # Align vertex weights exactly to active graph nodes to avoid igraph length mismatch.
+  group_size <- as.numeric(group_size_full[active_nodes])
+  group_size[is.na(group_size)] <- 1
+
+  active_colors <- get_universal_colors(active_nodes)
 
   circle_pdf <- file.path(DIR_FIGURES, paste0(run_tag, "_circle.pdf"))
   circle_png <- file.path(DIR_FIGURES, paste0(run_tag, "_circle.png"))
 
   pdf(circle_pdf, width = 10, height = 10)
   net_circle_fn(
-    cellchat@net$weight,
+    net_weight,
     vertex.weight = group_size,
+    color.use = active_colors,
     weight.scale = TRUE,
     label.edge = FALSE,
     title.name = paste0("Global Network: ", run_tag)
@@ -144,8 +162,9 @@ for (obj_path in resolved) {
 
   png(circle_png, width = 3000, height = 3000, res = 300)
   net_circle_fn(
-    cellchat@net$weight,
+    net_weight,
     vertex.weight = group_size,
+    color.use = active_colors,
     weight.scale = TRUE,
     label.edge = FALSE,
     title.name = paste0("Global Network: ", run_tag)
