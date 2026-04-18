@@ -2,7 +2,7 @@
 
 # =============================================================================
 # Script: 03c_plot_spatial_cellchat.R
-# Purpose: Decoupled plotting for dual-architecture Spatial CellChat outputs.
+# Purpose: Plot week-wise + merged Spatial CellChat outputs from Script 03.
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -11,10 +11,8 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-source("R/spatial_color_themes.R")
-
 PIPELINE_NAME <- "03c_plot_spatial_cellchat"
-PIPELINE_VERSION <- "2.0.0"
+PIPELINE_VERSION <- "3.0.0"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 RUN_SEED <- 42L
 set.seed(RUN_SEED)
@@ -39,7 +37,19 @@ resolve_object_path <- function(path_rds) {
   path_qs <- sub("\\.rds$", ".qs", path_rds)
   if (file.exists(path_qs)) return(path_qs)
   if (file.exists(path_rds)) return(path_rds)
-  stop("Missing object: ", path_rds)
+  NA_character_
+}
+
+read_object <- function(path) {
+  if (is.na(path)) return(NULL)
+  if (grepl("\\.qs$", path)) {
+    if (!requireNamespace("qs", quietly = TRUE)) {
+      log_msg("qs file found but package 'qs' not installed: ", path, .level = "WARN")
+      return(NULL)
+    }
+    return(qs::qread(path))
+  }
+  readRDS(path)
 }
 
 record_artifact_manifest <- function(
@@ -51,10 +61,7 @@ record_artifact_manifest <- function(
   source_data,
   plotting_script,
   figures_output,
-  notes,
-  hypothesis,
-  methods_blurb,
-  thesis_aim
+  notes
 ) {
   manifest <- list(
     pipeline = pipeline,
@@ -64,10 +71,7 @@ record_artifact_manifest <- function(
     source_data = source_data,
     plotting_script = plotting_script,
     figures_output = figures_output,
-    notes = notes,
-    hypothesis = hypothesis,
-    methods_blurb = methods_blurb,
-    thesis_aim = thesis_aim
+    notes = notes
   )
   jsonlite::write_json(manifest, manifest_path, pretty = TRUE, auto_unbox = TRUE)
 }
@@ -84,22 +88,31 @@ if (requireNamespace("SpatialCellChat", quietly = TRUE)) {
   stop("Neither SpatialCellChat nor CellChat is installed.")
 }
 
-bundle_paths <- c(
-  file.path(DIR_OBJECTS, "03_spatial_juxtacrine_fast.rds"),
-  file.path(DIR_OBJECTS, "03_spatial_paracrine_fast.rds"),
-  file.path(DIR_OBJECTS, "03_spatial_juxtacrine_full.rds"),
-  file.path(DIR_OBJECTS, "03_spatial_paracrine_full.rds")
+base_candidates <- c(
+  file.path(DIR_OBJECTS, "03_spatial_cellchat_W7.rds"),
+  file.path(DIR_OBJECTS, "03_spatial_cellchat_W8-2.rds"),
+  file.path(DIR_OBJECTS, "03_spatial_cellchat_W9.rds"),
+  file.path(DIR_OBJECTS, "03_spatial_cellchat_W11.rds"),
+  file.path(DIR_OBJECTS, "03_spatial_cellchat_merged.rds"),
+  file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_W7.rds"),
+  file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_W8-2.rds"),
+  file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_W9.rds"),
+  file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_W11.rds"),
+  file.path(DIR_OBJECTS, "03b_spatial_cellchat_full_merged.rds")
 )
-resolved_paths <- vapply(bundle_paths, resolve_object_path, character(1))
+
+resolved <- vapply(base_candidates, resolve_object_path, character(1))
+resolved <- resolved[!is.na(resolved)]
+if (length(resolved) == 0) stop("No week/merged CellChat objects found in output/objects.")
 
 fig_paths <- character(0)
 
-for (obj_path in resolved_paths) {
-  run_tag <- sub("\\.rds$", "", basename(obj_path))
-  log_msg("Plotting bundle: ", run_tag)
+for (obj_path in resolved) {
+  run_tag <- sub("\\.rds$|\\.qs$", "", basename(obj_path))
+  log_msg("Plotting object: ", run_tag)
 
-  bundle <- readRDS(obj_path)
-  cellchat <- bundle$cellchat
+  cellchat <- read_object(obj_path)
+  if (is.null(cellchat)) next
 
   idents <- levels(cellchat@idents)
   idents_lower <- tolower(idents)
@@ -116,7 +129,6 @@ for (obj_path in resolved_paths) {
   group_size <- as.numeric(table(cellchat@idents))
   names(group_size) <- names(table(cellchat@idents))
 
-  # Circle plot
   circle_pdf <- file.path(DIR_FIGURES, paste0(run_tag, "_circle.pdf"))
   circle_png <- file.path(DIR_FIGURES, paste0(run_tag, "_circle.png"))
 
@@ -140,7 +152,6 @@ for (obj_path in resolved_paths) {
   )
   dev.off()
 
-  # Bubble plot (EVT -> immune targets)
   bubble_pdf <- file.path(DIR_FIGURES, paste0(run_tag, "_evt_to_immune_bubble.pdf"))
   bubble_png <- file.path(DIR_FIGURES, paste0(run_tag, "_evt_to_immune_bubble.png"))
 
@@ -174,17 +185,14 @@ record_artifact_manifest(
   version = PIPELINE_VERSION,
   run_timestamp = RUN_TIMESTAMP,
   seed = RUN_SEED,
-  source_data = resolved_paths,
+  source_data = resolved,
   plotting_script = "scripts/01_active_pipeline/03c_plot_spatial_cellchat.R",
   figures_output = fig_paths,
   notes = c(
-    "Decoupled visualization for 4 dual-architecture CellChat bundles",
-    "Each bundle exports global network circle plot + EVT-to-immune bubble plot",
-    "All figures saved as both PDF and PNG"
-  ),
-  hypothesis = "Vulnerable niches show architecture-specific communication programs with distinct contact and diffusion signatures.",
-  methods_blurb = "Sequential plotting of juxtacrine/paracrine fast/full SpatialCellChat bundles with focused EVT-to-immune visualization.",
-  thesis_aim = "Compare synaptic-local vs paracrine-long-range signaling around vulnerable maternal-fetal interface niches."
+    "Plots week-wise and merged CellChat objects produced by Script 03",
+    "Supports both .rds and .qs object inputs",
+    "Exports circle and EVT->immune bubble plots as PDF+PNG"
+  )
 )
 
-log_msg("Saved dual-architecture CellChat figures + manifest: ", manifest_path)
+log_msg("Saved CellChat figures + manifest: ", manifest_path)

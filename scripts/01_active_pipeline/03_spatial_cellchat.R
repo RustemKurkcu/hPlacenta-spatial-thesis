@@ -74,6 +74,19 @@ read_object <- function(path) {
   readRDS(path)
 }
 
+save_dual_object <- function(object, path_rds) {
+  saveRDS(object, path_rds)
+  out <- c(path_rds)
+  if (requireNamespace("qs", quietly = TRUE)) {
+    path_qs <- sub("\\.rds$", ".qs", path_rds)
+    qs::qsave(object, path_qs, preset = "high")
+    out <- c(out, path_qs)
+  } else {
+    log_msg("Package 'qs' not installed; skipping .qs export for ", basename(path_rds), .level = "WARN")
+  }
+  out
+}
+
 get_normalized_assay_data <- function(seu, assay = "RNA", preferred_layers = c("data", "lognorm", "counts")) {
   is_valid_matrix <- function(x) !is.null(x) && (is.matrix(x) || inherits(x, "Matrix"))
   has_shape <- function(x) is_valid_matrix(x) && nrow(x) > 0 && ncol(x) > 0
@@ -270,11 +283,11 @@ process_one_week <- function(wk, seu_week) {
   )
 
   out_week <- file.path(DIR_OBJECTS, paste0("03_spatial_cellchat_", wk, ".rds"))
-  saveRDS(cellchat, out_week)
-  log_msg("Saved weekly CellChat object: ", out_week)
+  out_week_paths <- save_dual_object(cellchat, out_week)
+  log_msg("Saved weekly CellChat object(s): ", paste(out_week_paths, collapse = ", "))
   gc(verbose = FALSE)
 
-  list(cellchat = cellchat, output = out_week, min_dist = min_dist)
+  list(cellchat = cellchat, output = out_week_paths, min_dist = min_dist)
 }
 
 week_names <- names(week_list)
@@ -291,15 +304,15 @@ for (wk in week_names) {
 cellchat_merged <- merge_fn(cellchat_list, add.names = names(cellchat_list))
 
 merged_out <- file.path(DIR_OBJECTS, "03_spatial_cellchat_merged.rds")
-saveRDS(cellchat_merged, merged_out)
-log_msg("Saved merged CellChat object: ", merged_out)
+merged_out_paths <- save_dual_object(cellchat_merged, merged_out)
+log_msg("Saved merged CellChat object(s): ", paste(merged_out_paths, collapse = ", "))
 
-weekly_outputs <- unname(vapply(week_results, `[[`, character(1), "output"))
+weekly_outputs <- unlist(lapply(week_results, `[[`, "output"), use.names = FALSE)
 manifest_path <- file.path(DIR_REPORTS, "03_spatial_cellchat_manifest.json")
 record_artifact_manifest(
   manifest_path = manifest_path,
   source_data = input_obj,
-  output_objects = c(weekly_outputs, merged_out),
+  output_objects = c(weekly_outputs, merged_out_paths),
   notes = c(
     "Architecture: week-wise split then mergeCellChat (thesis pathways only)",
     paste0("weeks_processed=", paste(names(week_results), collapse = ",")),
