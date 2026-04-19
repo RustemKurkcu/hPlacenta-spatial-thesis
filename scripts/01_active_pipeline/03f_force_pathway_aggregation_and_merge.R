@@ -22,7 +22,7 @@ if (requireNamespace("SpatialCellChat", quietly = TRUE)) {
 }
 
 PIPELINE_NAME <- "03f_force_pathway_aggregation_and_merge"
-PIPELINE_VERSION <- "2.0.0"
+PIPELINE_VERSION <- "2.0.1"
 RUN_TIMESTAMP <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")
 
 OUT_ROOT <- "output"
@@ -147,15 +147,32 @@ build_pathway_tensor_cell_level <- function(cellchat, week_label = "unknown") {
       x = edge_v[sel],
       dims = c(dim_pc[1], dim_pc[2])
     )
-    sm <- Matrix::summary(mat)
-    pathway_chunks[[p_idx]] <- list(
-      i = as.integer(sm$i),
-      j = as.integer(sm$j),
-      k = rep.int(as.integer(p_idx), nrow(sm)),
-      v = as.numeric(sm$x)
-    )
+    # Matrix::summary() can fail on some local Matrix builds due to class
+    # registration issues (e.g., gTMatrix not defined). Prefer direct slots.
+    if (inherits(mat, "dgCMatrix")) {
+      dp <- diff(mat@p)
+      j_out <- rep.int(seq_along(dp), dp)
+      i_out <- mat@i + 1L  # convert 0-based CSC row index to 1-based
+      v_out <- mat@x
+      pathway_chunks[[p_idx]] <- list(
+        i = as.integer(i_out),
+        j = as.integer(j_out),
+        k = rep.int(as.integer(p_idx), length(v_out)),
+        v = as.numeric(v_out)
+      )
+      rm(dp, j_out, i_out, v_out)
+    } else {
+      sm <- Matrix::summary(mat)
+      pathway_chunks[[p_idx]] <- list(
+        i = as.integer(sm$i),
+        j = as.integer(sm$j),
+        k = rep.int(as.integer(p_idx), nrow(sm)),
+        v = as.numeric(sm$x)
+      )
+      rm(sm)
+    }
 
-    rm(mat, sm)
+    rm(mat)
     if (p_idx %% 10 == 0) gc(verbose = FALSE)
   }
 
@@ -257,6 +274,7 @@ record_manifest(
   notes = c(
     "Cell-level (n_cells x n_cells x n_pathways) pathway tensor reconstruction from net$prob.cell",
     "Preserves spatial coordinate resolution for spatial pathway maps",
+    "Uses dgCMatrix slot extraction fallback to bypass Matrix::summary class issues",
     "Writes *_completed weekly objects and merged_complete object"
   )
 )
