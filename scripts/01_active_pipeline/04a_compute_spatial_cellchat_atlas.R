@@ -22,9 +22,16 @@ DIR_REPORTS <- file.path(OUT_ROOT, "reports")
 for (d in c(DIR_OBJECTS, DIR_TABLES, DIR_REPORTS)) if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
 
 resolve_object_path <- function(path_rds) {
+  prefer_rds <- identical(tolower(Sys.getenv("ATLAS_PREFER_RDS", unset = "0")), "1") ||
+    identical(tolower(Sys.getenv("ATLAS_PREFER_RDS", unset = "0")), "true")
   path_qs <- sub("\\.rds$", ".qs", path_rds)
-  if (file.exists(path_qs)) return(path_qs)
-  if (file.exists(path_rds)) return(path_rds)
+  if (prefer_rds) {
+    if (file.exists(path_rds)) return(path_rds)
+    if (file.exists(path_qs)) return(path_qs)
+  } else {
+    if (file.exists(path_qs)) return(path_qs)
+    if (file.exists(path_rds)) return(path_rds)
+  }
   stop("Missing object: ", path_rds)
 }
 
